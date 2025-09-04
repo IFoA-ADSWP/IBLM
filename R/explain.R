@@ -1,6 +1,48 @@
-library(ggplot2)
-
-
+#' Explain GLM Model Predictions Using SHAP Values
+#'
+#' Creates an explainer object that generates SHAP (SHapley Additive exPlanations)
+#' values for GLM model predictions, providing various visualization and analysis
+#' functions to understand model behavior and feature contributions.
+#'
+#' @param x A list containing both a GLM model (`glm_model`) and an XGBoost model
+#'   (`xgb_model`) fitted on the same data. The XGBoost model is used to generate
+#'   SHAP values that correct the GLM predictions.
+#' @param d A data frame containing the input data for which explanations are desired.
+#'   Should contain the same variables as used in model training.
+#' @param as_contribution Logical, currently unused parameter for future functionality.
+#'
+#' @return A list containing:
+#' \describe{
+#'   \item{shap_correction_scatter}{Function to create scatter plots showing SHAP corrections vs variable values}
+#'   \item{shap_correction_density}{Function to create density plots of SHAP corrections for variables}
+#'   \item{shap_intercept}{List containing intercept correction visualizations}
+#'   \item{overall_correction}{Function to show global correction distributions}
+#'   \item{input_frame}{Original input data frame}
+#'   \item{shap_wide}{Wide format SHAP corrections data frame}
+#'   \item{raw_shap}{Raw SHAP values from XGBoost}
+#'   \item{betas}{GLM model coefficients}
+#'   \item{allnames}{Names of all model coefficients except intercept}
+#' }
+#'
+#' @details The function processes both continuous and categorical variables, handles
+#' reference levels for factors, and applies corrections to account for zero values
+#' and categorical reference categories. The resulting explainer provides multiple
+#' visualization methods to understand how SHAP values modify GLM predictions.
+#'
+#' @examples
+#' \dontrun{
+#' # Assuming you have fitted both GLM and XGBoost models
+#' models <- list(glm_model = my_glm, xgb_model = my_xgb)
+#' explainer <- explain(models, test_data)
+#'
+#' # Generate scatter plot for a variable
+#' explainer$shap_correction_scatter("age")
+#'
+#' # Show density of corrections
+#' explainer$shap_correction_density("income")
+#' }
+#'
+#' @export
 explain <- function(x, d, as_contribution = FALSE){
   rownames(d) <- NULL
 
@@ -53,8 +95,8 @@ explain <- function(x, d, as_contribution = FALSE){
     newdata = xgboost::xgb.DMatrix(
       data.matrix(
         dplyr::select(d, -dplyr::all_of(target))
-        )
-      ),
+      )
+    ),
     predcontrib = TRUE
   ) |> data.frame()
 
@@ -123,7 +165,21 @@ explain <- function(x, d, as_contribution = FALSE){
 
 # ========================= Helper functions for `explain` ========================
 
-# Helper: theme for plots
+#' Create Custom ggplot2 Theme for SHAP Visualizations
+#'
+#' Generates a custom ggplot2 theme with specific color scheme and styling
+#' optimized for SHAP explanation plots.
+#'
+#' @param custom_colors A character vector of 8 hex color codes used throughout
+#'   the plotting functions for consistent theming.
+#'
+#' @return A ggplot2 theme object that can be added to plots.
+#'
+#' @details The theme applies minimal styling with custom colors for titles,
+#' subtitles, and grid lines to maintain visual consistency across all
+#' SHAP explanation plots.
+#'
+#' @keywords internal
 chart_theme_fn <- function(custom_colors) {
   theme_minimal() +
     theme(
@@ -134,7 +190,30 @@ chart_theme_fn <- function(custom_colors) {
     )
 }
 
-# Convert source data to wide one-hot format
+#' Convert Data Frame to Wide One-Hot Encoded Format
+#'
+#' Transforms categorical variables in a data frame into one-hot encoded format
+#' and prepares the data structure needed for SHAP calculations.
+#'
+#' @param frame Input data frame to be transformed.
+#' @param all_names Character vector of all expected variable names including
+#'   categorical levels and intercept.
+#' @param cat_levels Named list where each element contains the unique levels
+#'   for each categorical variable.
+#' @param target Character string specifying the name of the target variable.
+#' @param no_cat_toggle Logical indicating whether there are any categorical
+#'   variables in the data.
+#' @param remove_target Logical, whether to remove the target variable from
+#'   the output (default TRUE).
+#'
+#' @return A data frame in wide format with one-hot encoded categorical variables,
+#' an intercept column, and all variables ordered according to `all_names`.
+#'
+#' @details For datasets with categorical variables, this function creates
+#' dummy variables for all levels (including reference levels) and ensures
+#' proper ordering for downstream SHAP calculations.
+#'
+#' @keywords internal
 data_dim_helper <- function(frame, all_names, cat_levels, target, no_cat_toggle, remove_target = TRUE) {
   if (no_cat_toggle) {
     return(frame)
@@ -165,7 +244,35 @@ data_dim_helper <- function(frame, all_names, cat_levels, target, no_cat_toggle,
   return(output_frame)
 }
 
-# Compute SHAP corrections
+#' Compute SHAP Value Corrections for GLM Coefficients
+#'
+#' Processes raw SHAP values to create coefficient corrections that account for
+#' zero values in continuous variables and reference levels in categorical variables.
+#'
+#' @param frame Data frame containing raw SHAP values from XGBoost.
+#' @param wide_frame Wide format input data frame (one-hot encoded).
+#' @param vartypes Named vector indicating the data type of each variable.
+#' @param reference_levels Character vector of reference level names for categorical variables.
+#' @param cat_levels Named list of categorical variable levels.
+#' @param target Character string specifying the target variable name.
+#' @param no_cat_toggle Logical indicating absence of categorical variables.
+#' @param beta_correction Logical, whether to apply beta corrections (default TRUE).
+#' @param epsilon Numeric threshold for avoiding division by very small numbers (default 0.05).
+#'
+#' @return A data frame with corrected SHAP values where:
+#' \itemize{
+#'   \item Categorical variables are properly aggregated by factor level
+#'   \item Continuous variables are normalized by their actual values
+#'   \item Reference level and zero-value corrections are added to the bias term
+#' }
+#'
+#' @details This function performs several key corrections:
+#' 1. Redistributes SHAP values for categorical variables across their levels
+#' 2. Adjusts for zero values in continuous variables
+#' 3. Accounts for reference category effects
+#' 4. Normalizes SHAP values by actual variable values for interpretability
+#'
+#' @keywords internal
 shap_dim_helper <- function(frame, wide_frame, vartypes, reference_levels, cat_levels,
                             target, no_cat_toggle, beta_correction = TRUE, epsilon = 0.05) {
   if (no_cat_toggle) {
@@ -208,7 +315,33 @@ shap_dim_helper <- function(frame, wide_frame, vartypes, reference_levels, cat_l
   return(output_frame)
 }
 
-# SHAP correction density plot
+#' Create Density Plot of SHAP Corrections for a Variable
+#'
+#' Generates a density plot showing the distribution of SHAP-based corrections
+#' to a GLM coefficient, along with the original coefficient and standard error bounds.
+#'
+#' @param varname Character string specifying the variable name to plot.
+#' @param betas Named numeric vector of GLM coefficients.
+#' @param vartypes Named vector indicating data types of variables.
+#' @param wide_input_frame Wide format input data frame.
+#' @param shap_wide Data frame containing SHAP corrections.
+#' @param x_glm_model The fitted GLM model object.
+#' @param d Original input data frame.
+#' @param custom_colors Character vector of hex colors for plot styling.
+#' @param chart_theme ggplot2 theme object for consistent plot appearance.
+#'
+#' @return A ggplot object showing the density distribution of SHAP corrections
+#' with vertical lines indicating the original coefficient value and standard error bounds.
+#'
+#' @details The plot shows:
+#' \itemize{
+#'   \item Density curve of corrected coefficient values
+#'   \item Solid vertical line at the original GLM coefficient
+#'   \item Dashed lines at ±1 standard error from the coefficient
+#'   \item Automatic x-axis limits based on SHAP quantiles and standard errors
+#' }
+#'
+#' @keywords internal
 shap_correction_density <- function(varname, betas, vartypes, wide_input_frame, shap_wide,
                                     x_glm_model, d, custom_colors, chart_theme) {
   if (!(varname %in% c(names(betas), colnames(d)))) stop("varname not in model!")
@@ -234,7 +367,41 @@ shap_correction_density <- function(varname, betas, vartypes, wide_input_frame, 
     chart_theme
 }
 
-# SHAP correction scatter plot
+#' Create Scatter Plot of SHAP Corrections vs Variable Values
+#'
+#' Generates a scatter plot showing how SHAP-based coefficient corrections
+#' vary with the actual values of a variable, revealing non-linear relationships.
+#'
+#' @param varname Character string specifying the variable name to plot.
+#' @param betas Named numeric vector of GLM coefficients.
+#' @param vartypes Named vector indicating data types of variables.
+#' @param cat_levels Named list of categorical variable levels.
+#' @param wide_input_frame Wide format input data frame.
+#' @param shap_wide Data frame containing SHAP corrections.
+#' @param d Original input data frame.
+#' @param target Character string specifying target variable name.
+#' @param reference_levels Character vector of reference level names.
+#' @param custom_colors Character vector of hex colors for plot styling.
+#' @param chart_theme ggplot2 theme object for consistent plot appearance.
+#' @param color Optional variable name for coloring points (currently unused).
+#' @param marginal Logical, whether to add marginal density plots (default FALSE).
+#' @param excl_outliers Logical, whether to exclude outliers (currently unused).
+#'
+#' @return A ggplot object (potentially with marginal plots) showing:
+#' \itemize{
+#'   \item Scatter points of variable values vs corrected coefficients
+#'   \item Smooth trend line through the points
+#'   \item Horizontal reference lines for original coefficient and standard error bounds
+#' }
+#'
+#' @details This visualization helps identify:
+#' \itemize{
+#'   \item Whether the linear assumption of GLM holds across the variable's range
+#'   \item Regions where the coefficient correction is most pronounced
+#'   \item Potential interaction effects or non-linear relationships
+#' }
+#'
+#' @keywords internal
 shap_correction_scatter <- function(varname,
                                     betas,
                                     vartypes,
@@ -276,7 +443,39 @@ shap_correction_scatter <- function(varname,
   return(p)
 }
 
-# SHAP intercept plots
+#' Generate Intercept Correction Analysis and Visualizations
+#'
+#' Analyzes how SHAP values correct the GLM intercept term, focusing on
+#' observations where continuous variables are zero or categorical variables
+#' are at their reference levels.
+#'
+#' @param shp Data frame containing raw SHAP values.
+#' @param x_glm_model The fitted GLM model object.
+#' @param d Original input data frame.
+#' @param target Character string specifying target variable name.
+#' @param cont_vars Character vector of continuous variable names.
+#' @param reference_levels_raw Named list of reference levels for categorical variables.
+#' @param no_cat_toggle Logical indicating absence of categorical variables.
+#' @param custom_colors Character vector of hex colors for plot styling.
+#' @param chart_theme ggplot2 theme object for consistent plot appearance.
+#'
+#' @return A list containing:
+#' \describe{
+#'   \item{overall_density}{ggplot object showing density of total intercept corrections}
+#' }
+#'
+#' @details This function:
+#' \itemize{
+#'   \item Identifies observations at reference conditions (zeros/reference levels)
+#'   \item Calculates intercept-specific SHAP corrections for these observations
+#'   \item Creates visualizations showing the distribution of corrected intercept values
+#'   \item Compares corrected values against the original GLM intercept and its standard error
+#' }
+#'
+#' The intercept correction is crucial for understanding baseline predictions and
+#' how they vary across different subpopulations in the data.
+#'
+#' @keywords internal
 shap_intercept <- function(shp,
                            x_glm_model,
                            d,
@@ -324,7 +523,34 @@ shap_intercept <- function(shp,
   return(list(overall_density = overall_density))
 }
 
-# Global SHAP corrections
+#' Generate Global SHAP Correction Distribution Plot
+#'
+#' Creates a visualization showing the overall distribution of multiplicative
+#' corrections that SHAP values apply to GLM predictions.
+#'
+#' @param shp Data frame containing raw SHAP values including BIAS term.
+#' @param custom_colors Character vector of hex colors for plot styling.
+#' @param chart_theme ggplot2 theme object for consistent plot appearance.
+#'
+#' @return A ggplot object showing:
+#' \itemize{
+#'   \item Density distribution of exponentiated total SHAP corrections
+#'   \item Vertical reference line at 1.0 (no correction)
+#'   \item Mean correction value in the subtitle
+#' }
+#'
+#' @details This function:
+#' \itemize{
+#'   \item Sums all SHAP values (including bias) for each observation
+#'   \item Exponentiates the totals to show multiplicative corrections
+#'   \item Visualizes how much the XGBoost model corrections deviate from GLM predictions
+#'   \item Values > 1 indicate upward corrections, < 1 indicate downward corrections
+#' }
+#'
+#' This global view helps assess the overall magnitude and direction of
+#' model corrections across the entire dataset.
+#'
+#' @keywords internal
 global_c <- function(shp, custom_colors, chart_theme) {
   dt <- shp |>
     dplyr::mutate(
