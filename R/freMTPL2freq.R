@@ -27,7 +27,7 @@
 #' which contains claim severity information, to model pure premiums as the
 #' product of frequency and severity.
 #'
-#' @source CASdatasets package \url{https://CRAN.R-project.org/package=CASdatasets}
+#' @source CASdatasets package \url{https://github.com/dutangc/CASdatasets/blob/master/data/freMTPL2freq.rda}
 #'
 #' @examples
 #' data(freMTPL2freq)

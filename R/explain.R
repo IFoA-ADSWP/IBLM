@@ -180,6 +180,8 @@ explain <- function(x, d, as_contribution = FALSE){
 #' SHAP explanation plots.
 #'
 #' @keywords internal
+#'
+#' @import ggplot2
 chart_theme_fn <- function(custom_colors) {
   theme_minimal() +
     theme(
@@ -342,6 +344,8 @@ shap_dim_helper <- function(frame, wide_frame, vartypes, reference_levels, cat_l
 #' }
 #'
 #' @keywords internal
+#'
+#' @import ggplot2
 shap_correction_density <- function(varname, betas, vartypes, wide_input_frame, shap_wide,
                                     x_glm_model, d, custom_colors, chart_theme) {
   if (!(varname %in% c(names(betas), colnames(d)))) stop("varname not in model!")
@@ -402,6 +406,8 @@ shap_correction_density <- function(varname, betas, vartypes, wide_input_frame, 
 #' }
 #'
 #' @keywords internal
+#'
+#' @import ggplot2
 shap_correction_scatter <- function(varname,
                                     betas,
                                     vartypes,
@@ -476,6 +482,8 @@ shap_correction_scatter <- function(varname,
 #' how they vary across different subpopulations in the data.
 #'
 #' @keywords internal
+#'
+#' @import ggplot2
 shap_intercept <- function(shp,
                            x_glm_model,
                            d,
@@ -551,6 +559,8 @@ shap_intercept <- function(shp,
 #' model corrections across the entire dataset.
 #'
 #' @keywords internal
+#'
+#' @import ggplot2
 global_c <- function(shp, custom_colors, chart_theme) {
   dt <- shp |>
     dplyr::mutate(

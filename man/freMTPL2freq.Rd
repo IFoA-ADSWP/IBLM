@@ -22,7 +22,7 @@ A data frame with 678,013 observations and 12 variables:
 }
 }
 \source{
-CASdatasets package \url{https://CRAN.R-project.org/package=CASdatasets}
+CASdatasets package \url{https://github.com/dutangc/CASdatasets/blob/master/data/freMTPL2freq.rda}
 }
 \usage{
 freMTPL2freq
