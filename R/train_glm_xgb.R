@@ -103,7 +103,11 @@ train_glm_xgb <- function(data,
 
   glm_family <- poisson()
 
-  }
+  } else {
+
+    stop(paste0("'family' argument must be one of: 'poisson'"))
+
+         }
 
   # ==================== GLM fitting ====================
 
