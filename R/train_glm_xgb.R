@@ -21,7 +21,7 @@
 #'   and early_stopping_rounds = 25.
 #'
 #' @return An object of class "ens" containing:
-#'   \item{glm_model}{The input GLM model object}
+#'   \item{glm_model}{The fitted GLM model object}
 #'   \item{xgb_model}{The trained XGBoost model object}
 #'
 #' @details
@@ -44,14 +44,17 @@
 #'
 #' @note
 #' \itemize{
-#'   \item The function expects both training and validation datasets to have identical structure
+#'   \item The function expects `data$train` and `data$validate` to have identical column structures
 #'   \item GLM predictions should not be zero to avoid division by zero errors
 #'   \item Currently only supports Poisson family; other families will use default XGBoost settings
-#'   \item The parameter name \code{xgb_additional_params} appears to have a typo (should be "xgb")
 #' }
 #'
 #' @examples
-#' # TBC
+#' library(IBLM)
+#'
+#' data <- split_into_train_validate_test(freMTPL2freq)
+#'
+#' ensemble_model <- train_glm_xgb(data, response_var = "ClaimRate")
 #'
 #' @seealso
 #' \code{\link[stats]{glm}}, \code{\link[xgboost]{xgb.train}}
