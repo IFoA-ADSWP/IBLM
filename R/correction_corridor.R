@@ -7,23 +7,25 @@
 #'
 #' @param ensemble An ensemble model object (typically of class "ens") containing
 #'   both GLM and XGBoost components, with a predict method
-#' @param explainer An explainer object containing an input_frame element with
+#' @param explainer An explainer object containing an `input_frame` element with
 #'   the data to be used for predictions
 #' @param trim_vals Numeric vector of trim values to test. Default is
-#'   c(NA, 4, 1, 0.2, 0.15, 0.1, 0.05, 0). NA represents no trimming
+#'   `c(NA_real_, 4, 1, 0.2, 0.15, 0.1, 0.05, 0)`. `NA_real_` represents no trimming
 #' @param sample_perc Numeric value between 0 and 1 specifying the fraction
 #'   of data to sample for visualization. Default is 0.2 (20%)
 #' @param var Character string specifying an optional variable name from the
-#'   data to use for coloring points. Default is NA (no coloring variable)
+#'   data to use for coloring points. Default is `NULL` (no coloring variable)
 #'
-#' @return A ggplot2 object showing a faceted scatter plot with:
-#'   \itemize{
-#'     \item X-axis: GLM predictions
-#'     \item Y-axis: Ensemble predictions
-#'     \item Facets: Different trim values
-#'     \item Reference line: y = x (perfect agreement line)
-#'     \item Optional: Points colored by specified variable
-#'   }
+#' @return A ggplot2 object.
+#'
+#' The plot contains:
+#' \itemize{
+#'   \item X-axis: GLM predictions
+#'   \item Y-axis: Ensemble predictions
+#'   \item Facets: Different trim values
+#'   \item Reference line: y = x (perfect agreement line)
+#'   \item Optional: Points colored by specified variable
+#' }
 #'
 #' @details
 #' The function works by:
@@ -44,15 +46,17 @@
 #' how corrections behave across the prediction range.
 #'
 #' @examples
-#' \dontrun{
 #' # Basic usage with default trim values
+#' \donttest{
 #' correction_corridor(my_ensemble, my_explainer)
+#' }
 #'
 #' # With custom trim values and coloring by a variable
+#' \dontrun{
 #' correction_corridor(
 #'   ensemble = my_ensemble,
 #'   explainer = my_explainer,
-#'   trim_vals = c(NA, 1, 0.5, 0.1),
+#'   trim_vals = c(NA_real_, 1, 0.5, 0.1),
 #'   sample_perc = 0.3,
 #'   var = "age_group"
 #' )
@@ -68,7 +72,7 @@
 #' @export
 correction_corridor <- function(ensemble,
                                 explainer,
-                                trim_vals = c(NA, 4, 1, 0.2, 0.15, 0.1, 0.05, 0),
+                                trim_vals = c(NA_real_, 4, 1, 0.2, 0.15, 0.1, 0.05, 0),
                                 sample_perc = 0.2,
                                 var = NA) {
 
