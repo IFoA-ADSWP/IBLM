@@ -101,15 +101,24 @@ train_glm_xgb <- function(data,
                           )
 ){
 
+  # ==================== checks ====================
+
   check_required_names(data, c("train", "validate"))
   check_required_names(data[['train']], response_var)
   check_required_names(data[['validate']], response_var)
+  stopifnot(
+    length(response_var) == 1,
+    names(data[['train']]) == names(data[['validate']])
+  )
+
+  # ==================== input generation ====================
 
   predictor_vars <- setdiff(names(data[['train']]), response_var)
 
-  train_responses <- data[['train']] |>  dplyr::select(dplyr::all_of(response_var))
+  train_responses <- data[['train']] |>  dplyr::pull(response_var)
+  validate_responses <- data[['validate']] |>  dplyr::pull(response_var)
+
   train_features <- data[['train']] |>  dplyr::select(-dplyr::all_of(response_var))
-  validate_responses <- data[['validate']] |>  dplyr::select(dplyr::all_of(response_var))
   validate_features <- data[['validate']] |>  dplyr::select(-dplyr::all_of(response_var))
 
   if(family == "poisson") {
@@ -119,10 +128,10 @@ train_glm_xgb <- function(data,
     eval_metric = "poisson-nloglik")
   }
 
-  # GLM fitting
+  # ==================== GLM fitting ====================
 
 
-  # Preparing data for XBG
+  # ==================== Preparing for XGB  ====================
 
   train_glm_preds <- unname(predict(glm_model, train_features, type="response"))
   validate_glm_preds <- unname(predict(glm_model, validate_features, type="response"))
@@ -144,6 +153,8 @@ train_glm_xgb <- function(data,
 
   }
 
+  # ==================== Fitting XGB  ====================
+
   xbg_train_core_params <- list(
     params = params,
     data = train_xgb_matrix,
@@ -152,6 +163,8 @@ train_glm_xgb <- function(data,
   xbg_train_all_params <- modifyList(xbg_train_core_params, xbg_train_additional_params)
 
   xgb_model <- do.call(xgboost::xgb.train, xbg_train_all_params)
+
+  # ==================== Collating Output  ====================
 
   toreturn = list(glm_model = glm_model,
                   xgb_model = xgb_model)
