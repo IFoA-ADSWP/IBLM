@@ -2,9 +2,10 @@
 
 S3method(predict,ens)
 export(ave_chart)
-export(correction_corridor)
 export(detect_outliers)
 export(explain)
 export(get_pinball_scores)
+export(split_into_train_validate_test)
+export(train_glm_xgb)
 export(train_multipl_glm_xgb)
 import(ggplot2)

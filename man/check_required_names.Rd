@@ -9,7 +9,7 @@ check_required_names(df, required_names)
 \arguments{
 \item{df}{A data frame (or list) to check.}
 
-\item{required_names}{A character vector of names that must be present in \code{obj}.}
+\item{required_names}{A character vector of names that must be present in `df`.}
 }
 \value{
 Returns \code{TRUE} if all required names are present. Throws an error otherwise.
