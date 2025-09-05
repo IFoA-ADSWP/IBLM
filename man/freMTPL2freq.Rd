@@ -3,45 +3,52 @@
 \docType{data}
 \name{freMTPL2freq}
 \alias{freMTPL2freq}
-\title{French Motor Third-Party Liability (MTPL) Insurance Frequency Data}
+\title{French Motor Insurance Claims Dataset}
 \format{
-A data frame with 678,013 observations and 12 variables:
+A data frame with 677,991 rows and 10 variables:
 \describe{
-  \item{PolicyID}{Unique policy identifier}
-  \item{Exposure}{Exposure period in years (≤ 1)}
-  \item{ClaimNb}{Number of claims reported for the policy}
-  \item{Power}{Car power}
-  \item{CarAge}{Age of the car (in years)}
-  \item{DriverAge}{Age of the driver (in years)}
-  \item{Brand}{Categorical variable indicating brand category}
-  \item{Gas}{Fuel type (e.g., Gasoline, Diesel)}
-  \item{Region}{Region code of the policyholder}
-  \item{Density}{Population density of the policyholder’s area}
-  \item{Area}{Urban/rural indicator of the insured’s area}
-  \item{...}{Additional categorical covariates depending on dataset version}
+  \item{ClaimRate}{Number of claims made, at an annualised rate (numeric)}
+  \item{VehPower}{Vehicle power rating or engine horsepower category (integer)}
+  \item{VehAge}{Age of the vehicle in years (integer)}
+  \item{DrivAge}{Age of the driver in years (integer)}
+  \item{BonusMalus}{Bonus-malus coefficient, a rating factor used in French
+    insurance where lower values indicate better driving records (integer)}
+  \item{VehBrand}{Vehicle brand/manufacturer code (factor with levels like B6, B12, etc.)}
+  \item{VehGas}{Type of fuel used by the vehicle (factor with levels: Regular, Diesel)}
+  \item{Area}{Area classification where the policy holder resides
+    (factor with levels A through F)}
+  \item{Density}{Population density of the area where the policy holder lives
+    (integer, inhabitants per square kilometer)}
+  \item{Region}{French administrative region where the policy holder resides
+    (factor with regions like Rhone-Alpes, Picardie, Aquitaine, etc.)}
 }
 }
 \source{
-CASdatasets package \url{https://github.com/dutangc/CASdatasets/blob/master/data/freMTPL2freq.rda}
+['https://github.com/dutangc/CASdatasets/blob/master/data/freMTPL2freq.rda']
 }
 \usage{
 freMTPL2freq
 }
 \description{
-This dataset contains automobile insurance policies from France with
-exposure and number of claims. It is a benchmark dataset often used for
-actuarial modeling of claim frequency (e.g., generalized linear models,
-credibility theory, and machine learning applications).
+A dataset containing information about French motor insurance policies and claims,
+commonly used for actuarial modeling and risk assessment studies.
 }
 \details{
-The dataset is a subset of French motor third-party liability (MTPL)
-insurance data. It is typically used together with \code{\link{freMTPL2sev}},
-which contains claim severity information, to model pure premiums as the
-product of frequency and severity.
+This dataset is frequently used in actuarial science and insurance analytics
+for modeling claim frequency and severity. The ClaimRate variable represents
+the response (i.e. number of claims, annualised) while the other variables serve as
+potential predictors for risk assessment.
+
+The BonusMalus system is a characteristic feature of French motor insurance,
+where coefficients typically range from 50 (best) to over 100 (worst),
+reflecting the policyholder's claims history.
 }
 \examples{
-data(freMTPL2freq)
-str(freMTPL2freq)
-summary(freMTPL2freq$ClaimNb)
+\dontrun{
+head(freMTPL2freq)
 }
+
+}
+\keyword{actuarial}
 \keyword{datasets}
+\keyword{insurance}

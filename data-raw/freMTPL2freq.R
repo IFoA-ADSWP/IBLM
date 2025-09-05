@@ -8,4 +8,9 @@ download.file(url, temp)
 
 load(temp)
 
+freMTPL2freq <- freMTPL2freq |>
+  dplyr::mutate(ClaimRate = ClaimNb/Exposure,
+                ClaimRate = pmin(ClaimRate,quantile(ClaimRate,0.999))) |>
+  dplyr::select(-dplyr::all_of(c("IDpol", "Exposure", "ClaimNb")))
+
 usethis::use_data(freMTPL2freq, overwrite = TRUE, compress = "xz")
