@@ -9,16 +9,14 @@
 #' @param data A named list containing training and validation datasets. Must have
 #'   elements named "train" and "validate", each containing data frames with the
 #'   same structure.
-#' @param glm_model A fitted GLM model object (from \code{\link[stats]{glm}}) that
-#'   will be used to generate baseline predictions for the ensemble.
 #' @param response_var Character string specifying the name of the response variable
-#'   column in the datasets. Default is "ClaimRate".
+#'   column in the datasets. The string MUST appear in both `data$train` and `data$validate`.
 #' @param family Character string specifying the distributional family for the model.
 #'   Currently only "poisson" is fully supported. Default is "poisson".
 #' @param use_glm Logical indicating whether to use GLM predictions as base margins
 #'   in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
 #'   than zero. Default is FALSE.
-#' @param xbg_train_additional_params Named list of additional parameters to pass to
+#' @param xgb_additional_params Named list of additional parameters to pass to
 #'   \code{\link[xgboost]{xgb.train}}. Default includes nrounds = 1000, verbose = 1,
 #'   and early_stopping_rounds = 25.
 #'
@@ -49,52 +47,21 @@
 #'   \item The function expects both training and validation datasets to have identical structure
 #'   \item GLM predictions should not be zero to avoid division by zero errors
 #'   \item Currently only supports Poisson family; other families will use default XGBoost settings
-#'   \item The parameter name \code{xbg_train_additional_params} appears to have a typo (should be "xgb")
+#'   \item The parameter name \code{xgb_additional_params} appears to have a typo (should be "xgb")
 #' }
 #'
 #' @examples
-#' \dontrun{
-#' # Prepare data
-#' train_data <- data.frame(
-#'   ClaimRate = rpois(1000, 2),
-#'   feature1 = rnorm(1000),
-#'   feature2 = runif(1000)
-#' )
-#' validate_data <- data.frame(
-#'   ClaimRate = rpois(500, 2),
-#'   feature1 = rnorm(500),
-#'   feature2 = runif(500)
-#' )
-#' data_list <- list(train = train_data, validate = validate_data)
-#'
-#' # Fit GLM model
-#' glm_fit <- glm(ClaimRate ~ feature1 + feature2,
-#'                data = train_data,
-#'                family = poisson())
-#'
-#' # Train ensemble
-#' ensemble_model <- train_glm_xgb(
-#'   data = data_list,
-#'   glm_model = glm_fit,
-#'   use_glm = TRUE,
-#'   xbg_train_additional_params = list(
-#'     nrounds = 500,
-#'     eta = 0.1,
-#'     max_depth = 6
-#'   )
-#' )
-#' }
+#' # TBC
 #'
 #' @seealso
-#' \code{\link[stats]{glm}}, \code{\link[xgboost]{xgb.train}}, \code{\link[xgboost]{xgb.DMatrix}}
+#' \code{\link[stats]{glm}}, \code{\link[xgboost]{xgb.train}}
 #'
 #' @export
 train_glm_xgb <- function(data,
-                          glm_model,
-                          response_var = "ClaimRate",
+                          response_var,
                           family= "poisson",
                           use_glm = FALSE,
-                          xbg_train_additional_params = list(
+                          xgb_additional_params = list(
                             nrounds = 1000,
                             verbose = 1,
                             early_stopping_rounds = 25
@@ -113,56 +80,68 @@ train_glm_xgb <- function(data,
 
   # ==================== input generation ====================
 
+  train <- list()
+  validate <- list()
+
   predictor_vars <- setdiff(names(data[['train']]), response_var)
 
-  train_responses <- data[['train']] |>  dplyr::pull(response_var)
-  validate_responses <- data[['validate']] |>  dplyr::pull(response_var)
+  train$responses <- data[['train']] |>  dplyr::pull(response_var)
+  validate$responses <- data[['validate']] |>  dplyr::pull(response_var)
 
-  train_features <- data[['train']] |>  dplyr::select(-dplyr::all_of(response_var))
-  validate_features <- data[['validate']] |>  dplyr::select(-dplyr::all_of(response_var))
+  train$features <- data[['train']] |>  dplyr::select(-dplyr::all_of(response_var))
+  validate$features <- data[['validate']] |>  dplyr::select(-dplyr::all_of(response_var))
 
   if(family == "poisson") {
-  params <- list(
+
+  xgb_family_params <- list(
     base_score = 1,
     objective = "count:poisson",
     eval_metric = "poisson-nloglik")
+
+  glm_family <- poisson()
+
   }
 
   # ==================== GLM fitting ====================
 
+  predictor_vars <- setdiff(names(data[['train']]), response_var)
+
+  formula <- as.formula(paste(response_var, "~", paste(predictor_vars, collapse = " + ")))
+
+  glm_model <- glm(formula, data = data[['train']], family = glm_family)
 
   # ==================== Preparing for XGB  ====================
 
-  train_glm_preds <- unname(predict(glm_model, train_features, type="response"))
-  validate_glm_preds <- unname(predict(glm_model, validate_features, type="response"))
+  train$glm_preds <- unname(predict(glm_model, train$features, type="response"))
+  validate$glm_preds <- unname(predict(glm_model, validate$features, type="response"))
 
-  train_targets <- train_responses / train_glm_preds
-  validate_targets <- validate_responses / validate_glm_preds
+  train$targets <- train$responses / train$glm_preds
+  validate$targets <- validate$responses / validate$glm_preds
 
-  train_xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(train_features), label = train_targets)
-  validate_xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(validate_features), label = validate_targets)
+  train$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(train$features), label = train$targets)
+  validate$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(validate$features), label = validate$targets)
 
   # Initialize with GLM predictions if use_glm is TRUE
   if (use_glm && !is.null(glm_model)) {
 
-    glm_predictions_train <- predict(glm_model, train_features, type="link")
-    xgboost::setinfo(train_xgb_matrix, "base_margin", unname(glm_predictions_train))
+    glm_predictions_train <- predict(glm_model, train$features, type="link")
+    xgboost::setinfo(train$xgb_matrix, "base_margin", unname(glm_predictions_train))
 
-    glm_predictions_val <- predict(glm_model, validate_features, type="link")
-    xgboost::setinfo(validate_xgb_matrix, "base_margin", unname(glm_predictions_val))
+    glm_predictions_val <- predict(glm_model, validate$features, type="link")
+    xgboost::setinfo(validate$xgb_matrix, "base_margin", unname(glm_predictions_val))
 
   }
 
   # ==================== Fitting XGB  ====================
 
-  xbg_train_core_params <- list(
-    params = params,
-    data = train_xgb_matrix,
-    watchlist = list(validation = validate_xgb_matrix)
+  xgb_core_params <- list(
+    params = xgb_family_params,
+    data = train$xgb_matrix,
+    watchlist = list(validation = validate$xgb_matrix)
   )
-  xbg_train_all_params <- modifyList(xbg_train_core_params, xbg_train_additional_params)
+  xgb_all_params <- modifyList(xgb_core_params, xgb_additional_params)
 
-  xgb_model <- do.call(xgboost::xgb.train, xbg_train_all_params)
+  xgb_model <- do.call(xgboost::xgb.train, xgb_all_params)
 
   # ==================== Collating Output  ====================
 

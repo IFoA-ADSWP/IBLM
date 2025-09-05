@@ -6,12 +6,10 @@
 \usage{
 train_glm_xgb(
   data,
-  glm_model,
-  response_var = "ClaimRate",
+  response_var,
   family = "poisson",
   use_glm = FALSE,
-  xbg_train_additional_params = list(nrounds = 1000, verbose = 1, early_stopping_rounds =
-    25)
+  xgb_additional_params = list(nrounds = 1000, verbose = 1, early_stopping_rounds = 25)
 )
 }
 \arguments{
@@ -19,11 +17,8 @@ train_glm_xgb(
 elements named "train" and "validate", each containing data frames with the
 same structure.}
 
-\item{glm_model}{A fitted GLM model object (from \code{\link[stats]{glm}}) that
-will be used to generate baseline predictions for the ensemble.}
-
 \item{response_var}{Character string specifying the name of the response variable
-column in the datasets. Default is "ClaimRate".}
+column in the datasets. The string MUST appear in both `data$train` and `data$validate`.}
 
 \item{family}{Character string specifying the distributional family for the model.
 Currently only "poisson" is fully supported. Default is "poisson".}
@@ -32,7 +27,7 @@ Currently only "poisson" is fully supported. Default is "poisson".}
 in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
 than zero. Default is FALSE.}
 
-\item{xbg_train_additional_params}{Named list of additional parameters to pass to
+\item{xgb_additional_params}{Named list of additional parameters to pass to
 \code{\link[xgboost]{xgb.train}}. Default includes nrounds = 1000, verbose = 1,
 and early_stopping_rounds = 25.}
 }
@@ -70,43 +65,13 @@ For Poisson family, XGBoost is configured with:
   \item The function expects both training and validation datasets to have identical structure
   \item GLM predictions should not be zero to avoid division by zero errors
   \item Currently only supports Poisson family; other families will use default XGBoost settings
-  \item The parameter name \code{xbg_train_additional_params} appears to have a typo (should be "xgb")
+  \item The parameter name \code{xgb_additional_params} appears to have a typo (should be "xgb")
 }
 }
 \examples{
-\dontrun{
-# Prepare data
-train_data <- data.frame(
-  ClaimRate = rpois(1000, 2),
-  feature1 = rnorm(1000),
-  feature2 = runif(1000)
-)
-validate_data <- data.frame(
-  ClaimRate = rpois(500, 2),
-  feature1 = rnorm(500),
-  feature2 = runif(500)
-)
-data_list <- list(train = train_data, validate = validate_data)
-
-# Fit GLM model
-glm_fit <- glm(ClaimRate ~ feature1 + feature2,
-               data = train_data,
-               family = poisson())
-
-# Train ensemble
-ensemble_model <- train_glm_xgb(
-  data = data_list,
-  glm_model = glm_fit,
-  use_glm = TRUE,
-  xbg_train_additional_params = list(
-    nrounds = 500,
-    eta = 0.1,
-    max_depth = 6
-  )
-)
-}
+# TBC
 
 }
 \seealso{
-\code{\link[stats]{glm}}, \code{\link[xgboost]{xgb.train}}, \code{\link[xgboost]{xgb.DMatrix}}
+\code{\link[stats]{glm}}, \code{\link[xgboost]{xgb.train}}
 }
