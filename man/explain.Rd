@@ -7,9 +7,7 @@
 explain(x, d, as_contribution = FALSE)
 }
 \arguments{
-\item{x}{A list containing both a GLM model (`glm_model`) and an XGBoost model
-(`xgb_model`) fitted on the same data. The XGBoost model is used to generate
-SHAP values that correct the GLM predictions.}
+\item{x}{A list object of class 'ens'. This should be output by `train_glm_xgb()`}
 
 \item{d}{A data frame containing the input data for which explanations are desired.
 Should contain the same variables as used in model training.}

@@ -6,6 +6,10 @@
 \usage{
 shap_correction_scatter(
   varname,
+  q,
+  color,
+  marginal,
+  excl_outliers,
   betas,
   vartypes,
   cat_levels,
@@ -16,13 +20,18 @@ shap_correction_scatter(
   reference_levels,
   custom_colors,
   chart_theme,
-  color = NULL,
-  marginal = FALSE,
-  excl_outliers = FALSE
+  all_names,
+  x
 )
 }
 \arguments{
 \item{varname}{Character string specifying the variable name to plot.}
+
+\item{color}{Optional variable name for coloring points (currently unused).}
+
+\item{marginal}{Logical, whether to add marginal density plots (default FALSE).}
+
+\item{excl_outliers}{Logical, whether to exclude outliers (currently unused).}
 
 \item{betas}{Named numeric vector of GLM coefficients.}
 
@@ -43,12 +52,6 @@ shap_correction_scatter(
 \item{custom_colors}{Character vector of hex colors for plot styling.}
 
 \item{chart_theme}{ggplot2 theme object for consistent plot appearance.}
-
-\item{color}{Optional variable name for coloring points (currently unused).}
-
-\item{marginal}{Logical, whether to add marginal density plots (default FALSE).}
-
-\item{excl_outliers}{Logical, whether to exclude outliers (currently unused).}
 }
 \value{
 A ggplot object (potentially with marginal plots) showing:

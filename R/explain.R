@@ -4,9 +4,7 @@
 #' values for GLM model predictions, providing various visualization and analysis
 #' functions to understand model behavior and feature contributions.
 #'
-#' @param x A list containing both a GLM model (`glm_model`) and an XGBoost model
-#'   (`xgb_model`) fitted on the same data. The XGBoost model is used to generate
-#'   SHAP values that correct the GLM predictions.
+#' @param x A list object of class 'ens'. This should be output by `train_glm_xgb()`
 #' @param d A data frame containing the input data for which explanations are desired.
 #'   Should contain the same variables as used in model training.
 #' @param as_contribution Logical, currently unused parameter for future functionality.
@@ -57,19 +55,23 @@ explain <- function(x, d, as_contribution = FALSE){
     x$glm_model$data[, !(vartypes %in% c("integer", "double"))],
     function(x) sort(unique(x))
   )
+  # cat_levels is a list of vectors, supposedly the categorical although factors are (incorrectly) dropped
+  # the vectors are unique values only
 
   cat_unique_names <- lapply(
     names(cat_levels),
     function(x) paste0(x, cat_levels[[x]])
   ) |> unlist()
+  # combine each name and value across all vectors in cat_levels to get id codes
 
   all_names <- c(
     "(Intercept)",
-    names(vartypes[vartypes %in% c("integer","double")]),
+    names(vartypes[vartypes %in% c("integer","double")]),  # NOTE: potential issue here with factor variables
     cat_unique_names
   )
+  # stitch back together, where categoricals are now expanded to cover all combos in `cat_unique_names`
 
-  target <- all.vars(x$glm_model$formula)[1]
+  target <- all.vars(x$glm_model$formula)[1] # Claims
 
   reference_levels_raw <- sapply(
     names(cat_levels),
@@ -81,9 +83,10 @@ explain <- function(x, d, as_contribution = FALSE){
     },
     USE.NAMES = TRUE
   )
+  # find the reference level for each categorical variable. This is the variable value that is not present in coefficients
 
   reference_levels <- setdiff(all_names, c(names(betas), target))
-  cont_vars <- names(which(vartypes != "character" & names(vartypes) != target))
+  cont_vars <- names(which(vartypes != "character" & names(vartypes) != target)) # NOTE: potential issue here with factor variables
   no_cat_toggle <- (length(cat_levels) == 0)
 
   custom_colors <- c("#113458", "#D9AB16", "#4096C0", "#DCDCD9", "#113458","#2166AC", "#FFFFFF", "#B2182B")
@@ -122,38 +125,77 @@ explain <- function(x, d, as_contribution = FALSE){
 
   # Return explainer object with plotting functions
   list(
-    shap_correction_scatter = function(...) shap_correction_scatter(
-      ..., betas = betas, vartypes = vartypes,
-      cat_levels = cat_levels, wide_input_frame = wide_input_frame,
-      shap_wide = shap_wide, d = d, target = target,
-      reference_levels = reference_levels, custom_colors = custom_colors,
+
+    shap_correction_scatter = function(
+      varname = "DrivAge",
+      q = 0.05,
+      color=NULL,
+      marginal=FALSE,
+      excl_outliers=FALSE
+      ) {
+        shap_correction_scatter(
+          varname,
+          q,
+          color,
+          marginal,
+          excl_outliers,
+          betas,
+          vartypes,
+          cat_levels,
+          wide_input_frame,
+          shap_wide,
+          d,
+          target,
+          reference_levels,
+          custom_colors,
+          chart_theme,
+          all_names,
+          x
+        )
+      },
+
+    shap_correction_density = function(
+      varname = "DrivAge"
+      ) {
+        shap_correction_density(
+          varname,
+          betas,
+          vartypes,
+          wide_input_frame,
+          shap_wide,
+          x_glm_model = x$glm_model,
+          d,
+          custom_colors,
+          chart_theme
+        )
+      },
+
+    shap_intercept = shap_intercept(
+      shp = shap,
+      x_glm_model = x$glm_model,
+      d = d,
+      target = target,
+      cont_vars = cont_vars,
+      reference_levels_raw = reference_levels_raw,
+      no_cat_toggle = no_cat_toggle,
+      custom_colors = custom_colors,
       chart_theme = chart_theme
     ),
 
-    shap_correction_density = function(...) shap_correction_density(
-      ..., betas = betas, vartypes = vartypes,
-      wide_input_frame = wide_input_frame, shap_wide = shap_wide,
-      x_glm_model = x$glm_model, d = d,
-      custom_colors = custom_colors, chart_theme = chart_theme
-    ),
-
-    shap_intercept = shap_intercept(
-      shp = shap, x_glm_model = x$glm_model, d = d,
-      target = target, cont_vars = cont_vars,
-      reference_levels_raw = reference_levels_raw,
-      no_cat_toggle = no_cat_toggle,
-      custom_colors = custom_colors, chart_theme = chart_theme
-    ),
-
-    overall_correction = function() global_c(
-      shp = shap, custom_colors = custom_colors,
+    overall_correction = global_c(
+      shp = shap,
+      custom_colors = custom_colors,
       chart_theme = chart_theme
     ),
 
     input_frame = d,
+
     shap_wide = shap_wide,  # beta corrections
+
     raw_shap = shap,
+
     betas = betas,
+
     allnames = names(betas)[-1]
   )
 }
@@ -346,8 +388,17 @@ shap_dim_helper <- function(frame, wide_frame, vartypes, reference_levels, cat_l
 #' @keywords internal
 #'
 #' @import ggplot2
-shap_correction_density <- function(varname, betas, vartypes, wide_input_frame, shap_wide,
-                                    x_glm_model, d, custom_colors, chart_theme) {
+shap_correction_density <- function(
+    varname,
+    betas,
+    vartypes,
+    wide_input_frame,
+    shap_wide,
+    x_glm_model,
+    d,
+    custom_colors,
+    chart_theme
+    ) {
   if (!(varname %in% c(names(betas), colnames(d)))) stop("varname not in model!")
 
   vartype <- if (varname %in% names(betas) & vartypes[varname] %in% c("double", "integer")) "numerical" else "categorical"
@@ -408,7 +459,12 @@ shap_correction_density <- function(varname, betas, vartypes, wide_input_frame, 
 #' @keywords internal
 #'
 #' @import ggplot2
+#' @importFrom magrittr %>%
 shap_correction_scatter <- function(varname,
+                                         q,
+                                         color,
+                                         marginal,
+                                         excl_outliers,
                                     betas,
                                     vartypes,
                                     cat_levels,
@@ -419,35 +475,104 @@ shap_correction_scatter <- function(varname,
                                     reference_levels,
                                     custom_colors,
                                     chart_theme,
-                                    color = NULL,
-                                    marginal = FALSE,
-                                    excl_outliers = FALSE) {
-  stderror <- summary(betas)$coefficients[varname, "Std. Error"]
-  beta <- betas[varname]
+                                    all_names,
+                                    x)  {
 
-  after_shap <- data.frame(
-    x = wide_input_frame[, varname],
-    shp = beta + shap_wide[, varname]
-  )
+  # TODO: warning or error if reference level passed as varname
+  color_vartype = "numerical"
 
-  p <- after_shap |>
-    ggplot() +
-    geom_point(aes(x = x, y = shp), alpha = 0.4) +
-    geom_smooth(aes(x = x, y = shp)) +
-    xlab(varname) +
-    ylab("beta correction") +
-    ggtitle(paste("SHAP corrections for", varname)) +
-    labs(subtitle = paste0(varname, " beta: ", round(beta, 4), ", SE: ", round(stderror, 4))) +
-    geom_hline(yintercept = beta, color = custom_colors[2], linewidth = 0.5) +
-    geom_hline(yintercept = beta - stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
-    geom_hline(yintercept = beta + stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
-    chart_theme
+  # if it's a categorical then we have to match all varnames
+  if(varname %in% names(betas) & vartypes[varname] %in% c("double","integer")){
+    vartype = "numerical"
+  }else if(varname %in% names(cat_levels)){
+    vartype = "categorical"
+    matched_names =  sort(all_names[grep(varname, all_names)])
+    reference_level = reference_levels[grep(varname, reference_levels)]
+    helper_names =  matched_names[matched_names!=reference_level]
 
-  if (marginal) {
-    p <- ggExtra::ggMarginal(p, type = "density", groupColour = FALSE, groupFill = FALSE)
+  }else{
+    stop("varname not in model!")
   }
+
+  if (!is.null(color)) {
+    if(color %in% names(betas) & vartypes[color] %in% c("double","integer")){
+      color_vartype = "numerical"
+    }else if(color %in% names(cat_levels)){
+      color_vartype = "categorical"
+    }else{
+      stop("color varname not in model, skipping coloring")
+      color = NULL
+    }
+  }
+
+  # is reference level (no glm beta)
+  if(vartype=="categorical"){
+
+    x = wide_input_frame[,matched_names]
+    shap_deviations = shap_wide[,matched_names]
+
+    beta = c(0,betas[helper_names]) |> set_names(reference_level,helper_names)
+
+    after_shap = sweep(shap_deviations, 2, beta[matched_names], FUN = "+")   |>
+      pivot_longer(cols = (matched_names),names_to = "x",values_to="shp")
+
+    color = NULL
+    message("color for categoricals currently not supported")
+
+    beta_lines_df = data.frame(
+      x = names(beta[matched_names]),
+      y = as.numeric(beta[matched_names])
+    )
+
+    # Add the lines to the plot
+    p = ggplot(data = after_shap, aes(x = x, y = shp)) +
+      geom_boxplot() +
+      geom_point(
+        data = beta_lines_df,
+        aes(x = x, y = y),
+        color = "red",
+      ) +
+      xlab("") +
+      ylab("beta correction") +
+      ggtitle(paste("SHAP corrections for", varname)) +
+      chart_theme
+
+  }else{
+
+    stderror = summary(x$glm_model)$coefficients[varname, "Std. Error"]
+    beta = betas[varname]
+
+    x = wide_input_frame[,varname]
+    shap_deviations = shap_wide[,varname]
+    after_shap = data.frame(x = x,
+                            shp = beta + shap_deviations) %>%
+      {if(is.null(color)) . else dplyr::mutate(.,color = d[,color])} %>%
+      {if(excl_outliers) dplyr::filter(., detect_outliers(shp,method = "quantile",q=0.01)) else . }
+
+    p  = after_shap |>
+      ggplot()+
+      geom_point(aes(x = x,y=shp,group = color, color=color),alpha=0.4)+
+      geom_smooth(aes(x = x,y=shp))+
+      {if(color_vartype=="numerical") scale_color_gradientn(name = color,colors = custom_colors[c(2,1)])}+
+      xlab(varname)+
+      ylab("beta correction")+
+      ggtitle(paste("SHAP corrections for", varname)) +
+      labs(subtitle = paste0(varname, " beta: ", round(beta, 4), ", SE: ", round(stderror, 4)))+
+      geom_hline(yintercept = beta, color = custom_colors[2], size = 0.5) +
+      geom_hline(yintercept = beta - stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
+      geom_hline(yintercept = beta + stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
+      chart_theme
+
+    if(marginal){
+      p = ggExtra::ggMarginal(p,type = "density",groupColour = F, groupFill = F)
+    }
+
+  }
+
   return(p)
+
 }
+
 
 #' Generate Intercept Correction Analysis and Visualizations
 #'
