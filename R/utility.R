@@ -30,3 +30,54 @@ check_required_names <- function(df, required_names) {
   # Return TRUE if all checks pass
   invisible(TRUE)
 }
+
+
+#' Assign a variable type based on membership in predefined lists
+#'
+#' This function checks whether a given variable is listed in
+#' `vars_continuous` or `vars_categorical` and assigns it the
+#' corresponding type (`"numerical"` or `"categorical"`). If the
+#' variable is not found in either list, an error is thrown.
+#'
+#' @param var A variable name or symbol to check.
+#' @param vars_continuous A character vector of variable names
+#'   considered continuous.
+#' @param vars_categorical A character vector of variable names
+#'   considered categorical.
+#'
+#' @return A character string: either `"numerical"` or `"categorical"`.
+#'
+#' @examples
+#' vars_cont <- c("age", "height", "weight")
+#' vars_cat <- c("gender", "group")
+#'
+#' assign_variable_type("age", vars_cont, vars_cat)
+#' # Returns "numerical"
+assign_variable_type <- function(
+    var,
+    vars_continuous,
+    vars_categorical
+) {
+
+
+  varname <- substitute(var)   # captures the expression passed in
+  varname <- as.character(varname)
+
+  if(var %in% vars_continuous){
+    vartype <- "numerical"
+  }else if(var %in% vars_categorical){
+    vartype <- "categorical"
+  }else{
+    stop(paste0(
+      "'",
+      varname,
+      "'",
+      " should be one of: ",
+      paste0(union(vars_continuous, vars_categorical), collapse = ", ")
+    ))
+  }
+
+  return(vartype)
+
+
+}
