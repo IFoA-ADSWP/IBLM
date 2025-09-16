@@ -422,39 +422,50 @@ shap_correction_density <- function(
     chart_theme
 }
 
-#' Create Scatter Plot of SHAP Corrections vs Variable Values
+
+
+#' Create SHAP Correction Scatter Plot
 #'
-#' Generates a scatter plot showing how SHAP-based coefficient corrections
-#' vary with the actual values of a variable, revealing non-linear relationships.
+#' Generates a scatter plot or boxplot showing SHAP (SHapley Additive exPlanations)
+#' corrections for a specified variable from a fitted model. For numerical variables,
+#' creates a scatter plot with optional coloring and marginal densities. For categorical
+#' variables, creates a boxplot with model coefficients overlaid.
 #'
-#' @param varname Character string specifying the variable name to plot.
-#' @param betas Named numeric vector of GLM coefficients.
-#' @param vartypes Named vector indicating data types of variables.
-#' @param cat_levels Named list of categorical variable levels.
-#' @param wide_input_frame Wide format input data frame.
-#' @param shap_wide Data frame containing SHAP corrections.
-#' @param d Original input data frame.
-#' @param target Character string specifying target variable name.
-#' @param reference_levels Character vector of reference level names.
-#' @param custom_colors Character vector of hex colors for plot styling.
-#' @param chart_theme ggplot2 theme object for consistent plot appearance.
-#' @param color Optional variable name for coloring points (currently unused).
-#' @param marginal Logical, whether to add marginal density plots (default FALSE).
-#' @param excl_outliers Logical, whether to exclude outliers (currently unused).
+#' @param varname Character. Name of the variable to plot SHAP corrections for.
+#'   Must be present in the fitted model.
+#' @param q Numeric. Quantile threshold for outlier detection (when excl_outliers = TRUE).
+#' @param color Character or NULL. Name of variable to use for point coloring.
+#'   Must be present in the model. Currently not supported for categorical variables.
+#' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
+#' @param excl_outliers Logical. Whether to exclude outliers based on quantile method.
+#' @param betas Named numeric vector. Model coefficients/betas from fitted model.
+#' @param vartypes Named character vector. Variable types ("double", "integer", etc.).
+#' @param cat_levels Named list. Categorical variable levels.
+#' @param wide_input_frame Data frame. Wide format input data used in model fitting.
+#' @param shap_wide Data frame. Wide format SHAP values corresponding to input data.
+#' @param d Data frame. Original dataset containing variables for coloring.
+#' @param target Character. Name of target/response variable.
+#' @param reference_levels Character vector. Reference levels for categorical variables.
+#' @param custom_colors Character vector. Custom color palette for plots.
+#' @param chart_theme ggplot2 theme object. Theme to apply to the plot.
+#' @param all_names Character vector. All variable names from the model.
+#' @param x Model object containing the fitted GLM model (used for standard errors).
 #'
-#' @return A ggplot object (potentially with marginal plots) showing:
+#' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
+#'   model coefficient line, and confidence bands. For categorical variables: boxplot
+#'   with coefficient points overlaid.
+#'
+#' @details
+#' The function handles both numerical and categorical variables differently:
 #' \itemize{
-#'   \item Scatter points of variable values vs corrected coefficients
-#'   \item Smooth trend line through the points
-#'   \item Horizontal reference lines for original coefficient and standard error bounds
+#'   \item Numerical: Creates scatter plot of variable values vs. beta + SHAP deviations
+#'   \item Categorical: Creates boxplot of SHAP deviations for each level with coefficient overlay
 #' }
 #'
-#' @details This visualization helps identify:
-#' \itemize{
-#'   \item Whether the linear assumption of GLM holds across the variable's range
-#'   \item Regions where the coefficient correction is most pronounced
-#'   \item Potential interaction effects or non-linear relationships
-#' }
+#' For numerical variables, horizontal lines show the model coefficient (solid) and
+#' confidence intervals (dashed). SHAP corrections represent local deviations from
+#' the global model coefficient.
+#'
 #'
 #' @keywords internal
 #'

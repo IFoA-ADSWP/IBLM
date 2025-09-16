@@ -2,7 +2,7 @@
 % Please edit documentation in R/explain.R
 \name{shap_correction_scatter}
 \alias{shap_correction_scatter}
-\title{Create Scatter Plot of SHAP Corrections vs Variable Values}
+\title{Create SHAP Correction Scatter Plot}
 \usage{
 shap_correction_scatter(
   varname,
@@ -25,52 +25,62 @@ shap_correction_scatter(
 )
 }
 \arguments{
-\item{varname}{Character string specifying the variable name to plot.}
+\item{varname}{Character. Name of the variable to plot SHAP corrections for.
+Must be present in the fitted model.}
 
-\item{color}{Optional variable name for coloring points (currently unused).}
+\item{q}{Numeric. Quantile threshold for outlier detection (when excl_outliers = TRUE).}
 
-\item{marginal}{Logical, whether to add marginal density plots (default FALSE).}
+\item{color}{Character or NULL. Name of variable to use for point coloring.
+Must be present in the model. Currently not supported for categorical variables.}
 
-\item{excl_outliers}{Logical, whether to exclude outliers (currently unused).}
+\item{marginal}{Logical. Whether to add marginal density plots (numerical variables only).}
 
-\item{betas}{Named numeric vector of GLM coefficients.}
+\item{excl_outliers}{Logical. Whether to exclude outliers based on quantile method.}
 
-\item{vartypes}{Named vector indicating data types of variables.}
+\item{betas}{Named numeric vector. Model coefficients/betas from fitted model.}
 
-\item{cat_levels}{Named list of categorical variable levels.}
+\item{vartypes}{Named character vector. Variable types ("double", "integer", etc.).}
 
-\item{wide_input_frame}{Wide format input data frame.}
+\item{cat_levels}{Named list. Categorical variable levels.}
 
-\item{shap_wide}{Data frame containing SHAP corrections.}
+\item{wide_input_frame}{Data frame. Wide format input data used in model fitting.}
 
-\item{d}{Original input data frame.}
+\item{shap_wide}{Data frame. Wide format SHAP values corresponding to input data.}
 
-\item{target}{Character string specifying target variable name.}
+\item{d}{Data frame. Original dataset containing variables for coloring.}
 
-\item{reference_levels}{Character vector of reference level names.}
+\item{target}{Character. Name of target/response variable.}
 
-\item{custom_colors}{Character vector of hex colors for plot styling.}
+\item{reference_levels}{Character vector. Reference levels for categorical variables.}
 
-\item{chart_theme}{ggplot2 theme object for consistent plot appearance.}
+\item{custom_colors}{Character vector. Custom color palette for plots.}
+
+\item{chart_theme}{ggplot2 theme object. Theme to apply to the plot.}
+
+\item{all_names}{Character vector. All variable names from the model.}
+
+\item{x}{Model object containing the fitted GLM model (used for standard errors).}
 }
 \value{
-A ggplot object (potentially with marginal plots) showing:
-\itemize{
-  \item Scatter points of variable values vs corrected coefficients
-  \item Smooth trend line through the points
-  \item Horizontal reference lines for original coefficient and standard error bounds
-}
+A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
+  model coefficient line, and confidence bands. For categorical variables: boxplot
+  with coefficient points overlaid.
 }
 \description{
-Generates a scatter plot showing how SHAP-based coefficient corrections
-vary with the actual values of a variable, revealing non-linear relationships.
+Generates a scatter plot or boxplot showing SHAP (SHapley Additive exPlanations)
+corrections for a specified variable from a fitted model. For numerical variables,
+creates a scatter plot with optional coloring and marginal densities. For categorical
+variables, creates a boxplot with model coefficients overlaid.
 }
 \details{
-This visualization helps identify:
+The function handles both numerical and categorical variables differently:
 \itemize{
-  \item Whether the linear assumption of GLM holds across the variable's range
-  \item Regions where the coefficient correction is most pronounced
-  \item Potential interaction effects or non-linear relationships
+  \item Numerical: Creates scatter plot of variable values vs. beta + SHAP deviations
+  \item Categorical: Creates boxplot of SHAP deviations for each level with coefficient overlay
 }
+
+For numerical variables, horizontal lines show the model coefficient (solid) and
+confidence intervals (dashed). SHAP corrections represent local deviations from
+the global model coefficient.
 }
 \keyword{internal}
