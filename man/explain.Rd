@@ -4,13 +4,14 @@
 \alias{explain}
 \title{Explain GLM Model Predictions Using SHAP Values}
 \usage{
-explain(x, d, as_contribution = FALSE)
+explain(x, data, as_contribution = FALSE)
 }
 \arguments{
 \item{x}{A list object of class 'ens'. This should be output by `train_glm_xgb()`}
 
-\item{d}{A data frame containing the input data for which explanations are desired.
-Should contain the same variables as used in model training.}
+\item{data}{A data frame containing the data for which explanations are desired.
+
+**This should be the "test" portion of your dataset**}
 
 \item{as_contribution}{Logical, currently unused parameter for future functionality.}
 }

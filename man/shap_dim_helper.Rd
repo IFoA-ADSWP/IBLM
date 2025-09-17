@@ -10,7 +10,8 @@ shap_dim_helper(
   vartypes,
   reference_levels,
   cat_levels,
-  target,
+  response_var,
+  predictor_vars_continuous,
   no_cat_toggle,
   beta_correction = TRUE,
   epsilon = 0.05
@@ -27,7 +28,7 @@ shap_dim_helper(
 
 \item{cat_levels}{Named list of categorical variable levels.}
 
-\item{target}{Character string specifying the target variable name.}
+\item{response_var}{Character string specifying the response_var variable name.}
 
 \item{no_cat_toggle}{Logical indicating absence of categorical variables.}
 

@@ -11,7 +11,7 @@ shap_correction_density(
   wide_input_frame,
   shap_wide,
   x_glm_model,
-  d,
+  data,
   custom_colors,
   chart_theme
 )
@@ -29,7 +29,7 @@ shap_correction_density(
 
 \item{x_glm_model}{The fitted GLM model object.}
 
-\item{d}{Original input data frame.}
+\item{data}{Original input data frame.}
 
 \item{custom_colors}{Character vector of hex colors for plot styling.}
 

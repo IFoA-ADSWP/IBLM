@@ -5,8 +5,10 @@
 #' functions to understand model behavior and feature contributions.
 #'
 #' @param x A list object of class 'ens'. This should be output by `train_glm_xgb()`
-#' @param d A data frame containing the input data for which explanations are desired.
-#'   Should contain the same variables as used in model training.
+#' @param data A data frame containing the data for which explanations are desired.
+#'
+#' **This should be the "test" portion of your dataset**
+#'
 #' @param as_contribution Logical, currently unused parameter for future functionality.
 #'
 #' @return A list containing:
@@ -41,37 +43,33 @@
 #' }
 #'
 #' @export
-explain <- function(x, d, as_contribution = FALSE){
-  rownames(d) <- NULL
+explain <- function(x, data, as_contribution = FALSE){
+  rownames(data) <- NULL
 
   # Definitions and global variables
   betas <- x$glm_model$coefficients
   coef_names <- names(betas)
 
   vartypes <- lapply(x$glm_model$data, typeof) |> unlist()
+  varclasses <- lapply(x$glm_model$data, class) |> unlist()
+
+  response_var <- all.vars(x$glm_model$formula)[1]
+  predictor_vars_all <- names(vartypes)
+  predictor_vars_categorical <- predictor_vars_all[(!vartypes %in% c("integer", "double") | varclasses == "factor")]
+  predictor_vars_continuous <- predictor_vars_all |> setdiff(response_var) |> setdiff(predictor_vars_categorical)
 
   # Factor levels for categorical variables
   cat_levels <- lapply(
-    x$glm_model$data[, !(vartypes %in% c("integer", "double"))],
+    x$glm_model$data |> dplyr::select(dplyr::all_of(predictor_vars_categorical)),
     function(x) sort(unique(x))
   )
-  # cat_levels is a list of vectors, supposedly the categorical although factors are (incorrectly) dropped
-  # the vectors are unique values only
 
   cat_unique_names <- lapply(
     names(cat_levels),
     function(x) paste0(x, cat_levels[[x]])
   ) |> unlist()
-  # combine each name and value across all vectors in cat_levels to get id codes
 
-  all_names <- c(
-    "(Intercept)",
-    names(vartypes[vartypes %in% c("integer","double")]),  # NOTE: potential issue here with factor variables
-    cat_unique_names
-  )
-  # stitch back together, where categoricals are now expanded to cover all combos in `cat_unique_names`
-
-  target <- all.vars(x$glm_model$formula)[1] # Claims
+  all_names <- c("(Intercept)", predictor_vars_continuous, cat_unique_names)
 
   reference_levels_raw <- sapply(
     names(cat_levels),
@@ -83,11 +81,9 @@ explain <- function(x, d, as_contribution = FALSE){
     },
     USE.NAMES = TRUE
   )
-  # find the reference level for each categorical variable. This is the variable value that is not present in coefficients
 
-  reference_levels <- setdiff(all_names, c(names(betas), target))
-  cont_vars <- names(which(vartypes != "character" & names(vartypes) != target)) # NOTE: potential issue here with factor variables
-  no_cat_toggle <- (length(cat_levels) == 0)
+  reference_levels <- setdiff(all_names, c(names(betas), response_var))
+  no_cat_toggle <- (length(predictor_vars_categorical) == 0)
 
   custom_colors <- c("#113458", "#D9AB16", "#4096C0", "#DCDCD9", "#113458","#2166AC", "#FFFFFF", "#B2182B")
   chart_theme <- chart_theme_fn(custom_colors)
@@ -97,7 +93,7 @@ explain <- function(x, d, as_contribution = FALSE){
     x$xgb_model,
     newdata = xgboost::xgb.DMatrix(
       data.matrix(
-        dplyr::select(d, -dplyr::all_of(target))
+        dplyr::select(data, -dplyr::all_of(response_var))
       )
     ),
     predcontrib = TRUE
@@ -105,10 +101,10 @@ explain <- function(x, d, as_contribution = FALSE){
 
   # Prepare wide input frame
   wide_input_frame <- data_dim_helper(
-    frame = d,
+    frame = data,
     all_names = all_names,
     cat_levels = cat_levels,
-    target = target,
+    response_var = response_var,
     no_cat_toggle = no_cat_toggle
   )
 
@@ -116,11 +112,13 @@ explain <- function(x, d, as_contribution = FALSE){
   shap_wide <- shap_dim_helper(
     frame = shap,
     wide_frame = wide_input_frame,
-    vartypes = vartypes,
     reference_levels = reference_levels,
     cat_levels = cat_levels,
-    target = target,
-    no_cat_toggle = no_cat_toggle
+    response_var = response_var,
+    predictor_vars_continuous = predictor_vars_continuous,
+    no_cat_toggle = no_cat_toggle,
+    beta_correction = TRUE,
+    epsilon = 0.05
   )
 
   # Return explainer object with plotting functions
@@ -134,23 +132,24 @@ explain <- function(x, d, as_contribution = FALSE){
       excl_outliers=FALSE
       ) {
         shap_correction_scatter(
-          varname,
-          q,
-          color,
-          marginal,
-          excl_outliers,
-          betas,
-          vartypes,
-          cat_levels,
-          wide_input_frame,
-          shap_wide,
-          d,
-          target,
-          reference_levels,
-          custom_colors,
-          chart_theme,
-          all_names,
-          x
+          varname = varname,
+          q = q,
+          color = color,
+          marginal = marginal,
+          excl_outliers = excl_outliers,
+          betas = betas,
+          cat_levels = cat_levels,
+          wide_input_frame = wide_input_frame,
+          shap_wide = shap_wide,
+          data = data,
+          response_var = response_var,
+          predictor_vars_categorical = predictor_vars_categorical,
+          predictor_vars_continuous = predictor_vars_continuous,
+          reference_levels = reference_levels,
+          custom_colors = custom_colors,
+          chart_theme = chart_theme,
+          all_names = all_names,
+          x = x
         )
       },
 
@@ -158,24 +157,25 @@ explain <- function(x, d, as_contribution = FALSE){
       varname = "DrivAge"
       ) {
         shap_correction_density(
-          varname,
-          betas,
-          vartypes,
-          wide_input_frame,
-          shap_wide,
+          varname = varname,
+          betas = betas,
+          wide_input_frame = wide_input_frame,
+          shap_wide = shap_wide,
           x_glm_model = x$glm_model,
-          d,
-          custom_colors,
-          chart_theme
+          data = data,
+          predictor_vars_continuous = predictor_vars_continuous,
+          predictor_vars_categorical = predictor_vars_categorical,
+          custom_colors = custom_colors,
+          chart_theme = chart_theme
         )
       },
 
     shap_intercept = shap_intercept(
       shp = shap,
       x_glm_model = x$glm_model,
-      d = d,
-      target = target,
-      cont_vars = cont_vars,
+      data = data,
+      response_var = response_var,
+      predictor_vars_continuous = predictor_vars_continuous,
       reference_levels_raw = reference_levels_raw,
       no_cat_toggle = no_cat_toggle,
       custom_colors = custom_colors,
@@ -188,7 +188,7 @@ explain <- function(x, d, as_contribution = FALSE){
       chart_theme = chart_theme
     ),
 
-    input_frame = d,
+    input_frame = data,
 
     shap_wide = shap_wide,  # beta corrections
 
@@ -244,10 +244,10 @@ chart_theme_fn <- function(custom_colors) {
 #'   categorical levels and intercept.
 #' @param cat_levels Named list where each element contains the unique levels
 #'   for each categorical variable.
-#' @param target Character string specifying the name of the target variable.
+#' @param response_var Character string specifying the name of the response_var variable.
 #' @param no_cat_toggle Logical indicating whether there are any categorical
 #'   variables in the data.
-#' @param remove_target Logical, whether to remove the target variable from
+#' @param remove_target Logical, whether to remove the response_var variable from
 #'   the output (default TRUE).
 #'
 #' @return A data frame in wide format with one-hot encoded categorical variables,
@@ -258,7 +258,7 @@ chart_theme_fn <- function(custom_colors) {
 #' proper ordering for downstream SHAP calculations.
 #'
 #' @keywords internal
-data_dim_helper <- function(frame, all_names, cat_levels, target, no_cat_toggle, remove_target = TRUE) {
+data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_toggle, remove_target = TRUE) {
   if (no_cat_toggle) {
     return(frame)
   }
@@ -282,7 +282,7 @@ data_dim_helper <- function(frame, all_names, cat_levels, target, no_cat_toggle,
     dplyr::select(dplyr::all_of(all_names))
 
   if (remove_target) {
-    output_frame <- output_frame |> dplyr::select(-dplyr::any_of(target))
+    output_frame <- output_frame |> dplyr::select(-dplyr::any_of(response_var))
   }
 
   return(output_frame)
@@ -295,10 +295,9 @@ data_dim_helper <- function(frame, all_names, cat_levels, target, no_cat_toggle,
 #'
 #' @param frame Data frame containing raw SHAP values from XGBoost.
 #' @param wide_frame Wide format input data frame (one-hot encoded).
-#' @param vartypes Named vector indicating the data type of each variable.
 #' @param reference_levels Character vector of reference level names for categorical variables.
 #' @param cat_levels Named list of categorical variable levels.
-#' @param target Character string specifying the target variable name.
+#' @param response_var Character string specifying the response_var variable name.
 #' @param no_cat_toggle Logical indicating absence of categorical variables.
 #' @param beta_correction Logical, whether to apply beta corrections (default TRUE).
 #' @param epsilon Numeric threshold for avoiding division by very small numbers (default 0.05).
@@ -317,13 +316,13 @@ data_dim_helper <- function(frame, all_names, cat_levels, target, no_cat_toggle,
 #' 4. Normalizes SHAP values by actual variable values for interpretability
 #'
 #' @keywords internal
-shap_dim_helper <- function(frame, wide_frame, vartypes, reference_levels, cat_levels,
-                            target, no_cat_toggle, beta_correction = TRUE, epsilon = 0.05) {
+shap_dim_helper <- function(frame, wide_frame, reference_levels, cat_levels,
+                            response_var, predictor_vars_continuous, no_cat_toggle, beta_correction = TRUE, epsilon = 0.05) {
   if (no_cat_toggle) {
     output_frame <- frame |>
       dplyr::mutate(bias = frame$BIAS[1], .before = dplyr::everything())
   } else {
-    wide_frame <- wide_frame |> dplyr::select(-dplyr::any_of(c("(Intercept)", target)))
+    wide_frame <- wide_frame |> dplyr::select(-dplyr::any_of(c("(Intercept)", response_var)))
 
     cat_frame <- lapply(names(cat_levels), function(x) {
       lvl <- cat_levels[[x]]
@@ -343,18 +342,16 @@ shap_dim_helper <- function(frame, wide_frame, vartypes, reference_levels, cat_l
   }
 
   if (beta_correction) {
-    nums <- names(vartypes[vartypes %in% c("integer", "double")])
-    nums <- nums[!(nums %in% target)]
 
-    shap_for_zeros <- rowSums(((wide_frame[, nums] == 0) * 1) * output_frame[, nums])
+    shap_for_zeros <- rowSums(((wide_frame[, predictor_vars_continuous] == 0) * 1) * output_frame[, predictor_vars_continuous])
     shap_for_cat_ref <- if (no_cat_toggle) 0 else rowSums(output_frame[, reference_levels])
     output_frame$bias <- output_frame$bias + shap_for_zeros + shap_for_cat_ref
 
-    denominator <- frame[, nums]
+    denominator <- frame[, predictor_vars_continuous]
     denominator[abs(denominator) < epsilon] <- epsilon
-    calc <- output_frame[, nums] / frame[, nums]
+    calc <- output_frame[, predictor_vars_continuous] / frame[, predictor_vars_continuous]
     calc[apply(calc, 2, is.infinite)] <- 0
-    output_frame[, nums] <- calc
+    output_frame[, predictor_vars_continuous] <- calc
   }
   return(output_frame)
 }
@@ -366,11 +363,10 @@ shap_dim_helper <- function(frame, wide_frame, vartypes, reference_levels, cat_l
 #'
 #' @param varname Character string specifying the variable name to plot.
 #' @param betas Named numeric vector of GLM coefficients.
-#' @param vartypes Named vector indicating data types of variables.
 #' @param wide_input_frame Wide format input data frame.
 #' @param shap_wide Data frame containing SHAP corrections.
 #' @param x_glm_model The fitted GLM model object.
-#' @param d Original input data frame.
+#' @param data Original input data frame.
 #' @param custom_colors Character vector of hex colors for plot styling.
 #' @param chart_theme ggplot2 theme object for consistent plot appearance.
 #'
@@ -391,17 +387,26 @@ shap_dim_helper <- function(frame, wide_frame, vartypes, reference_levels, cat_l
 shap_correction_density <- function(
     varname,
     betas,
-    vartypes,
     wide_input_frame,
     shap_wide,
     x_glm_model,
-    d,
+    data,
+    predictor_vars_continuous,
+    predictor_vars_categorical,
     custom_colors,
     chart_theme
     ) {
-  if (!(varname %in% c(names(betas), colnames(d)))) stop("varname not in model!")
+  if (!(varname %in% c(names(betas), colnames(data)))) stop("varname not in model!")
 
-  vartype <- if (varname %in% names(betas) & vartypes[varname] %in% c("double", "integer")) "numerical" else "categorical"
+  if (!varname %in% names(betas)){
+    vartype <- "categorical"
+  } else {
+    vartype <- assign_variable_type(
+      varname,
+      predictor_vars_continuous,
+      predictor_vars_categorical
+    )
+  }
   stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
   beta <- betas[varname]
 
@@ -439,12 +444,11 @@ shap_correction_density <- function(
 #' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
 #' @param excl_outliers Logical. Whether to exclude outliers based on quantile method.
 #' @param betas Named numeric vector. Model coefficients/betas from fitted model.
-#' @param vartypes Named character vector. Variable types ("double", "integer", etc.).
 #' @param cat_levels Named list. Categorical variable levels.
 #' @param wide_input_frame Data frame. Wide format input data used in model fitting.
 #' @param shap_wide Data frame. Wide format SHAP values corresponding to input data.
-#' @param d Data frame. Original dataset containing variables for coloring.
-#' @param target Character. Name of target/response variable.
+#' @param data Data frame. Original dataset containing variables for coloring.
+#' @param response_var Character. Name of response_var/response variable.
 #' @param reference_levels Character vector. Reference levels for categorical variables.
 #' @param custom_colors Character vector. Custom color palette for plots.
 #' @param chart_theme ggplot2 theme object. Theme to apply to the plot.
@@ -477,12 +481,13 @@ shap_correction_scatter <- function(varname,
                                          marginal,
                                          excl_outliers,
                                     betas,
-                                    vartypes,
                                     cat_levels,
                                     wide_input_frame,
                                     shap_wide,
-                                    d,
-                                    target,
+                                    data,
+                                    response_var,
+                                    predictor_vars_categorical,
+                                    predictor_vars_continuous,
                                     reference_levels,
                                     custom_colors,
                                     chart_theme,
@@ -490,53 +495,47 @@ shap_correction_scatter <- function(varname,
                                     x)  {
 
   # TODO: warning or error if reference level passed as varname
-  color_vartype = "numerical"
+  color_vartype <- "numerical"
 
-  # if it's a categorical then we have to match all varnames
-  if(varname %in% names(betas) & vartypes[varname] %in% c("double","integer")){
-    vartype = "numerical"
-  }else if(varname %in% names(cat_levels)){
-    vartype = "categorical"
-    matched_names =  sort(all_names[grep(varname, all_names)])
-    reference_level = reference_levels[grep(varname, reference_levels)]
-    helper_names =  matched_names[matched_names!=reference_level]
-
-  }else{
-    stop("varname not in model!")
-  }
+  vartype <- assign_variable_type(
+    varname,
+    predictor_vars_continuous,
+    predictor_vars_categorical
+  )
 
   if (!is.null(color)) {
-    if(color %in% names(betas) & vartypes[color] %in% c("double","integer")){
-      color_vartype = "numerical"
-    }else if(color %in% names(cat_levels)){
-      color_vartype = "categorical"
-    }else{
-      stop("color varname not in model, skipping coloring")
-      color = NULL
-    }
+    color_vartype <- assign_variable_type(
+      color,
+      predictor_vars_continuous,
+      predictor_vars_categorical
+    )
   }
 
   # is reference level (no glm beta)
   if(vartype=="categorical"){
 
-    x = wide_input_frame[,matched_names]
-    shap_deviations = shap_wide[,matched_names]
+    matched_names <-  sort(all_names[grep(varname, all_names)]) # potential risk of fuzzy matching if similar reference variable names
+    reference_level <- reference_levels[grep(varname, reference_levels)]
+    helper_names <- matched_names[matched_names!=reference_level]
 
-    beta = c(0,betas[helper_names]) |> set_names(reference_level,helper_names)
+    x <- wide_input_frame[,matched_names]
+    shap_deviations <- shap_wide[,matched_names]
 
-    after_shap = sweep(shap_deviations, 2, beta[matched_names], FUN = "+")   |>
-      pivot_longer(cols = (matched_names),names_to = "x",values_to="shp")
+    beta = c(0,betas[helper_names]) |> stats::setNames(c(reference_level, helper_names))
+
+    after_shap <- sweep(shap_deviations, 2, beta[matched_names], FUN = "+")   |>
+      tidyr::pivot_longer(cols = (matched_names),names_to = "x",values_to="shp")
 
     color = NULL
     message("color for categoricals currently not supported")
 
-    beta_lines_df = data.frame(
+    beta_lines_df <- data.frame(
       x = names(beta[matched_names]),
       y = as.numeric(beta[matched_names])
     )
 
     # Add the lines to the plot
-    p = ggplot(data = after_shap, aes(x = x, y = shp)) +
+    p <- ggplot(data = after_shap, aes(x = x, y = shp)) +
       geom_boxplot() +
       geom_point(
         data = beta_lines_df,
@@ -557,7 +556,7 @@ shap_correction_scatter <- function(varname,
     shap_deviations = shap_wide[,varname]
     after_shap = data.frame(x = x,
                             shp = beta + shap_deviations) %>%
-      {if(is.null(color)) . else dplyr::mutate(.,color = d[,color])} %>%
+      {if(is.null(color)) . else dplyr::mutate(.,color = data[,color])} %>%
       {if(excl_outliers) dplyr::filter(., detect_outliers(shp,method = "quantile",q=0.01)) else . }
 
     p  = after_shap |>
@@ -593,9 +592,9 @@ shap_correction_scatter <- function(varname,
 #'
 #' @param shp Data frame containing raw SHAP values.
 #' @param x_glm_model The fitted GLM model object.
-#' @param d Original input data frame.
-#' @param target Character string specifying target variable name.
-#' @param cont_vars Character vector of continuous variable names.
+#' @param data Original input data frame.
+#' @param response_var Character string specifying response_var variable name.
+#' @param predictor_vars_continuous Character vector of continuous variable names.
 #' @param reference_levels_raw Named list of reference levels for categorical variables.
 #' @param no_cat_toggle Logical indicating absence of categorical variables.
 #' @param custom_colors Character vector of hex colors for plot styling.
@@ -622,9 +621,9 @@ shap_correction_scatter <- function(varname,
 #' @import ggplot2
 shap_intercept <- function(shp,
                            x_glm_model,
-                           d,
-                           target,
-                           cont_vars,
+                           data,
+                           response_var,
+                           predictor_vars_continuous,
                            reference_levels_raw,
                            no_cat_toggle,
                            custom_colors,
@@ -634,14 +633,14 @@ shap_intercept <- function(shp,
   baseline <- shp$BIAS[1]
 
   if (no_cat_toggle) {
-    shap_mask <- d |>
-      dplyr::select(-dplyr::all_of(target)) |>
-      dplyr::mutate(dplyr::across(dplyr::all_of(cont_vars), ~ as.integer(. == 0)))
+    shap_mask <- data |>
+      dplyr::select(-dplyr::all_of(response_var)) |>
+      dplyr::mutate(dplyr::across(dplyr::all_of(predictor_vars_continuous), ~ as.integer(. == 0)))
   } else {
-    shap_mask <- d |>
-      dplyr::select(-dplyr::all_of(target)) |>
+    shap_mask <- data |>
+      dplyr::select(-dplyr::all_of(response_var)) |>
       dplyr::mutate(
-        dplyr::across(dplyr::all_of(cont_vars), ~ as.integer(. == 0)),
+        dplyr::across(dplyr::all_of(predictor_vars_continuous), ~ as.integer(. == 0)),
         dplyr::across(
           dplyr::all_of(names(reference_levels_raw)),
           ~ as.integer(. == reference_levels_raw[dplyr::cur_column()])
@@ -652,7 +651,7 @@ shap_intercept <- function(shp,
   intercept_shap <- (dplyr::select(shp, -"BIAS") * shap_mask) |>
     dplyr::select(names(which(colSums(shap_mask) > 0))) |>
     (\(df) dplyr::filter(df, rowSums(df) != 0))() |>
-    dplyr::select(-dplyr::any_of(cont_vars))
+    dplyr::select(-dplyr::any_of(predictor_vars_continuous))
 
   overall_density <- intercept_shap |>
     dplyr::mutate(total_correction = rowSums(dplyr::across(dplyr::everything())) + baseline + beta_0) |>

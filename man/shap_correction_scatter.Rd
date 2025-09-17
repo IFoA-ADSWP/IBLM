@@ -15,8 +15,10 @@ shap_correction_scatter(
   cat_levels,
   wide_input_frame,
   shap_wide,
-  d,
-  target,
+  data,
+  response_var,
+  predictor_vars_categorical,
+  predictor_vars_continuous,
   reference_levels,
   custom_colors,
   chart_theme,
@@ -47,9 +49,9 @@ Must be present in the model. Currently not supported for categorical variables.
 
 \item{shap_wide}{Data frame. Wide format SHAP values corresponding to input data.}
 
-\item{d}{Data frame. Original dataset containing variables for coloring.}
+\item{data}{Data frame. Original dataset containing variables for coloring.}
 
-\item{target}{Character. Name of target/response variable.}
+\item{response_var}{Character. Name of response_var/response variable.}
 
 \item{reference_levels}{Character vector. Reference levels for categorical variables.}
 

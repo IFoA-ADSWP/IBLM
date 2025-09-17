@@ -8,7 +8,7 @@ data_dim_helper(
   frame,
   all_names,
   cat_levels,
-  target,
+  response_var,
   no_cat_toggle,
   remove_target = TRUE
 )
@@ -22,12 +22,12 @@ categorical levels and intercept.}
 \item{cat_levels}{Named list where each element contains the unique levels
 for each categorical variable.}
 
-\item{target}{Character string specifying the name of the target variable.}
+\item{response_var}{Character string specifying the name of the response_var variable.}
 
 \item{no_cat_toggle}{Logical indicating whether there are any categorical
 variables in the data.}
 
-\item{remove_target}{Logical, whether to remove the target variable from
+\item{remove_target}{Logical, whether to remove the response_var variable from
 the output (default TRUE).}
 }
 \value{

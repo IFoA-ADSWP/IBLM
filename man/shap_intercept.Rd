@@ -7,9 +7,9 @@
 shap_intercept(
   shp,
   x_glm_model,
-  d,
-  target,
-  cont_vars,
+  data,
+  response_var,
+  predictor_vars_continuous,
   reference_levels_raw,
   no_cat_toggle,
   custom_colors,
@@ -21,11 +21,11 @@ shap_intercept(
 
 \item{x_glm_model}{The fitted GLM model object.}
 
-\item{d}{Original input data frame.}
+\item{data}{Original input data frame.}
 
-\item{target}{Character string specifying target variable name.}
+\item{response_var}{Character string specifying response_var variable name.}
 
-\item{cont_vars}{Character vector of continuous variable names.}
+\item{predictor_vars_continuous}{Character vector of continuous variable names.}
 
 \item{reference_levels_raw}{Named list of reference levels for categorical variables.}
 
