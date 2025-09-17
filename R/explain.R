@@ -364,8 +364,6 @@ shap_dim_helper <- function(shap_raw,
 
     output_frame$bias <- output_frame$bias + shap_for_zeros + shap_for_cat_ref
 
-    #denominator <- wide_frame[, predictor_vars_continuous]
-    #denominator[abs(denominator) < epsilon] <- epsilon
     calc <- output_frame[, predictor_vars_continuous] / wide_frame[, predictor_vars_continuous]
     calc[apply(calc, 2, is.infinite)] <- 0
     output_frame[, predictor_vars_continuous] <- calc
@@ -379,6 +377,8 @@ shap_dim_helper <- function(shap_raw,
 #' to a GLM coefficient, along with the original coefficient and standard error bounds.
 #'
 #' @param varname Character string specifying the variable name to plot.
+#' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot (i.e. value of 0.05 will only show shaps within 5% --> 95% quantile range for plot)
+#' @param type Character string, must be "kde" or "hist"
 #' @param betas Named numeric vector of GLM coefficients.
 #' @param wide_input_frame Wide format input data frame.
 #' @param shap_wide Data frame containing SHAP corrections.
@@ -417,8 +417,8 @@ shap_correction_density <- function(
     ) {
   if (!(varname %in% c(names(betas), colnames(data)))) stop("varname not in model!")
 
-  if (!varname %in% names(betas)){
-    vartype <- "categorical"
+  if (varname %in% names(betas) & !(varname %in% predictor_vars_categorical)){
+    vartype <- "categorical_level"
   } else {
     vartype <- assign_variable_type(
       varname,
@@ -426,13 +426,21 @@ shap_correction_density <- function(
       predictor_vars_categorical
     )
   }
-  stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
-  beta <- betas[varname]
 
-  shap_deviations <- shap_wide[, varname]
-  from_shap <- beta + stats::quantile(shap_deviations, probs = c(q, 1-q))
-  lower_bound <- min(from_shap[1], beta - stderror)
-  upper_bound <- max(from_shap[2], beta + stderror)
+  if(vartype %in% c("numerical","categorical_level")){
+    stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
+    beta <- betas[varname]
+    shap_deviations <- shap_wide[, varname]
+  }
+
+  if(vartype=="categorical_level"){
+    is_wanted_level <- wide_input_frame[,varname]==1
+    shap_deviations <- shap_deviations[is_wanted_level]
+    }
+
+  shap_quantiles <- beta + stats::quantile(shap_deviations, probs = c(q, 1-q))
+  lower_bound <- min(shap_quantiles[1], beta - stderror)
+  upper_bound <- max(shap_quantiles[2], beta + stderror)
 
   if(type == "kde") {
     geom_corrections_density <- list(geom_density(color = custom_colors[1], fill = custom_colors[4], alpha = 0.3))

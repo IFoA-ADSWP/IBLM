@@ -22,6 +22,10 @@ shap_correction_density(
 \arguments{
 \item{varname}{Character string specifying the variable name to plot.}
 
+\item{q}{Number, must be between 0 and 0.5. Determines the quantile range of the plot (i.e. value of 0.05 will only show shaps within 5% --> 95% quantile range for plot)}
+
+\item{type}{Character string, must be "kde" or "hist"}
+
 \item{betas}{Named numeric vector of GLM coefficients.}
 
 \item{wide_input_frame}{Wide format input data frame.}
