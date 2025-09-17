@@ -110,15 +110,14 @@ explain <- function(x, data, as_contribution = FALSE){
 
   # Apply SHAP dimension helper
   shap_wide <- shap_dim_helper(
-    frame = shap,
+    shap_raw = shap,
     wide_frame = wide_input_frame,
     reference_levels = reference_levels,
     cat_levels = cat_levels,
     response_var = response_var,
     predictor_vars_continuous = predictor_vars_continuous,
     no_cat_toggle = no_cat_toggle,
-    beta_correction = TRUE,
-    epsilon = 0.05
+    beta_correction = TRUE
   )
 
   # Return explainer object with plotting functions
@@ -154,10 +153,14 @@ explain <- function(x, data, as_contribution = FALSE){
       },
 
     shap_correction_density = function(
-      varname = "DrivAge"
+      varname = "DrivAge",
+      q = 0.05,
+      type="kde"
       ) {
         shap_correction_density(
           varname = varname,
+          q=q,
+          type=type,
           betas = betas,
           wide_input_frame = wide_input_frame,
           shap_wide = shap_wide,
@@ -316,12 +319,21 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
 #' 4. Normalizes SHAP values by actual variable values for interpretability
 #'
 #' @keywords internal
-shap_dim_helper <- function(frame, wide_frame, reference_levels, cat_levels,
-                            response_var, predictor_vars_continuous, no_cat_toggle, beta_correction = TRUE, epsilon = 0.05) {
+shap_dim_helper <- function(shap_raw,
+                            wide_frame,
+                            reference_levels,
+                            cat_levels,
+                            response_var,
+                            predictor_vars_continuous,
+                            no_cat_toggle,
+                            beta_correction = TRUE) {
   if (no_cat_toggle) {
-    output_frame <- frame |>
-      dplyr::mutate(bias = frame$BIAS[1], .before = dplyr::everything())
+
+    output_frame <- shap_raw |>
+      dplyr::mutate(bias = shap_raw$BIAS[1], .before = dplyr::everything())
+
   } else {
+
     wide_frame <- wide_frame |> dplyr::select(-dplyr::any_of(c("(Intercept)", response_var)))
 
     cat_frame <- lapply(names(cat_levels), function(x) {
@@ -329,27 +341,32 @@ shap_dim_helper <- function(frame, wide_frame, reference_levels, cat_levels,
       mask <- wide_frame |>
         dplyr::select(dplyr::all_of(paste0(x, lvl))) |>
         data.matrix()
-      matrix(rep(frame[, x], length(lvl)), byrow = FALSE, ncol = length(lvl)) * mask
+      matrix(rep(shap_raw[, x], length(lvl)), byrow = FALSE, ncol = length(lvl)) * mask
     }) |>
       dplyr::bind_cols()
 
     output_frame <- cbind(
-      frame[, setdiff(colnames(wide_frame), colnames(cat_frame))],
+      shap_raw[, setdiff(colnames(wide_frame), colnames(cat_frame))],
       cat_frame
     ) |>
       dplyr::select(colnames(wide_frame)) |>
-      dplyr::mutate(bias = frame$BIAS[1], .before = dplyr::everything())
+      dplyr::mutate(bias = shap_raw$BIAS[1], .before = dplyr::everything())
   }
 
   if (beta_correction) {
 
     shap_for_zeros <- rowSums(((wide_frame[, predictor_vars_continuous] == 0) * 1) * output_frame[, predictor_vars_continuous])
-    shap_for_cat_ref <- if (no_cat_toggle) 0 else rowSums(output_frame[, reference_levels])
+
+    shap_for_cat_ref <- ifelse(
+      no_cat_toggle,
+      rowSums(output_frame[,reference_levels]),
+      0)
+
     output_frame$bias <- output_frame$bias + shap_for_zeros + shap_for_cat_ref
 
-    denominator <- frame[, predictor_vars_continuous]
-    denominator[abs(denominator) < epsilon] <- epsilon
-    calc <- output_frame[, predictor_vars_continuous] / frame[, predictor_vars_continuous]
+    #denominator <- wide_frame[, predictor_vars_continuous]
+    #denominator[abs(denominator) < epsilon] <- epsilon
+    calc <- output_frame[, predictor_vars_continuous] / wide_frame[, predictor_vars_continuous]
     calc[apply(calc, 2, is.infinite)] <- 0
     output_frame[, predictor_vars_continuous] <- calc
   }
@@ -386,6 +403,8 @@ shap_dim_helper <- function(frame, wide_frame, reference_levels, cat_levels,
 #' @import ggplot2
 shap_correction_density <- function(
     varname,
+    q = 0.05,
+    type="kde",
     betas,
     wide_input_frame,
     shap_wide,
@@ -411,13 +430,21 @@ shap_correction_density <- function(
   beta <- betas[varname]
 
   shap_deviations <- shap_wide[, varname]
-  from_shap <- beta + stats::quantile(shap_deviations, probs = c(0.05, 0.95))
+  from_shap <- beta + stats::quantile(shap_deviations, probs = c(q, 1-q))
   lower_bound <- min(from_shap[1], beta - stderror)
   upper_bound <- max(from_shap[2], beta + stderror)
 
+  if(type == "kde") {
+    geom_corrections_density <- list(geom_density(color = custom_colors[1], fill = custom_colors[4], alpha = 0.3))
+    } else if(type == "hist") {
+    geom_corrections_density <- list(geom_histogram(color = custom_colors[1], fill = custom_colors[4], alpha = 0.3, bins = 100))
+    } else {
+  stop("type was not 'kde' or 'hist'")
+      }
+
   data.frame(x = beta + shap_deviations) |>
     ggplot(aes(x = x)) +
-    geom_density(color = custom_colors[1], fill = custom_colors[4], alpha = 0.3) +
+    geom_corrections_density +
     geom_vline(xintercept = beta, color = custom_colors[2], linewidth = 0.5) +
     geom_vline(xintercept = beta - stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
     geom_vline(xintercept = beta + stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +

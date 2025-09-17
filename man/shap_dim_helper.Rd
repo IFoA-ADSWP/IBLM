@@ -5,24 +5,18 @@
 \title{Compute SHAP Value Corrections for GLM Coefficients}
 \usage{
 shap_dim_helper(
-  frame,
+  shap_raw,
   wide_frame,
-  vartypes,
   reference_levels,
   cat_levels,
   response_var,
   predictor_vars_continuous,
   no_cat_toggle,
-  beta_correction = TRUE,
-  epsilon = 0.05
+  beta_correction = TRUE
 )
 }
 \arguments{
-\item{frame}{Data frame containing raw SHAP values from XGBoost.}
-
 \item{wide_frame}{Wide format input data frame (one-hot encoded).}
-
-\item{vartypes}{Named vector indicating the data type of each variable.}
 
 \item{reference_levels}{Character vector of reference level names for categorical variables.}
 
@@ -33,6 +27,8 @@ shap_dim_helper(
 \item{no_cat_toggle}{Logical indicating absence of categorical variables.}
 
 \item{beta_correction}{Logical, whether to apply beta corrections (default TRUE).}
+
+\item{frame}{Data frame containing raw SHAP values from XGBoost.}
 
 \item{epsilon}{Numeric threshold for avoiding division by very small numbers (default 0.05).}
 }

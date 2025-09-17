@@ -6,12 +6,15 @@
 \usage{
 shap_correction_density(
   varname,
+  q = 0.05,
+  type = "kde",
   betas,
-  vartypes,
   wide_input_frame,
   shap_wide,
   x_glm_model,
   data,
+  predictor_vars_continuous,
+  predictor_vars_categorical,
   custom_colors,
   chart_theme
 )
@@ -20,8 +23,6 @@ shap_correction_density(
 \item{varname}{Character string specifying the variable name to plot.}
 
 \item{betas}{Named numeric vector of GLM coefficients.}
-
-\item{vartypes}{Named vector indicating data types of variables.}
 
 \item{wide_input_frame}{Wide format input data frame.}
 

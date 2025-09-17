@@ -11,7 +11,6 @@ shap_correction_scatter(
   marginal,
   excl_outliers,
   betas,
-  vartypes,
   cat_levels,
   wide_input_frame,
   shap_wide,
@@ -40,8 +39,6 @@ Must be present in the model. Currently not supported for categorical variables.
 \item{excl_outliers}{Logical. Whether to exclude outliers based on quantile method.}
 
 \item{betas}{Named numeric vector. Model coefficients/betas from fitted model.}
-
-\item{vartypes}{Named character vector. Variable types ("double", "integer", etc.).}
 
 \item{cat_levels}{Named list. Categorical variable levels.}
 
