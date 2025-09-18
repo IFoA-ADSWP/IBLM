@@ -54,8 +54,5 @@ This function:
   \item Creates visualizations showing the distribution of corrected intercept values
   \item Compares corrected values against the original GLM intercept and its standard error
 }
-
-The intercept correction is crucial for understanding baseline predictions and
-how they vary across different subpopulations in the data.
 }
 \keyword{internal}

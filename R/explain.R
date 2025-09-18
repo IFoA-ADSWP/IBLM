@@ -706,10 +706,13 @@ shap_intercept <- function(shap,
     ggtitle("Overall intercept correction distribution") +
     chart_theme
 
-  grouped_density = intercept_shap %>%
-    pivot_longer(cols = everything()) %>%
-    filter(value!=0) %>%
-    mutate(value = value + baseline + beta_0) %>%
+  intercept_shap_long <- intercept_shap |>
+    tidyr::pivot_longer(cols = dplyr::everything()) |>
+    dplyr::filter(value!=0) |>
+    dplyr::mutate(name = factor(name, levels = names(sort(-colSums(intercept_shap!=0)))),
+                  value = value + baseline + beta_0)
+
+  grouped_density = intercept_shap_long |>
     ggplot(aes(x=value))+
     geom_density()+
     facet_wrap(~name,scales="free")+
@@ -721,16 +724,9 @@ shap_intercept <- function(shap,
     ylab("")+
     chart_theme
 
-  jitter = intercept_shap %>%
-    pivot_longer(cols = everything()) %>%
-    filter(value!=0) %>%
-    mutate(name = factor(name, levels = names(sort(-colSums(intercept_shap!=0)))),
-           value = value + baseline + beta_0) %>%
+  boxplot <- intercept_shap_long |>
     ggplot(aes(x = name,y=value))+
-    # geom_jitter(alpha = 0.3)+
-    # geom_violin(color = custom_colors[3], linewidth = 0.5)+
     geom_boxplot()+
-    # ggbeeswarm::geom_beeswarm()+
     geom_hline(yintercept = baseline + beta_0, color = custom_colors[2], size = 0.5)+
     ggtitle(paste0("Jitter chart of beta corrections for intercept"),
             subtitle = paste0("Intercept: ", round(beta_0,2)," with shap baseline: ",round(baseline,2)))+
@@ -740,7 +736,7 @@ shap_intercept <- function(shap,
 
   return(list(overall_density = overall_density,
               grouped_density = grouped_density,
-              jitter = jitter))
+              boxplot = boxplot))
 }
 
 #' Generate Global SHAP Correction Distribution Plot
