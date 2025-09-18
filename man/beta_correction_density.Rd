@@ -2,7 +2,7 @@
 % Please edit documentation in R/explain.R
 \name{beta_correction_density}
 \alias{beta_correction_density}
-\title{Create Density Plot of SHAP Corrections for a Variable}
+\title{Create Density Plot of Corrected Beta values for a Variable}
 \usage{
 beta_correction_density(
   varname,
@@ -46,8 +46,8 @@ A ggplot object showing the density distribution of SHAP corrections
 with vertical lines indicating the original coefficient value and standard error bounds.
 }
 \description{
-Generates a density plot showing the distribution of SHAP-based corrections
-to a GLM coefficient, along with the original coefficient and standard error bounds.
+Generates a density plot showing the distribution of corrected Beta values
+to a GLM coefficient, along with the original Beta coefficient, and standard error bounds around it.
 }
 \details{
 The plot shows:

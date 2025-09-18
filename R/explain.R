@@ -255,9 +255,6 @@ chart_theme_fn <- function(custom_colors) {
 #' @return A data frame in wide format with one-hot encoded categorical variables,
 #' an intercept column, and all variables ordered according to `all_names`.
 #'
-#' @details For datasets with categorical variables, this function creates
-#' dummy variables for all levels (including reference levels) and ensures
-#' proper ordering for downstream SHAP calculations.
 #'
 #' @keywords internal
 data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_toggle, remove_target = TRUE) {
@@ -290,9 +287,9 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
   return(output_frame)
 }
 
-#' Compute SHAP Value Corrections for GLM Coefficients
+#' Compute Beta Corrections based on SHAP values
 #'
-#' Processes raw SHAP values to create coefficient corrections that account for
+#' Processes raw SHAP values to create coefficient corrections. The bias is adjusted to account for
 #' zero values in continuous variables and reference levels in categorical variables.
 #'
 #' @param frame Data frame containing raw SHAP values from XGBoost.
@@ -302,7 +299,6 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
 #' @param response_var Character string specifying the response_var variable name.
 #' @param no_cat_toggle Logical indicating absence of categorical variables.
 #' @param beta_correction Logical, whether to apply beta corrections (default TRUE).
-#' @param epsilon Numeric threshold for avoiding division by very small numbers (default 0.05).
 #'
 #' @return A data frame with corrected SHAP values where:
 #' \itemize{
@@ -310,12 +306,6 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
 #'   \item Continuous variables are normalized by their actual values
 #'   \item Reference level and zero-value corrections are added to the bias term
 #' }
-#'
-#' @details This function performs several key corrections:
-#' 1. Redistributes SHAP values for categorical variables across their levels
-#' 2. Adjusts for zero values in continuous variables
-#' 3. Accounts for reference category effects
-#' 4. Normalizes SHAP values by actual variable values for interpretability
 #'
 #' @keywords internal
 shap_dim_helper <- function(shap_raw,
@@ -381,10 +371,10 @@ shap_dim_helper <- function(shap_raw,
   }
 }
 
-#' Create Density Plot of SHAP Corrections for a Variable
+#' Create Density Plot of Corrected Beta values for a Variable
 #'
-#' Generates a density plot showing the distribution of SHAP-based corrections
-#' to a GLM coefficient, along with the original coefficient and standard error bounds.
+#' Generates a density plot showing the distribution of corrected Beta values
+#' to a GLM coefficient, along with the original Beta coefficient, and standard error bounds around it.
 #'
 #' @param varname Character string specifying the variable name to plot.
 #' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot
@@ -434,7 +424,7 @@ beta_correction_density <- function(
   } else if (varname %in% names(betas)){
     vartype <- "categorical_level"
   } else {
-    stop("varname not fouund in model!")
+    stop("varname not found in model!")
   }
 
   if(vartype %in% c("numerical","categorical_level")){
@@ -474,11 +464,10 @@ beta_correction_density <- function(
 
 
 
-#' Create SHAP Correction Scatter Plot
+#' Create Scatter Plot of Beta Corrections for a Variable
 #'
-#' Generates a scatter plot or boxplot showing SHAP (SHapley Additive exPlanations)
-#' corrections for a specified variable from a fitted model. For numerical variables,
-#' creates a scatter plot with optional coloring and marginal densities. For categorical
+#' Generates a scatter plot or boxplot showing SHAP corrections for a specified variable from a fitted model.
+#' For numerical variables, creates a scatter plot with optional coloring and marginal densities. For categorical
 #' variables, creates a boxplot with model coefficients overlaid.
 #'
 #' @param varname Character. Name of the variable to plot SHAP corrections for.

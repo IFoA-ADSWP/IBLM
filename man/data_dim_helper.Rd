@@ -37,9 +37,4 @@ an intercept column, and all variables ordered according to `all_names`.
 \description{
 Transforms categorical variables in a data frame into one-hot encoded format
 }
-\details{
-For datasets with categorical variables, this function creates
-dummy variables for all levels (including reference levels) and ensures
-proper ordering for downstream SHAP calculations.
-}
 \keyword{internal}

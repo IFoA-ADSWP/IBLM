@@ -2,7 +2,7 @@
 % Please edit documentation in R/explain.R
 \name{shap_dim_helper}
 \alias{shap_dim_helper}
-\title{Compute SHAP Value Corrections for GLM Coefficients}
+\title{Compute Beta Corrections based on SHAP values}
 \usage{
 shap_dim_helper(
   shap_raw,
@@ -29,8 +29,6 @@ shap_dim_helper(
 \item{beta_correction}{Logical, whether to apply beta corrections (default TRUE).}
 
 \item{frame}{Data frame containing raw SHAP values from XGBoost.}
-
-\item{epsilon}{Numeric threshold for avoiding division by very small numbers (default 0.05).}
 }
 \value{
 A data frame with corrected SHAP values where:
@@ -41,14 +39,7 @@ A data frame with corrected SHAP values where:
 }
 }
 \description{
-Processes raw SHAP values to create coefficient corrections that account for
+Processes raw SHAP values to create coefficient corrections. The bias is adjusted to account for
 zero values in continuous variables and reference levels in categorical variables.
-}
-\details{
-This function performs several key corrections:
-1. Redistributes SHAP values for categorical variables across their levels
-2. Adjusts for zero values in continuous variables
-3. Accounts for reference category effects
-4. Normalizes SHAP values by actual variable values for interpretability
 }
 \keyword{internal}

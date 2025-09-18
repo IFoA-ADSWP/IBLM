@@ -2,7 +2,7 @@
 % Please edit documentation in R/explain.R
 \name{beta_correction_scatter}
 \alias{beta_correction_scatter}
-\title{Create SHAP Correction Scatter Plot}
+\title{Create Scatter Plot of Beta Corrections for a Variable}
 \usage{
 beta_correction_scatter(
   varname,
@@ -66,9 +66,8 @@ A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
   with coefficient points overlaid.
 }
 \description{
-Generates a scatter plot or boxplot showing SHAP (SHapley Additive exPlanations)
-corrections for a specified variable from a fitted model. For numerical variables,
-creates a scatter plot with optional coloring and marginal densities. For categorical
+Generates a scatter plot or boxplot showing SHAP corrections for a specified variable from a fitted model.
+For numerical variables, creates a scatter plot with optional coloring and marginal densities. For categorical
 variables, creates a boxplot with model coefficients overlaid.
 }
 \details{
