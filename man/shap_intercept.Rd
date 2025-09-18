@@ -5,7 +5,7 @@
 \title{Generate Intercept Correction Analysis and Visualizations}
 \usage{
 shap_intercept(
-  shp,
+  shap,
   x_glm_model,
   data,
   response_var,
@@ -17,7 +17,7 @@ shap_intercept(
 )
 }
 \arguments{
-\item{shp}{Data frame containing raw SHAP values.}
+\item{shap}{Data frame containing raw SHAP values.}
 
 \item{x_glm_model}{The fitted GLM model object.}
 

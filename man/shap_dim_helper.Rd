@@ -6,7 +6,7 @@
 \usage{
 shap_dim_helper(
   shap_raw,
-  wide_frame,
+  wide_input_frame,
   reference_levels,
   cat_levels,
   response_var,
@@ -16,7 +16,7 @@ shap_dim_helper(
 )
 }
 \arguments{
-\item{wide_frame}{Wide format input data frame (one-hot encoded).}
+\item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
 
 \item{reference_levels}{Character vector of reference level names for categorical variables.}
 

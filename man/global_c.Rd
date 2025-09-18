@@ -4,10 +4,10 @@
 \alias{global_c}
 \title{Generate Global SHAP Correction Distribution Plot}
 \usage{
-global_c(shp, custom_colors, chart_theme)
+global_c(shap, custom_colors, chart_theme)
 }
 \arguments{
-\item{shp}{Data frame containing raw SHAP values including BIAS term.}
+\item{shap}{Data frame containing raw SHAP values including BIAS term.}
 
 \item{custom_colors}{Character vector of hex colors for plot styling.}
 

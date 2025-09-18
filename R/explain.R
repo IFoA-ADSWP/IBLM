@@ -13,12 +13,12 @@
 #'
 #' @return A list containing:
 #' \describe{
-#'   \item{shap_correction_scatter}{Function to create scatter plots showing SHAP corrections vs variable values}
-#'   \item{shap_correction_density}{Function to create density plots of SHAP corrections for variables}
+#'   \item{beta_correction_scatter}{Function to create scatter plots showing SHAP corrections vs variable values}
+#'   \item{beta_correction_density}{Function to create density plots of SHAP corrections for variables}
 #'   \item{shap_intercept}{List containing intercept correction visualizations}
 #'   \item{overall_correction}{Function to show global correction distributions}
 #'   \item{input_frame}{Original input data frame}
-#'   \item{shap_wide}{Wide format SHAP corrections data frame}
+#'   \item{beta_corrections}{Wide format SHAP corrections data frame}
 #'   \item{raw_shap}{Raw SHAP values from XGBoost}
 #'   \item{betas}{GLM model coefficients}
 #'   \item{allnames}{Names of all model coefficients except intercept}
@@ -36,10 +36,10 @@
 #' explainer <- explain(models, test_data)
 #'
 #' # Generate scatter plot for a variable
-#' explainer$shap_correction_scatter("age")
+#' explainer$beta_correction_scatter("age")
 #'
 #' # Show density of corrections
-#' explainer$shap_correction_density("income")
+#' explainer$beta_correction_density("income")
 #' }
 #'
 #' @export
@@ -99,7 +99,7 @@ explain <- function(x, data, as_contribution = FALSE){
     predcontrib = TRUE
   ) |> data.frame()
 
-  # Prepare wide input frame
+  # Prepare wide input frame... this is `data` but with categoricals converted to one-hot format
   wide_input_frame <- data_dim_helper(
     frame = data,
     all_names = all_names,
@@ -108,10 +108,10 @@ explain <- function(x, data, as_contribution = FALSE){
     no_cat_toggle = no_cat_toggle
   )
 
-  # Apply SHAP dimension helper
-  shap_wide <- shap_dim_helper(
+  # Prepare shap corrections... this converts `shap` values to the adjustments to beta values instead
+  beta_corrections <- shap_dim_helper(
     shap_raw = shap,
-    wide_frame = wide_input_frame,
+    wide_input_frame = wide_input_frame,
     reference_levels = reference_levels,
     cat_levels = cat_levels,
     response_var = response_var,
@@ -123,14 +123,14 @@ explain <- function(x, data, as_contribution = FALSE){
   # Return explainer object with plotting functions
   list(
 
-    shap_correction_scatter = function(
+    beta_correction_scatter = function(
       varname = "DrivAge",
       q = 0.05,
       color=NULL,
       marginal=FALSE,
       excl_outliers=FALSE
       ) {
-        shap_correction_scatter(
+        beta_correction_scatter(
           varname = varname,
           q = q,
           color = color,
@@ -139,7 +139,7 @@ explain <- function(x, data, as_contribution = FALSE){
           betas = betas,
           cat_levels = cat_levels,
           wide_input_frame = wide_input_frame,
-          shap_wide = shap_wide,
+          beta_corrections = beta_corrections,
           data = data,
           response_var = response_var,
           predictor_vars_categorical = predictor_vars_categorical,
@@ -152,18 +152,18 @@ explain <- function(x, data, as_contribution = FALSE){
         )
       },
 
-    shap_correction_density = function(
+    beta_correction_density = function(
       varname = "DrivAge",
       q = 0.05,
       type="kde"
       ) {
-        shap_correction_density(
+        beta_correction_density(
           varname = varname,
           q=q,
           type=type,
           betas = betas,
           wide_input_frame = wide_input_frame,
-          shap_wide = shap_wide,
+          beta_corrections = beta_corrections,
           x_glm_model = x$glm_model,
           data = data,
           predictor_vars_continuous = predictor_vars_continuous,
@@ -174,7 +174,7 @@ explain <- function(x, data, as_contribution = FALSE){
       },
 
     shap_intercept = shap_intercept(
-      shp = shap,
+      shap = shap,
       x_glm_model = x$glm_model,
       data = data,
       response_var = response_var,
@@ -186,14 +186,14 @@ explain <- function(x, data, as_contribution = FALSE){
     ),
 
     overall_correction = global_c(
-      shp = shap,
+      shap = shap,
       custom_colors = custom_colors,
       chart_theme = chart_theme
     ),
 
     input_frame = data,
 
-    shap_wide = shap_wide,  # beta corrections
+    beta_corrections = beta_corrections,  # beta corrections
 
     raw_shap = shap,
 
@@ -240,7 +240,6 @@ chart_theme_fn <- function(custom_colors) {
 #' Convert Data Frame to Wide One-Hot Encoded Format
 #'
 #' Transforms categorical variables in a data frame into one-hot encoded format
-#' and prepares the data structure needed for SHAP calculations.
 #'
 #' @param frame Input data frame to be transformed.
 #' @param all_names Character vector of all expected variable names including
@@ -297,7 +296,7 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
 #' zero values in continuous variables and reference levels in categorical variables.
 #'
 #' @param frame Data frame containing raw SHAP values from XGBoost.
-#' @param wide_frame Wide format input data frame (one-hot encoded).
+#' @param wide_input_frame Wide format input data frame (one-hot encoded).
 #' @param reference_levels Character vector of reference level names for categorical variables.
 #' @param cat_levels Named list of categorical variable levels.
 #' @param response_var Character string specifying the response_var variable name.
@@ -320,7 +319,7 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
 #'
 #' @keywords internal
 shap_dim_helper <- function(shap_raw,
-                            wide_frame,
+                            wide_input_frame,
                             reference_levels,
                             cat_levels,
                             response_var,
@@ -329,46 +328,57 @@ shap_dim_helper <- function(shap_raw,
                             beta_correction = TRUE) {
   if (no_cat_toggle) {
 
-    output_frame <- shap_raw |>
+    shap_wide <- shap_raw |>
       dplyr::mutate(bias = shap_raw$BIAS[1], .before = dplyr::everything())
 
   } else {
 
-    wide_frame <- wide_frame |> dplyr::select(-dplyr::any_of(c("(Intercept)", response_var)))
+    wide_input_frame <- wide_input_frame |> dplyr::select(-dplyr::any_of(c("(Intercept)", response_var)))
 
     cat_frame <- lapply(names(cat_levels), function(x) {
       lvl <- cat_levels[[x]]
-      mask <- wide_frame |>
+      mask <- wide_input_frame |>
         dplyr::select(dplyr::all_of(paste0(x, lvl))) |>
         data.matrix()
       matrix(rep(shap_raw[, x], length(lvl)), byrow = FALSE, ncol = length(lvl)) * mask
     }) |>
       dplyr::bind_cols()
 
-    output_frame <- cbind(
-      shap_raw[, setdiff(colnames(wide_frame), colnames(cat_frame))],
+    shap_wide <- cbind(
+      shap_raw[, setdiff(colnames(wide_input_frame), colnames(cat_frame))],
       cat_frame
     ) |>
-      dplyr::select(colnames(wide_frame)) |>
+      dplyr::select(colnames(wide_input_frame)) |>
       dplyr::mutate(bias = shap_raw$BIAS[1], .before = dplyr::everything())
   }
 
   if (beta_correction) {
 
-    shap_for_zeros <- rowSums(((wide_frame[, predictor_vars_continuous] == 0) * 1) * output_frame[, predictor_vars_continuous])
+    shap_for_zeros <- rowSums(
+      ((wide_input_frame[, predictor_vars_continuous] == 0) * 1) * shap_wide[, predictor_vars_continuous]
+      )
 
+    # PB NOTE: beleive the logic is the wrong way round on this
     shap_for_cat_ref <- ifelse(
       no_cat_toggle,
-      rowSums(output_frame[,reference_levels]),
+      rowSums(shap_wide[,reference_levels]),
       0)
 
-    output_frame$bias <- output_frame$bias + shap_for_zeros + shap_for_cat_ref
+    beta_corrections <- shap_wide
 
-    calc <- output_frame[, predictor_vars_continuous] / wide_frame[, predictor_vars_continuous]
+    beta_corrections$bias <- beta_corrections$bias + shap_for_zeros + shap_for_cat_ref
+
+    calc <- beta_corrections[, predictor_vars_continuous] / wide_input_frame[, predictor_vars_continuous]
     calc[apply(calc, 2, is.infinite)] <- 0
-    output_frame[, predictor_vars_continuous] <- calc
+    beta_corrections[, predictor_vars_continuous] <- calc
+
+    return(beta_corrections)
+
+  } else {
+
+    return(shap_wide)
+
   }
-  return(output_frame)
 }
 
 #' Create Density Plot of SHAP Corrections for a Variable
@@ -377,11 +387,12 @@ shap_dim_helper <- function(shap_raw,
 #' to a GLM coefficient, along with the original coefficient and standard error bounds.
 #'
 #' @param varname Character string specifying the variable name to plot.
-#' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot (i.e. value of 0.05 will only show shaps within 5% --> 95% quantile range for plot)
+#' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot
+#' (i.e. value of 0.05 will only show shaps within 5% --> 95% quantile range for plot)
 #' @param type Character string, must be "kde" or "hist"
 #' @param betas Named numeric vector of GLM coefficients.
 #' @param wide_input_frame Wide format input data frame.
-#' @param shap_wide Data frame containing SHAP corrections.
+#' @param beta_corrections Data frame containing SHAP corrections.
 #' @param x_glm_model The fitted GLM model object.
 #' @param data Original input data frame.
 #' @param custom_colors Character vector of hex colors for plot styling.
@@ -401,13 +412,13 @@ shap_dim_helper <- function(shap_raw,
 #' @keywords internal
 #'
 #' @import ggplot2
-shap_correction_density <- function(
+beta_correction_density <- function(
     varname,
     q = 0.05,
     type="kde",
     betas,
     wide_input_frame,
-    shap_wide,
+    beta_corrections,
     x_glm_model,
     data,
     predictor_vars_continuous,
@@ -415,22 +426,21 @@ shap_correction_density <- function(
     custom_colors,
     chart_theme
     ) {
-  if (!(varname %in% c(names(betas), colnames(data)))) stop("varname not in model!")
 
-  if (varname %in% names(betas) & !(varname %in% predictor_vars_categorical)){
+  if (varname %in% predictor_vars_continuous) {
+    vartype <- "numerical"
+  } else if (varname %in% predictor_vars_categorical) {
+    vartype <- "categorical"
+  } else if (varname %in% names(betas)){
     vartype <- "categorical_level"
   } else {
-    vartype <- assign_variable_type(
-      varname,
-      predictor_vars_continuous,
-      predictor_vars_categorical
-    )
+    stop("varname not fouund in model!")
   }
 
   if(vartype %in% c("numerical","categorical_level")){
     stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
     beta <- betas[varname]
-    shap_deviations <- shap_wide[, varname]
+    shap_deviations <- beta_corrections[, varname]
   }
 
   if(vartype=="categorical_level"){
@@ -481,7 +491,7 @@ shap_correction_density <- function(
 #' @param betas Named numeric vector. Model coefficients/betas from fitted model.
 #' @param cat_levels Named list. Categorical variable levels.
 #' @param wide_input_frame Data frame. Wide format input data used in model fitting.
-#' @param shap_wide Data frame. Wide format SHAP values corresponding to input data.
+#' @param beta_corrections Data frame. Wide format SHAP values corresponding to input data.
 #' @param data Data frame. Original dataset containing variables for coloring.
 #' @param response_var Character. Name of response_var/response variable.
 #' @param reference_levels Character vector. Reference levels for categorical variables.
@@ -510,7 +520,7 @@ shap_correction_density <- function(
 #'
 #' @import ggplot2
 #' @importFrom magrittr %>%
-shap_correction_scatter <- function(varname,
+beta_correction_scatter <- function(varname,
                                          q,
                                          color,
                                          marginal,
@@ -518,7 +528,7 @@ shap_correction_scatter <- function(varname,
                                     betas,
                                     cat_levels,
                                     wide_input_frame,
-                                    shap_wide,
+                                    beta_corrections,
                                     data,
                                     response_var,
                                     predictor_vars_categorical,
@@ -554,7 +564,7 @@ shap_correction_scatter <- function(varname,
     helper_names <- matched_names[matched_names!=reference_level]
 
     x <- wide_input_frame[,matched_names]
-    shap_deviations <- shap_wide[,matched_names]
+    shap_deviations <- beta_corrections[,matched_names]
 
     beta = c(0,betas[helper_names]) |> stats::setNames(c(reference_level, helper_names))
 
@@ -588,7 +598,7 @@ shap_correction_scatter <- function(varname,
     beta = betas[varname]
 
     x = wide_input_frame[,varname]
-    shap_deviations = shap_wide[,varname]
+    shap_deviations = beta_corrections[,varname]
     after_shap = data.frame(x = x,
                             shp = beta + shap_deviations) %>%
       {if(is.null(color)) . else dplyr::mutate(.,color = data[,color])} %>%
@@ -625,7 +635,7 @@ shap_correction_scatter <- function(varname,
 #' observations where continuous variables are zero or categorical variables
 #' are at their reference levels.
 #'
-#' @param shp Data frame containing raw SHAP values.
+#' @param shap Data frame containing raw SHAP values.
 #' @param x_glm_model The fitted GLM model object.
 #' @param data Original input data frame.
 #' @param response_var Character string specifying response_var variable name.
@@ -648,13 +658,11 @@ shap_correction_scatter <- function(varname,
 #'   \item Compares corrected values against the original GLM intercept and its standard error
 #' }
 #'
-#' The intercept correction is crucial for understanding baseline predictions and
-#' how they vary across different subpopulations in the data.
 #'
 #' @keywords internal
 #'
 #' @import ggplot2
-shap_intercept <- function(shp,
+shap_intercept <- function(shap,
                            x_glm_model,
                            data,
                            response_var,
@@ -665,7 +673,7 @@ shap_intercept <- function(shp,
                            chart_theme) {
   beta_0 <- x_glm_model$coefficients["(Intercept)"] |> as.numeric()
   beta_0_SE <- summary(x_glm_model)$coefficients["(Intercept)", "Std. Error"]
-  baseline <- shp$BIAS[1]
+  baseline <- shap$BIAS[1]
 
   if (no_cat_toggle) {
     shap_mask <- data |>
@@ -683,7 +691,7 @@ shap_intercept <- function(shp,
       )
   }
 
-  intercept_shap <- (dplyr::select(shp, -"BIAS") * shap_mask) |>
+  intercept_shap <- (dplyr::select(shap, -"BIAS") * shap_mask) |>
     dplyr::select(names(which(colSums(shap_mask) > 0))) |>
     (\(df) dplyr::filter(df, rowSums(df) != 0))() |>
     dplyr::select(-dplyr::any_of(predictor_vars_continuous))
@@ -698,7 +706,41 @@ shap_intercept <- function(shp,
     ggtitle("Overall intercept correction distribution") +
     chart_theme
 
-  return(list(overall_density = overall_density))
+  grouped_density = intercept_shap %>%
+    pivot_longer(cols = everything()) %>%
+    filter(value!=0) %>%
+    mutate(value = value + baseline + beta_0) %>%
+    ggplot(aes(x=value))+
+    geom_density()+
+    facet_wrap(~name,scales="free")+
+    geom_vline(xintercept = baseline + beta_0, color = custom_colors[2], size = 0.5)+
+    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = custom_colors[1], size = 0.5)+
+    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = custom_colors[1], size = 0.5)+
+    ggtitle("Individual intercept correction distributions")+
+    xlab("")+
+    ylab("")+
+    chart_theme
+
+  jitter = intercept_shap %>%
+    pivot_longer(cols = everything()) %>%
+    filter(value!=0) %>%
+    mutate(name = factor(name, levels = names(sort(-colSums(intercept_shap!=0)))),
+           value = value + baseline + beta_0) %>%
+    ggplot(aes(x = name,y=value))+
+    # geom_jitter(alpha = 0.3)+
+    # geom_violin(color = custom_colors[3], linewidth = 0.5)+
+    geom_boxplot()+
+    # ggbeeswarm::geom_beeswarm()+
+    geom_hline(yintercept = baseline + beta_0, color = custom_colors[2], size = 0.5)+
+    ggtitle(paste0("Jitter chart of beta corrections for intercept"),
+            subtitle = paste0("Intercept: ", round(beta_0,2)," with shap baseline: ",round(baseline,2)))+
+    xlab("")+
+    ylab("")+
+    chart_theme
+
+  return(list(overall_density = overall_density,
+              grouped_density = grouped_density,
+              jitter = jitter))
 }
 
 #' Generate Global SHAP Correction Distribution Plot
@@ -706,7 +748,7 @@ shap_intercept <- function(shp,
 #' Creates a visualization showing the overall distribution of multiplicative
 #' corrections that SHAP values apply to GLM predictions.
 #'
-#' @param shp Data frame containing raw SHAP values including BIAS term.
+#' @param shap Data frame containing raw SHAP values including BIAS term.
 #' @param custom_colors Character vector of hex colors for plot styling.
 #' @param chart_theme ggplot2 theme object for consistent plot appearance.
 #'
@@ -731,8 +773,8 @@ shap_intercept <- function(shp,
 #' @keywords internal
 #'
 #' @import ggplot2
-global_c <- function(shp, custom_colors, chart_theme) {
-  dt <- shp |>
+global_c <- function(shap, custom_colors, chart_theme) {
+  dt <- shap |>
     dplyr::mutate(
       total = rowSums(dplyr::across(dplyr::everything())),
       total_exp = exp(total)

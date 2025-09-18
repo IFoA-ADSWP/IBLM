@@ -36,7 +36,6 @@ an intercept column, and all variables ordered according to `all_names`.
 }
 \description{
 Transforms categorical variables in a data frame into one-hot encoded format
-and prepares the data structure needed for SHAP calculations.
 }
 \details{
 For datasets with categorical variables, this function creates

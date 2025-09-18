@@ -18,12 +18,12 @@ explain(x, data, as_contribution = FALSE)
 \value{
 A list containing:
 \describe{
-  \item{shap_correction_scatter}{Function to create scatter plots showing SHAP corrections vs variable values}
-  \item{shap_correction_density}{Function to create density plots of SHAP corrections for variables}
+  \item{beta_correction_scatter}{Function to create scatter plots showing SHAP corrections vs variable values}
+  \item{beta_correction_density}{Function to create density plots of SHAP corrections for variables}
   \item{shap_intercept}{List containing intercept correction visualizations}
   \item{overall_correction}{Function to show global correction distributions}
   \item{input_frame}{Original input data frame}
-  \item{shap_wide}{Wide format SHAP corrections data frame}
+  \item{beta_corrections}{Wide format SHAP corrections data frame}
   \item{raw_shap}{Raw SHAP values from XGBoost}
   \item{betas}{GLM model coefficients}
   \item{allnames}{Names of all model coefficients except intercept}
@@ -47,10 +47,10 @@ models <- list(glm_model = my_glm, xgb_model = my_xgb)
 explainer <- explain(models, test_data)
 
 # Generate scatter plot for a variable
-explainer$shap_correction_scatter("age")
+explainer$beta_correction_scatter("age")
 
 # Show density of corrections
-explainer$shap_correction_density("income")
+explainer$beta_correction_density("income")
 }
 
 }
