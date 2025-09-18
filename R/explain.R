@@ -350,11 +350,11 @@ shap_dim_helper <- function(shap_raw,
       ((wide_input_frame[, predictor_vars_continuous] == 0) * 1) * shap_wide[, predictor_vars_continuous]
       )
 
-    # PB NOTE: beleive the logic is the wrong way round on this
     shap_for_cat_ref <- ifelse(
       no_cat_toggle,
-      rowSums(shap_wide[,reference_levels]),
-      0)
+      0,
+      rowSums(shap_wide[,reference_levels])
+      )
 
     beta_corrections <- shap_wide
 
