@@ -13,8 +13,8 @@
 #'
 #' @return A list containing:
 #' \describe{
-#'   \item{beta_correction_scatter}{Function to create scatter plots showing SHAP corrections vs variable values}
-#'   \item{beta_correction_density}{Function to create density plots of SHAP corrections for variables}
+#'   \item{beta_corrected_scatter}{Function to create scatter plots showing SHAP corrections vs variable values}
+#'   \item{beta_corrected_density}{Function to create density plots of SHAP corrections for variables}
 #'   \item{shap_intercept}{List containing intercept correction visualizations}
 #'   \item{overall_correction}{Function to show global correction distributions}
 #'   \item{input_frame}{Original input data frame}
@@ -36,10 +36,10 @@
 #' explainer <- explain(models, test_data)
 #'
 #' # Generate scatter plot for a variable
-#' explainer$beta_correction_scatter("age")
+#' explainer$beta_corrected_scatter("age")
 #'
 #' # Show density of corrections
-#' explainer$beta_correction_density("income")
+#' explainer$beta_corrected_density("income")
 #' }
 #'
 #' @export
@@ -123,14 +123,14 @@ explain <- function(x, data, as_contribution = FALSE){
   # Return explainer object with plotting functions
   list(
 
-    beta_correction_scatter = function(
+    beta_corrected_scatter = function(
       varname = "DrivAge",
       q = 0.05,
       color=NULL,
       marginal=FALSE,
       excl_outliers=FALSE
       ) {
-        beta_correction_scatter(
+        beta_corrected_scatter(
           varname = varname,
           q = q,
           color = color,
@@ -152,16 +152,18 @@ explain <- function(x, data, as_contribution = FALSE){
         )
       },
 
-    beta_correction_density = function(
+    beta_corrected_density = function(
       varname = "DrivAge",
       q = 0.05,
       type="kde"
       ) {
-        beta_correction_density(
+        beta_corrected_density(
           varname = varname,
           q=q,
           type=type,
           betas = betas,
+          cat_levels = cat_levels,
+          reference_levels = reference_levels,
           wide_input_frame = wide_input_frame,
           beta_corrections = beta_corrections,
           x_glm_model = x$glm_model,
@@ -376,11 +378,12 @@ shap_dim_helper <- function(shap_raw,
 #' Generates a density plot showing the distribution of corrected Beta values
 #' to a GLM coefficient, along with the original Beta coefficient, and standard error bounds around it.
 #'
-#' @param varname Character string specifying the variable name to plot.
+#' @param varname Character string specifying the variable name OR coefficient name is accepted as well.
 #' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot
 #' (i.e. value of 0.05 will only show shaps within 5% --> 95% quantile range for plot)
 #' @param type Character string, must be "kde" or "hist"
 #' @param betas Named numeric vector of GLM coefficients.
+#' @param cat_levels Names list of categorical variables, with each item a vector of the levels
 #' @param wide_input_frame Wide format input data frame.
 #' @param beta_corrections Data frame containing SHAP corrections.
 #' @param x_glm_model The fitted GLM model object.
@@ -388,25 +391,33 @@ shap_dim_helper <- function(shap_raw,
 #' @param custom_colors Character vector of hex colors for plot styling.
 #' @param chart_theme ggplot2 theme object for consistent plot appearance.
 #'
-#' @return A ggplot object showing the density distribution of SHAP corrections
+#' @return ggplot object(s) showing the density distribution of corrected beta coefficients
 #' with vertical lines indicating the original coefficient value and standard error bounds.
+#'
+#' The item returned will be:
+#' \itemize{
+#'   \item single ggplot object when `varname` was a numerical variable OR a coefficient name
+#'   \item list of ggplot objects when `varname` was a categorical variable
+#' }
 #'
 #' @details The plot shows:
 #' \itemize{
 #'   \item Density curve of corrected coefficient values
 #'   \item Solid vertical line at the original GLM coefficient
 #'   \item Dashed lines at ±1 standard error from the coefficient
-#'   \item Automatic x-axis limits based on SHAP quantiles and standard errors
+#'   \item Automatic x-axis limits that cut off the highest and lowest q %. If you want axis unaltered, set q = 0
 #' }
 #'
 #' @keywords internal
 #'
 #' @import ggplot2
-beta_correction_density <- function(
+beta_corrected_density <- function(
     varname,
     q = 0.05,
     type="kde",
     betas,
+    cat_levels,
+    reference_levels,
     wide_input_frame,
     beta_corrections,
     x_glm_model,
@@ -417,22 +428,60 @@ beta_correction_density <- function(
     chart_theme
     ) {
 
+  stopifnot(is.numeric(q), q >= 0 , q < 0.5)
+
   if (varname %in% predictor_vars_continuous) {
     vartype <- "numerical"
   } else if (varname %in% predictor_vars_categorical) {
     vartype <- "categorical"
+  } else if (varname %in% reference_levels) {
+    stop("varname is reference level. Plot cannot be produced as no beta coefficient exists for this level")
   } else if (varname %in% names(betas)){
     vartype <- "categorical_level"
   } else {
     stop("varname not found in model!")
   }
 
+  # if the variable is categorical, we will use recursion to plot each unique level and output a list instead...
+  if(vartype %in% "categorical"){
+
+    levels_to_plot <- paste0(varname, cat_levels[[varname]])  |> intersect(names(betas))
+
+    output <- purrr::map(
+      levels_to_plot,
+      function(x) {
+        beta_corrected_density(
+          varname = x,
+          q = q,
+          type = type,
+          betas = betas,
+          cat_levels = cat_levels,
+          reference_levels = reference_levels,
+          wide_input_frame = wide_input_frame,
+          beta_corrections = beta_corrections,
+          x_glm_model = x_glm_model,
+          data = data,
+          predictor_vars_continuous = predictor_vars_continuous,
+          predictor_vars_categorical = predictor_vars_categorical,
+          custom_colors = custom_colors,
+          chart_theme = chart_theme
+        )
+      }
+    ) |> stats::setNames(levels_to_plot)
+
+    return(output)
+  }
+
+  # otherwise, we perform the code for a single plot...
+
+  # if the variable is numerical, or if we are dealing with only one categorical_level, there is only 1 Beta value
   if(vartype %in% c("numerical","categorical_level")){
     stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
     beta <- betas[varname]
     shap_deviations <- beta_corrections[, varname]
   }
 
+  # remove policies that do not have the level that was specified via varname (only when varname is a variable-level combo)
   if(vartype=="categorical_level"){
     is_wanted_level <- wide_input_frame[,varname]==1
     shap_deviations <- shap_deviations[is_wanted_level]
@@ -456,10 +505,14 @@ beta_correction_density <- function(
     geom_vline(xintercept = beta, color = custom_colors[2], linewidth = 0.5) +
     geom_vline(xintercept = beta - stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
     geom_vline(xintercept = beta + stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
-    ggtitle(paste("SHAP correction density for", varname)) +
-    labs(subtitle = paste0(varname, " beta: ", round(beta, 3), ", SE: ", round(stderror, 3))) +
+    labs(
+      title = paste("Beta density after SHAP corrections for", varname),
+      subtitle = paste0(varname, " beta: ", round(beta, 3), ", SE: ±", round(stderror, 4)),
+      ) +
+    xlab("Beta Coefficients") +
     xlim(lower_bound, upper_bound) +
     chart_theme
+
 }
 
 
@@ -509,7 +562,7 @@ beta_correction_density <- function(
 #'
 #' @import ggplot2
 #' @importFrom magrittr %>%
-beta_correction_scatter <- function(varname,
+beta_corrected_scatter <- function(varname,
                                          q,
                                          color,
                                          marginal,
@@ -577,8 +630,8 @@ beta_correction_scatter <- function(varname,
         color = "red",
       ) +
       xlab("") +
-      ylab("beta correction") +
-      ggtitle(paste("SHAP corrections for", varname)) +
+      ylab("Beta Coefficients") +
+      ggtitle(paste("Betas after SHAP corrections for", varname)) +
       chart_theme
 
   }else{
@@ -593,7 +646,7 @@ beta_correction_scatter <- function(varname,
       {if(is.null(color)) . else dplyr::mutate(.,color = data[,color])} %>%
       {if(excl_outliers) dplyr::filter(., detect_outliers(shp,method = "quantile",q=0.01)) else . }
 
-    p  = after_shap |>
+    p  <- after_shap |>
       ggplot()+
       geom_point(aes(x = x,y=shp,group = color, color=color),alpha=0.4)+
       geom_smooth(aes(x = x,y=shp))+
