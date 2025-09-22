@@ -187,7 +187,7 @@ explain <- function(x, data, as_contribution = FALSE){
       chart_theme = chart_theme
     ),
 
-    overall_correction = global_c(
+    overall_correction = overall_correction(
       shap = shap,
       custom_colors = custom_colors,
       chart_theme = chart_theme
@@ -265,7 +265,7 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
   }
 
   main_frame <- data.frame(matrix(0, nrow = nrow(frame), ncol = length(all_names))) |>
-    setNames(all_names)
+    stats::setNames(all_names)
 
   df_onehot <- frame |>
     fastDummies::dummy_cols(
@@ -811,7 +811,7 @@ shap_intercept <- function(shap,
 #' @keywords internal
 #'
 #' @import ggplot2
-global_c <- function(shap, custom_colors, chart_theme) {
+overall_correction <- function(shap, custom_colors, chart_theme) {
   dt <- shap |>
     dplyr::mutate(
       total = rowSums(dplyr::across(dplyr::everything())),
