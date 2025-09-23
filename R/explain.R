@@ -108,17 +108,24 @@ explain <- function(x, data, as_contribution = FALSE){
     no_cat_toggle = no_cat_toggle
   )
 
-  # Prepare shap corrections... this converts `shap` values to the adjustments to beta values instead
-  beta_corrections <- shap_dim_helper(
+  # Prepare wide shap corrections... this converts `shap` values to wide format for categoricals
+  shap_wide <- shap_dim_helper(
     shap_raw = shap,
     wide_input_frame = wide_input_frame,
-    reference_levels = reference_levels,
     cat_levels = cat_levels,
     response_var = response_var,
-    predictor_vars_continuous = predictor_vars_continuous,
-    no_cat_toggle = no_cat_toggle,
-    beta_correction = TRUE
+    no_cat_toggle = no_cat_toggle
   )
+
+  # Prepare beta corrections... this converts `shap` values be compatible with feature values
+  beta_corrections <- beta_corrections_derive(
+      shap_wide = shap_wide,
+      wide_input_frame = wide_input_frame,
+      reference_levels = reference_levels,
+      predictor_vars_continuous = predictor_vars_continuous,
+      no_cat_toggle = no_cat_toggle
+    )
+
 
   # Return explainer object with plotting functions
   list(
@@ -296,35 +303,24 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
   return(output_frame)
 }
 
-#' Compute Beta Corrections based on SHAP values
+#' Convert Shap values to Wide One-Hot Encoded Format
 #'
-#' Processes raw SHAP values to create coefficient corrections. The bias is adjusted to account for
-#' zero values in continuous variables and reference levels in categorical variables.
+#' Transforms categorical variables in a data frame into one-hot encoded format
 #'
-#' @param frame Data frame containing raw SHAP values from XGBoost.
+#' @param shap_raw Data frame containing raw SHAP values from XGBoost.
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
-#' @param reference_levels Character vector of reference level names for categorical variables.
 #' @param cat_levels Named list of categorical variable levels.
 #' @param response_var Character string specifying the response_var variable name.
 #' @param no_cat_toggle Logical indicating absence of categorical variables.
-#' @param beta_correction Logical, whether to apply beta corrections (default TRUE).
 #'
-#' @return A data frame with corrected SHAP values where:
-#' \itemize{
-#'   \item Categorical variables are properly aggregated by factor level
-#'   \item Continuous variables are normalized by their actual values
-#'   \item Reference level and zero-value corrections are added to the bias term
-#' }
+#' @return A data frame where SHAP values are in wide format for categorical variables.
 #'
 #' @keywords internal
 shap_dim_helper <- function(shap_raw,
                             wide_input_frame,
-                            reference_levels,
                             cat_levels,
                             response_var,
-                            predictor_vars_continuous,
-                            no_cat_toggle,
-                            beta_correction = TRUE) {
+                            no_cat_toggle) {
   if (no_cat_toggle) {
 
     shap_wide <- shap_raw |>
@@ -351,7 +347,35 @@ shap_dim_helper <- function(shap_raw,
       dplyr::mutate(bias = shap_raw$BIAS[1], .before = dplyr::everything())
   }
 
-  if (beta_correction) {
+  return(shap_wide)
+
+}
+
+
+#' Compute Beta Corrections based on SHAP values
+#'
+#' Processes raw SHAP values to create coefficient corrections. The bias is adjusted to account for
+#' zero values in continuous variables and reference levels in categorical variables.
+#'
+#' @param shap_wide Data frame containing SHAP values from XGBoost that have been converted to wide format by [shap_dim_helper()]
+#' @param wide_input_frame Wide format input data frame (one-hot encoded).
+#' @param reference_levels Character vector of reference level names for categorical variables.
+#' @param predictor_vars_continuous Character vector of numeric variables.
+#' @param no_cat_toggle Logical indicating absence of categorical variables.
+#'
+#' @return A data frame with beta corrections where:
+#' \itemize{
+#'   \item Categorical variables are properly aggregated by factor level
+#'   \item Continuous variables are normalized by their actual values
+#'   \item Reference level and zero-value corrections are added to the bias term
+#' }
+#'
+#' @keywords internal
+beta_corrections_derive <- function(shap_wide,
+                            wide_input_frame,
+                            reference_levels,
+                            predictor_vars_continuous,
+                            no_cat_toggle){
 
     shap_for_zeros <- rowSums(
       ((wide_input_frame[, predictor_vars_continuous] == 0) * 1) * shap_wide[, predictor_vars_continuous]
@@ -373,11 +397,7 @@ shap_dim_helper <- function(shap_raw,
 
     return(beta_corrections)
 
-  } else {
 
-    return(shap_wide)
-
-  }
 }
 
 #' Create Density Plot of Corrected Beta values for a Variable

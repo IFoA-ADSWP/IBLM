@@ -2,44 +2,31 @@
 % Please edit documentation in R/explain.R
 \name{shap_dim_helper}
 \alias{shap_dim_helper}
-\title{Compute Beta Corrections based on SHAP values}
+\title{Convert Shap values to Wide One-Hot Encoded Format}
 \usage{
 shap_dim_helper(
   shap_raw,
   wide_input_frame,
-  reference_levels,
   cat_levels,
   response_var,
-  predictor_vars_continuous,
-  no_cat_toggle,
-  beta_correction = TRUE
+  no_cat_toggle
 )
 }
 \arguments{
-\item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
+\item{shap_raw}{Data frame containing raw SHAP values from XGBoost.}
 
-\item{reference_levels}{Character vector of reference level names for categorical variables.}
+\item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
 
 \item{cat_levels}{Named list of categorical variable levels.}
 
 \item{response_var}{Character string specifying the response_var variable name.}
 
 \item{no_cat_toggle}{Logical indicating absence of categorical variables.}
-
-\item{beta_correction}{Logical, whether to apply beta corrections (default TRUE).}
-
-\item{frame}{Data frame containing raw SHAP values from XGBoost.}
 }
 \value{
-A data frame with corrected SHAP values where:
-\itemize{
-  \item Categorical variables are properly aggregated by factor level
-  \item Continuous variables are normalized by their actual values
-  \item Reference level and zero-value corrections are added to the bias term
-}
+A data frame where SHAP values are in wide format for categorical variables.
 }
 \description{
-Processes raw SHAP values to create coefficient corrections. The bias is adjusted to account for
-zero values in continuous variables and reference levels in categorical variables.
+Transforms categorical variables in a data frame into one-hot encoded format
 }
 \keyword{internal}
