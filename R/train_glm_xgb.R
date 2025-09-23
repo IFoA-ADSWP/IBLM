@@ -34,13 +34,13 @@
 #'   \item base_score: 1
 #' }
 #'
-#' #' For "gamma" family the link function is 'log' and XGBoost is configured with:
+#' For "gamma" family the link function is 'log' and XGBoost is configured with:
 #' \itemize{
 #'   \item objective: "reg:gamma"
 #'   \item base_score: 1
 #' }
 #'
-#' #' For "gaussian" family the link function is 'identity' and XGBoost is configured with:
+#' For "gaussian" family the link function is 'identity' and XGBoost is configured with:
 #' \itemize{
 #'   \item objective: "reg:squarederror"
 #'   \item base_score: 0
