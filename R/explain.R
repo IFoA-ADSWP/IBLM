@@ -656,9 +656,11 @@ beta_corrected_scatter <- function(varname,
         aes(x = x, y = y),
         color = "red",
       ) +
-      xlab("") +
-      ylab("Beta Coefficients") +
-      ggtitle(paste("Betas after SHAP corrections for", varname)) +
+      labs(
+        title = paste("Beta Coefficients after SHAP corrections for", varname),
+        x = varname,
+        y = "Beta Coefficients"
+      )+
       chart_theme
 
   }else{
@@ -678,10 +680,12 @@ beta_corrected_scatter <- function(varname,
       geom_point(aes(x = x,y=shp,group = color, color=color),alpha=0.4)+
       geom_smooth(aes(x = x,y=shp))+
       {if(color_vartype=="numerical") scale_color_gradientn(name = color,colors = custom_colors[c(2,1)])}+
-      xlab(varname)+
-      ylab("beta correction")+
-      ggtitle(paste("SHAP corrections for", varname)) +
-      labs(subtitle = paste0(varname, " beta: ", round(beta, 4), ", SE: ", round(stderror, 4)))+
+      labs(
+        title = paste("Beta Coefficients after SHAP corrections for", varname),
+        subtitle = paste0(varname, " beta: ", round(beta, 4), ", SE: ", round(stderror, 4)),
+        x = varname,
+        y = "Beta Coefficients"
+        )+
       geom_hline(yintercept = beta, color = custom_colors[2], size = 0.5) +
       geom_hline(yintercept = beta - stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
       geom_hline(yintercept = beta + stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
