@@ -37,8 +37,13 @@ An object of class "ens" containing:
 }
 \description{
 This function trains an ensemble model combining a Generalized Linear Model (GLM)
-with an XGBoost model. The XGBoost model is trained on the ratio of actual responses
-to GLM predictions, effectively learning the residual patterns that the GLM couldn't
+with an XGBoost model.
+
+The XGBoost model is trained on:
+- actual responses / GLM predictions, when the link function is log
+- actual responses - GLM predictions, when the link function is identity
+
+This gets XGBoost to effectively learn the residual patterns that the GLM couldn't
 capture. Optionally, GLM predictions can be used as base margins for XGBoost training.
 }
 \details{

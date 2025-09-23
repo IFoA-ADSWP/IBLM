@@ -1,9 +1,15 @@
 
 #' Train GLM-XGBoost Ensemble Model
 #'
+#' @description
 #' This function trains an ensemble model combining a Generalized Linear Model (GLM)
-#' with an XGBoost model. The XGBoost model is trained on the ratio of actual responses
-#' to GLM predictions, effectively learning the residual patterns that the GLM couldn't
+#' with an XGBoost model.
+#'
+#' The XGBoost model is trained on:
+#' - actual responses / GLM predictions, when the link function is log
+#' - actual responses - GLM predictions, when the link function is identity
+#'
+#' This gets XGBoost to effectively learn the residual patterns that the GLM couldn't
 #' capture. Optionally, GLM predictions can be used as base margins for XGBoost training.
 #'
 #' @param data A named list containing training and validation datasets. Must have
@@ -122,7 +128,7 @@ train_glm_xgb <- function(data,
 
   } else {
 
-    stop(paste0("'family' argument must be one of: 'poisson', 'gamma', 'gaussian'"))
+    stop(paste0("family was ", family, " but should be one of: poisson, gamma, gaussian"))
 
          }
 
@@ -136,16 +142,34 @@ train_glm_xgb <- function(data,
 
   # ==================== Preparing for XGB  ====================
 
+  link <- glm_family$link
+
   train$glm_preds <- unname(predict(glm_model, train$features, type="response"))
   validate$glm_preds <- unname(predict(glm_model, validate$features, type="response"))
 
-  train$targets <- train$responses / train$glm_preds
-  validate$targets <- validate$responses / validate$glm_preds
+  if(link=="log") {
+
+    train$targets <- train$responses / train$glm_preds
+    validate$targets <- validate$responses / validate$glm_preds
+    relationship <- "multiplicative"
+
+  } else if(link == "identity") {
+
+    train$targets <- train$responses - train$glm_preds
+    validate$targets <- validate$responses - validate$glm_preds
+    relationship <- "additive"
+
+  } else {
+
+    stop(paste0("link function was ",link," but should be one of: log, identity"))
+
+  }
 
   train$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(train$features), label = train$targets)
   validate$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(validate$features), label = validate$targets)
 
   # Initialize with GLM predictions if use_glm is TRUE
+  # PB NOTE: should this 'base_margin' part be deleted, as not clear to me how it would be used!
   if (use_glm && !is.null(glm_model)) {
 
     glm_predictions_train <- predict(glm_model, train$features, type="link")
@@ -171,6 +195,8 @@ train_glm_xgb <- function(data,
 
   toreturn = list(glm_model = glm_model,
                   xgb_model = xgb_model)
+
+  attr(toreturn, "relationship") <- relationship
 
   class(toreturn) <- "ens"
 
