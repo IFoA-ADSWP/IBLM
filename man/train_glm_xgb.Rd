@@ -9,27 +9,26 @@ train_glm_xgb(
   response_var,
   family = "poisson",
   use_glm = FALSE,
-  xgb_additional_params = list(nrounds = 1000, verbose = 1, early_stopping_rounds = 25)
+  xgb_additional_params = list(nrounds = 1000, verbose = 0, early_stopping_rounds = 25)
 )
 }
 \arguments{
 \item{data}{A named list containing training and validation datasets. Must have
 elements named "train" and "validate", each containing data frames with the
-same structure.}
+same structure. This item is naturally output from the function [split_into_train_validate_test()]}
 
 \item{response_var}{Character string specifying the name of the response variable
 column in the datasets. The string MUST appear in both `data$train` and `data$validate`.}
 
 \item{family}{Character string specifying the distributional family for the model.
-Currently only "poisson" is fully supported. Default is "poisson".}
+Currently only "poisson" and "gaussian" is fully supported. See details for how this impacts fitting.}
 
 \item{use_glm}{Logical indicating whether to use GLM predictions as base margins
 in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
 than zero. Default is FALSE.}
 
 \item{xgb_additional_params}{Named list of additional parameters to pass to
-\code{\link[xgboost]{xgb.train}}. Default includes nrounds = 1000, verbose = 1,
-and early_stopping_rounds = 25.}
+\code{\link[xgboost]{xgb.train()}}.}
 }
 \value{
 An object of class "ens" containing:
@@ -43,28 +42,20 @@ to GLM predictions, effectively learning the residual patterns that the GLM coul
 capture. Optionally, GLM predictions can be used as base margins for XGBoost training.
 }
 \details{
-The function works by:
-\enumerate{
-  \item Using the provided GLM model to generate predictions on training and validation sets
-  \item Computing target ratios by dividing actual responses by GLM predictions
-  \item Training an XGBoost model to predict these ratios
-  \item Optionally using GLM link predictions as base margins if \code{use_glm = TRUE}
-}
+The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family.
 
-The ensemble prediction would typically be: GLM_prediction * XGBoost_prediction
+Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `xgb_additional_params`
 
-For Poisson family, XGBoost is configured with:
+For "poisson" family, XGBoost is configured with:
 \itemize{
   \item objective: "count:poisson"
-  \item eval_metric: "poisson-nloglik"
   \item base_score: 1
 }
-}
-\note{
+
+#' For "gaussian" family, XGBoost is configured with:
 \itemize{
-  \item The function expects `data$train` and `data$validate` to have identical column structures
-  \item GLM predictions should not be zero to avoid division by zero errors
-  \item Currently only supports Poisson family; other families will use default XGBoost settings
+  \item objective: "reg:squarederror"
+  \item base_score: 0
 }
 }
 \examples{
@@ -76,5 +67,5 @@ ensemble_model <- train_glm_xgb(data, response_var = "ClaimRate")
 
 }
 \seealso{
-\code{\link[stats]{glm}}, \code{\link[xgboost]{xgb.train}}
+\code{\link[stats]{glm()}}, \code{\link[xgboost]{xgb.train()}}
 }
