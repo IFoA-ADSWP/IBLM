@@ -187,15 +187,22 @@ explain <- function(x, data, as_contribution = FALSE){
       chart_theme = chart_theme
     ),
 
-    overall_correction = overall_correction(
-      shap = shap,
-      custom_colors = custom_colors,
-      chart_theme = chart_theme
-    ),
+    overall_correction = function(
+      transform_x_scale_by_link= TRUE
+      ) {
+      overall_correction(
+        transform_x_scale_by_link = transform_x_scale_by_link,
+        shap = shap,
+        custom_colors = custom_colors,
+        chart_theme = chart_theme,
+        family = x$glm_model$family,
+        relationship = attr(x, "relationship")
+        )
+      },
 
     input_frame = data,
 
-    beta_corrections = beta_corrections,  # beta corrections
+    beta_corrections = beta_corrections,
 
     raw_shap = shap,
 
@@ -781,50 +788,67 @@ shap_intercept <- function(shap,
               boxplot = boxplot))
 }
 
-#' Generate Global SHAP Correction Distribution Plot
+#' Generate Σ SHAP Correction Distribution Plot
 #'
-#' Creates a visualization showing the overall distribution of multiplicative
-#' corrections that SHAP values apply to GLM predictions.
+#' Creates a visualization showing for each record the overall booster component (either multiplicative or additive)
 #'
+#' @param transform_x_scale_by_link TRUE/FALSE, whether to transform the x axis by the link function
 #' @param shap Data frame containing raw SHAP values including BIAS term.
 #' @param custom_colors Character vector of hex colors for plot styling.
 #' @param chart_theme ggplot2 theme object for consistent plot appearance.
+#' @param family object of class "family" containing the link information for the fitted GLM. The can be found in `glm_model$family`
+#' @param relationship string, should explain what the ensemble relationship is, i.e. "multiplicative" or "additive"
 #'
-#' @return A ggplot object showing:
-#' \itemize{
-#'   \item Density distribution of exponentiated total SHAP corrections
-#'   \item Vertical reference line at 1.0 (no correction)
-#'   \item Mean correction value in the subtitle
-#' }
-#'
-#' @details This function:
-#' \itemize{
-#'   \item Sums all SHAP values (including bias) for each observation
-#'   \item Exponentiates the totals to show multiplicative corrections
-#'   \item Visualizes how much the XGBoost model corrections deviate from GLM predictions
-#'   \item Values > 1 indicate upward corrections, < 1 indicate downward corrections
-#' }
-#'
-#' This global view helps assess the overall magnitude and direction of
-#' model corrections across the entire dataset.
+#' @return A ggplot object showing density of total booster values
 #'
 #' @keywords internal
 #'
 #' @import ggplot2
-overall_correction <- function(shap, custom_colors, chart_theme) {
+overall_correction <- function(transform_x_scale_by_link = TRUE, shap, custom_colors, chart_theme, family, relationship) {
+
   dt <- shap |>
     dplyr::mutate(
       total = rowSums(dplyr::across(dplyr::everything())),
-      total_exp = exp(total)
+      total_exp = exp(total),
+      total_invlink = family$linkinv(total)
     )
 
+  out_the_box_transformations <- c("asn", "atanh", "boxcox", "date", "exp", "hms", "identity", "log", "log10", "log1p", "log2", "logit", "modulus", "probability", "probit", "pseudo_log", "reciprocal", "reverse", "sqrt", "time")
+
+
+  if (!transform_x_scale_by_link | family$link == "identity") {
+
+    scale_x_link <- list()
+
+  } else if (family$link %in% out_the_box_transformations) {
+
+    scale_x_link <- list(
+      labs(caption = paste0("**Please note scale is tranformed by ", family$link, " function")),
+      scale_x_continuous(transform = family$link)
+    )
+
+  } else {
+
+    scale_x_link <- list(
+      labs(caption = paste0("**Please note scale is tranformed by ", family$link, " function")),
+      scale_x_continuous(transform = scales::new_transform(
+        "link",
+        transform = family$linkfun,
+        inverse = family$linkinv
+      ))
+    )
+
+  }
+
   dt |>
-    ggplot(aes(x = total_exp)) +
+    ggplot(aes(x = total_invlink)) +
     geom_density() +
-    geom_vline(xintercept = 1) +
-    ggtitle(
-      "Distribution of corrections to GLM prediction",
-      subtitle = paste0("mean correction: ", round(mean(dt$total_exp), 3))
-    ) +
-    chart_theme
+    geom_vline(xintercept = family$linkinv(0)) +
+    chart_theme +
+    scale_x_link +
+    labs(
+      title = paste0("Distribution of ", relationship, " corrections to GLM prediction"),
+      subtitle = paste0("mean correction: ", round(mean(dt$total_invlink), 3)),
+      x = paste0(relationship, " correction") |> tools::toTitleCase()
+      )
 }

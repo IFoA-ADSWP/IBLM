@@ -2,39 +2,34 @@
 % Please edit documentation in R/explain.R
 \name{overall_correction}
 \alias{overall_correction}
-\title{Generate Global SHAP Correction Distribution Plot}
+\title{Generate Σ SHAP Correction Distribution Plot}
 \usage{
-overall_correction(shap, custom_colors, chart_theme)
+overall_correction(
+  transform_x_scale_by_link = TRUE,
+  shap,
+  custom_colors,
+  chart_theme,
+  family,
+  relationship
+)
 }
 \arguments{
+\item{transform_x_scale_by_link}{TRUE/FALSE, whether to transform the x axis by the link function}
+
 \item{shap}{Data frame containing raw SHAP values including BIAS term.}
 
 \item{custom_colors}{Character vector of hex colors for plot styling.}
 
 \item{chart_theme}{ggplot2 theme object for consistent plot appearance.}
+
+\item{family}{object of class "family" containing the link information for the fitted GLM. The can be found in `glm_model$family`}
+
+\item{relationship}{string, should explain what the ensemble relationship is, i.e. "multiplicative" or "additive"}
 }
 \value{
-A ggplot object showing:
-\itemize{
-  \item Density distribution of exponentiated total SHAP corrections
-  \item Vertical reference line at 1.0 (no correction)
-  \item Mean correction value in the subtitle
-}
+A ggplot object showing density of total booster values
 }
 \description{
-Creates a visualization showing the overall distribution of multiplicative
-corrections that SHAP values apply to GLM predictions.
-}
-\details{
-This function:
-\itemize{
-  \item Sums all SHAP values (including bias) for each observation
-  \item Exponentiates the totals to show multiplicative corrections
-  \item Visualizes how much the XGBoost model corrections deviate from GLM predictions
-  \item Values > 1 indicate upward corrections, < 1 indicate downward corrections
-}
-
-This global view helps assess the overall magnitude and direction of
-model corrections across the entire dataset.
+Creates a visualization showing for each record the overall booster component (either multiplicative or additive)
 }
 \keyword{internal}
