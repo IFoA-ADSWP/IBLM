@@ -21,7 +21,7 @@ same structure. This item is naturally output from the function [split_into_trai
 column in the datasets. The string MUST appear in both `data$train` and `data$validate`.}
 
 \item{family}{Character string specifying the distributional family for the model.
-Currently only "poisson" and "gaussian" is fully supported. See details for how this impacts fitting.}
+Currently only "poisson", "gamma" and "gaussian" is fully supported. See details for how this impacts fitting.}
 
 \item{use_glm}{Logical indicating whether to use GLM predictions as base margins
 in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
@@ -46,13 +46,19 @@ The `family` argument will be fed into the GLM fitting. Default values for the X
 
 Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `xgb_additional_params`
 
-For "poisson" family, XGBoost is configured with:
+For "poisson" family the link function is 'log' and XGBoost is configured with:
 \itemize{
   \item objective: "count:poisson"
   \item base_score: 1
 }
 
-#' For "gaussian" family, XGBoost is configured with:
+#' For "gamma" family the link function is 'log' and XGBoost is configured with:
+\itemize{
+  \item objective: "reg:gamma"
+  \item base_score: 1
+}
+
+#' For "gaussian" family the link function is 'identity' and XGBoost is configured with:
 \itemize{
   \item objective: "reg:squarederror"
   \item base_score: 0

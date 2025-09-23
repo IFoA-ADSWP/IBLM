@@ -12,7 +12,7 @@
 #' @param response_var Character string specifying the name of the response variable
 #'   column in the datasets. The string MUST appear in both `data$train` and `data$validate`.
 #' @param family Character string specifying the distributional family for the model.
-#'   Currently only "poisson" and "gaussian" is fully supported. See details for how this impacts fitting.
+#'   Currently only "poisson", "gamma" and "gaussian" is fully supported. See details for how this impacts fitting.
 #' @param use_glm Logical indicating whether to use GLM predictions as base margins
 #'   in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
 #'   than zero. Default is FALSE.
@@ -28,13 +28,19 @@
 #'
 #' Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `xgb_additional_params`
 #'
-#' For "poisson" family, XGBoost is configured with:
+#' For "poisson" family the link function is 'log' and XGBoost is configured with:
 #' \itemize{
 #'   \item objective: "count:poisson"
 #'   \item base_score: 1
 #' }
 #'
-#' #' For "gaussian" family, XGBoost is configured with:
+#' #' For "gamma" family the link function is 'log' and XGBoost is configured with:
+#' \itemize{
+#'   \item objective: "reg:gamma"
+#'   \item base_score: 1
+#' }
+#'
+#' #' For "gaussian" family the link function is 'identity' and XGBoost is configured with:
 #' \itemize{
 #'   \item objective: "reg:squarederror"
 #'   \item base_score: 0
@@ -85,6 +91,8 @@ train_glm_xgb <- function(data,
   train$features <- data[['train']] |>  dplyr::select(-dplyr::all_of(response_var))
   validate$features <- data[['validate']] |>  dplyr::select(-dplyr::all_of(response_var))
 
+  # ==================== glm/xgb distribution and link choices ====================
+
   if(family == "poisson") {
 
   xgb_family_params <- list(
@@ -93,6 +101,15 @@ train_glm_xgb <- function(data,
     )
 
   glm_family <- stats::poisson()
+
+  } else if(family == "gamma") {
+
+    xgb_family_params <- list(
+      base_score = 1,
+      objective = "reg:gamma"
+    )
+
+    glm_family <- stats::Gamma(link = "log")
 
   } else if(family == "gaussian") {
 
@@ -105,7 +122,7 @@ train_glm_xgb <- function(data,
 
   } else {
 
-    stop(paste0("'family' argument must be one of: 'poisson', 'gaussian'"))
+    stop(paste0("'family' argument must be one of: 'poisson', 'gamma', 'gaussian'"))
 
          }
 
