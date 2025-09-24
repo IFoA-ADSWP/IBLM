@@ -4,26 +4,22 @@
 \alias{predict.ens}
 \title{Predict method for ensemble models}
 \usage{
-\method{predict}{ens}(model, dt, trim = NA)
+\method{predict}{ens}(model, data, trim = NA, type = "response")
 }
 \arguments{
 \item{model}{An object of class "ens" containing:
-\describe{
-  \item{glm_model}{A fitted GLM model object}
-  \item{xgb_model}{A fitted XGBoost model object}
-  \item{min_res}{Minimum residual value for trimming (when trim is used)}
-  \item{max_res}{Maximum residual value for trimming (when trim is used)}
-}}
+\itemize{
+  \item{glm_model}{ A fitted GLM model object}
+  \item{xgb_model}{ A fitted XGBoost model object}
+}
+The object must also contain the attribute "relationship" which describes how the ensemble predictions are combined}
 
-\item{dt}{A data frame or matrix containing the predictor variables for
+\item{data}{A data frame or matrix containing the predictor variables for
 which predictions are desired. Must have the same structure as the
 training data used to fit the ensemble model.}
 
-\item{trim}{Numeric value for post-hoc trimming of XGBoost predictions.
-If \code{NA} (default), no trimming is applied. When specified, applies
-both affine transformation based on learned min/max values and truncation
-to the range [max(1-trim, 0), 1+trim], followed by normalization to
-maintain unit mean.}
+\item{trim}{Numeric value for post-hoc truncating of XGBoost predictions.
+If \code{NA} (default), no trimming is applied.}
 }
 \value{
 A numeric vector of ensemble predictions computed as the element-wise
@@ -32,37 +28,33 @@ A numeric vector of ensemble predictions computed as the element-wise
 }
 \description{
 This function generates predictions from an ensemble model consisting of a GLM
-and an XGBoost model. The final prediction is computed as the product of the
-GLM response probabilities and the XGBoost predictions, with optional
-post-hoc trimming applied to the XGBoost component.
+and an XGBoost model.
 }
 \details{
 The prediction process involves the following steps:
 \enumerate{
   \item Generate GLM predictions using \code{type="response"}
   \item Generate XGBoost predictions on a DMatrix conversion of the input data
-  \item If trimming is specified:
-    \itemize{
-      \item Apply affine transformation based on model's learned min/max residuals
-      \item Truncate predictions to the specified trim range
-      \item Normalize by dividing by the mean to maintain unit average
-    }
-  \item Multiply GLM and XGBoost predictions element-wise
+  \item If trimming is specified, apply to XGBoost predictions
+  \item Multiply **or** Add the GLM and XGBoost predictions to get the ensemble predictions
 }
-
-The function includes error checking and will enter the debugger if any
-predictions are NA, NaN, or negative.
 }
 \examples{
 \dontrun{
-# Basic prediction without trimming
-predictions <- predict(ensemble_model, new_data)
+data <- freMTPL2freq |> split_into_train_validate_test()
 
-# Prediction with trimming
-trimmed_predictions <- predict(ensemble_model, new_data, trim = 0.1)
+IBLM <- train_glm_xgb(
+  data,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+predictions <- predict(IBLM, data$test)
+
+predictions
 }
 
 }
 \seealso{
-\code{\link[stats]{predict}}, \code{\link[xgboost]{predict.xgb.Booster}}
+\code{\link[stats]{predict.glm()}}, \code{\link[xgboost]{predict.xgb.Booster()}}
 }
