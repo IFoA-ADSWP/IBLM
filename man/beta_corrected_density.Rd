@@ -47,8 +47,8 @@ The plot shows:
 \itemize{
   \item Density curve of corrected coefficient values
   \item Solid vertical line at the original GLM coefficient
-  \item Dashed lines at ±1 standard error from the coefficient
-  \item Automatic x-axis limits that cut off the highest and lowest q %. If you want axis unaltered, set q = 0
+  \item Dashed lines at plus/minus 1 standard error from the coefficient
+  \item Automatic x-axis limits that cut off the highest and lowest q pct. If you want axis unaltered, set q = 0
 }
 }
 \keyword{internal}

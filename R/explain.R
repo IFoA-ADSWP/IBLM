@@ -446,8 +446,8 @@ beta_corrections_derive <- function(shap_wide,
 #' \itemize{
 #'   \item Density curve of corrected coefficient values
 #'   \item Solid vertical line at the original GLM coefficient
-#'   \item Dashed lines at ±1 standard error from the coefficient
-#'   \item Automatic x-axis limits that cut off the highest and lowest q %. If you want axis unaltered, set q = 0
+#'   \item Dashed lines at plus/minus 1 standard error from the coefficient
+#'   \item Automatic x-axis limits that cut off the highest and lowest q pct. If you want axis unaltered, set q = 0
 #' }
 #'
 #' @keywords internal
@@ -547,7 +547,7 @@ beta_corrected_density <- function(
     geom_vline(xintercept = beta + stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
     labs(
       title = paste("Beta density after SHAP corrections for", varname),
-      subtitle = paste0(varname, " beta: ", round(beta, 3), ", SE: ±", round(stderror, 4)),
+      subtitle = paste0(varname, " beta: ", round(beta, 3), ", SE: +/-", round(stderror, 4)),
       ) +
     xlab("Beta Coefficients") +
     xlim(lower_bound, upper_bound) +
