@@ -11,17 +11,17 @@ beta_corrected_scatter(
   marginal,
   excl_outliers,
   betas,
-  cat_levels,
+  levels_all_cat,
   wide_input_frame,
   beta_corrections,
   data,
   response_var,
   predictor_vars_categorical,
   predictor_vars_continuous,
-  reference_levels,
+  coef_names_reference_cat,
   custom_colors,
   chart_theme,
-  all_names,
+  coef_names_all,
   x
 )
 }
@@ -40,7 +40,7 @@ Must be present in the model. Currently not supported for categorical variables.
 
 \item{betas}{Named numeric vector. Model coefficients/betas from fitted model.}
 
-\item{cat_levels}{Named list. Categorical variable levels.}
+\item{levels_all_cat}{Named list. Categorical variable levels.}
 
 \item{wide_input_frame}{Data frame. Wide format input data used in model fitting.}
 
@@ -50,13 +50,13 @@ Must be present in the model. Currently not supported for categorical variables.
 
 \item{response_var}{Character. Name of response_var/response variable.}
 
-\item{reference_levels}{Character vector. Reference levels for categorical variables.}
+\item{coef_names_reference_cat}{Character vector. Reference levels for categorical variables.}
 
 \item{custom_colors}{Character vector. Custom color palette for plots.}
 
 \item{chart_theme}{ggplot2 theme object. Theme to apply to the plot.}
 
-\item{all_names}{Character vector. All variable names from the model.}
+\item{coef_names_all}{Character vector. All variable names from the model.}
 
 \item{x}{Model object containing the fitted GLM model (used for standard errors).}
 }

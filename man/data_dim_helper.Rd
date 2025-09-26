@@ -6,8 +6,8 @@
 \usage{
 data_dim_helper(
   frame,
-  all_names,
-  cat_levels,
+  coef_names_all,
+  levels_all_cat,
   response_var,
   no_cat_toggle,
   remove_target = TRUE
@@ -16,10 +16,10 @@ data_dim_helper(
 \arguments{
 \item{frame}{Input data frame to be transformed.}
 
-\item{all_names}{Character vector of all expected variable names including
+\item{coef_names_all}{Character vector of all expected variable names including
 categorical levels and intercept.}
 
-\item{cat_levels}{Named list where each element contains the unique levels
+\item{levels_all_cat}{Named list where each element contains the unique levels
 for each categorical variable.}
 
 \item{response_var}{Character string specifying the name of the response_var variable.}
@@ -32,7 +32,7 @@ the output (default TRUE).}
 }
 \value{
 A data frame in wide format with one-hot encoded categorical variables,
-an intercept column, and all variables ordered according to `all_names`.
+an intercept column, and all variables ordered according to `coef_names_all`.
 }
 \description{
 Transforms categorical variables in a data frame into one-hot encoded format

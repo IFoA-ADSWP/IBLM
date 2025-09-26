@@ -10,7 +10,7 @@ shap_intercept(
   data,
   response_var,
   predictor_vars_continuous,
-  reference_levels_raw,
+  levels_reference_cat,
   no_cat_toggle,
   custom_colors,
   chart_theme
@@ -27,7 +27,7 @@ shap_intercept(
 
 \item{predictor_vars_continuous}{Character vector of continuous variable names.}
 
-\item{reference_levels_raw}{Named list of reference levels for categorical variables.}
+\item{levels_reference_cat}{Named list of reference levels for categorical variables.}
 
 \item{no_cat_toggle}{Logical indicating absence of categorical variables.}
 

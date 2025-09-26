@@ -9,8 +9,8 @@ beta_corrected_density(
   q = 0.05,
   type = "kde",
   betas,
-  cat_levels,
-  reference_levels,
+  levels_all_cat,
+  coef_names_reference_cat,
   wide_input_frame,
   beta_corrections,
   x_glm_model,
@@ -31,7 +31,7 @@ beta_corrected_density(
 
 \item{betas}{Named numeric vector of GLM coefficients.}
 
-\item{cat_levels}{Names list of categorical variables, with each item a vector of the levels}
+\item{levels_all_cat}{Names list of categorical variables, with each item a vector of the levels}
 
 \item{wide_input_frame}{Wide format input data frame.}
 

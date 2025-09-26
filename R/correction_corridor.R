@@ -17,7 +17,7 @@ correction_corridor <- function(ensemble,
 
   # Generate predictions for each trim value
   df_list <- lapply(trim_vals, function(trim_val) {
-    ens_pred <- predict(
+    ens_pred <- stats::predict(
       model = ensemble,
       dt = df |>
         dplyr::select(-ClaimNb),

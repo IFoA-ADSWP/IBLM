@@ -7,7 +7,7 @@
 beta_corrections_derive(
   shap_wide,
   wide_input_frame,
-  reference_levels,
+  coef_names_reference_cat,
   predictor_vars_continuous,
   no_cat_toggle
 )
@@ -17,7 +17,7 @@ beta_corrections_derive(
 
 \item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
 
-\item{reference_levels}{Character vector of reference level names for categorical variables.}
+\item{coef_names_reference_cat}{Character vector of reference level names for categorical variables.}
 
 \item{predictor_vars_continuous}{Character vector of numeric variables.}
 

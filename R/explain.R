@@ -48,10 +48,12 @@ explain <- function(x, data, as_contribution = FALSE){
 
   # Definitions and global variables
   betas <- x$glm_model$coefficients
-  coef_names <- names(betas)
+  coef_names_glm <- names(betas)
 
   vartypes <- lapply(x$glm_model$data, typeof) |> unlist()
   varclasses <- lapply(x$glm_model$data, class) |> unlist()
+
+  # create data objects that explain variables
 
   response_var <- all.vars(x$glm_model$formula)[1]
   predictor_vars_all <- names(vartypes)
@@ -59,37 +61,43 @@ explain <- function(x, data, as_contribution = FALSE){
   predictor_vars_continuous <- predictor_vars_all |> setdiff(response_var) |> setdiff(predictor_vars_categorical)
 
   # Factor levels for categorical variables
-  cat_levels <- lapply(
+
+  levels_all_cat <- lapply(
     x$glm_model$data |> dplyr::select(dplyr::all_of(predictor_vars_categorical)),
     function(x) sort(unique(x))
   )
 
-  cat_unique_names <- lapply(
-    names(cat_levels),
-    function(x) paste0(x, cat_levels[[x]])
-  ) |> unlist()
-
-  all_names <- c("(Intercept)", predictor_vars_continuous, cat_unique_names)
-
-  reference_levels_raw <- sapply(
-    names(cat_levels),
+  levels_reference_cat <- sapply(
+    names(levels_all_cat),
     function(var) {
-      all_levels <- cat_levels[[var]]
-      present_levels <- coef_names[startsWith(coef_names, var)]
+      all_levels <- levels_all_cat[[var]]
+      present_levels <- coef_names_glm[startsWith(coef_names_glm, var)]
       present_levels_clean <- gsub(paste0("^", var), "", present_levels)
       setdiff(all_levels, present_levels_clean)
     },
     USE.NAMES = TRUE
   )
 
-  reference_levels <- setdiff(all_names, c(names(betas), response_var))
+
+
+  coef_names_all_cat <- lapply(
+    names(levels_all_cat),
+    function(x) paste0(x, levels_all_cat[[x]])
+  ) |> unlist()
+
+  coef_names_all <- c("(Intercept)", predictor_vars_continuous, coef_names_all_cat)
+
+  coef_names_reference_cat <- setdiff(coef_names_all, coef_names_glm)
+
+
+
   no_cat_toggle <- (length(predictor_vars_categorical) == 0)
 
   custom_colors <- c("#113458", "#D9AB16", "#4096C0", "#DCDCD9", "#113458","#2166AC", "#FFFFFF", "#B2182B")
   chart_theme <- chart_theme_fn(custom_colors)
 
   # Generate SHAP values
-  shap <- predict(
+  shap <- stats::predict(
     x$xgb_model,
     newdata = xgboost::xgb.DMatrix(
       data.matrix(
@@ -102,8 +110,8 @@ explain <- function(x, data, as_contribution = FALSE){
   # Prepare wide input frame... this is `data` but with categoricals converted to one-hot format
   wide_input_frame <- data_dim_helper(
     frame = data,
-    all_names = all_names,
-    cat_levels = cat_levels,
+    coef_names_all = coef_names_all,
+    levels_all_cat = levels_all_cat,
     response_var = response_var,
     no_cat_toggle = no_cat_toggle
   )
@@ -112,7 +120,7 @@ explain <- function(x, data, as_contribution = FALSE){
   shap_wide <- shap_dim_helper(
     shap_raw = shap,
     wide_input_frame = wide_input_frame,
-    cat_levels = cat_levels,
+    levels_all_cat = levels_all_cat,
     response_var = response_var,
     no_cat_toggle = no_cat_toggle
   )
@@ -121,7 +129,7 @@ explain <- function(x, data, as_contribution = FALSE){
   beta_corrections <- beta_corrections_derive(
       shap_wide = shap_wide,
       wide_input_frame = wide_input_frame,
-      reference_levels = reference_levels,
+      coef_names_reference_cat = coef_names_reference_cat,
       predictor_vars_continuous = predictor_vars_continuous,
       no_cat_toggle = no_cat_toggle
     )
@@ -144,17 +152,17 @@ explain <- function(x, data, as_contribution = FALSE){
           marginal = marginal,
           excl_outliers = excl_outliers,
           betas = betas,
-          cat_levels = cat_levels,
+          levels_all_cat = levels_all_cat,
           wide_input_frame = wide_input_frame,
           beta_corrections = beta_corrections,
           data = data,
           response_var = response_var,
           predictor_vars_categorical = predictor_vars_categorical,
           predictor_vars_continuous = predictor_vars_continuous,
-          reference_levels = reference_levels,
+          coef_names_reference_cat = coef_names_reference_cat,
           custom_colors = custom_colors,
           chart_theme = chart_theme,
-          all_names = all_names,
+          coef_names_all = coef_names_all,
           x = x
         )
       },
@@ -169,8 +177,8 @@ explain <- function(x, data, as_contribution = FALSE){
           q=q,
           type=type,
           betas = betas,
-          cat_levels = cat_levels,
-          reference_levels = reference_levels,
+          levels_all_cat = levels_all_cat,
+          coef_names_reference_cat = coef_names_reference_cat,
           wide_input_frame = wide_input_frame,
           beta_corrections = beta_corrections,
           x_glm_model = x$glm_model,
@@ -188,7 +196,7 @@ explain <- function(x, data, as_contribution = FALSE){
       data = data,
       response_var = response_var,
       predictor_vars_continuous = predictor_vars_continuous,
-      reference_levels_raw = reference_levels_raw,
+      levels_reference_cat = levels_reference_cat,
       no_cat_toggle = no_cat_toggle,
       custom_colors = custom_colors,
       chart_theme = chart_theme
@@ -211,11 +219,11 @@ explain <- function(x, data, as_contribution = FALSE){
 
     beta_corrections = beta_corrections,
 
-    raw_shap = shap,
+    shap = shap,
 
     betas = betas,
 
-    allnames = names(betas)[-1]
+    allnames = coef_names_glm |> setdiff("(Intercept)")
   )
 }
 
@@ -258,9 +266,9 @@ chart_theme_fn <- function(custom_colors) {
 #' Transforms categorical variables in a data frame into one-hot encoded format
 #'
 #' @param frame Input data frame to be transformed.
-#' @param all_names Character vector of all expected variable names including
+#' @param coef_names_all Character vector of all expected variable names including
 #'   categorical levels and intercept.
-#' @param cat_levels Named list where each element contains the unique levels
+#' @param levels_all_cat Named list where each element contains the unique levels
 #'   for each categorical variable.
 #' @param response_var Character string specifying the name of the response_var variable.
 #' @param no_cat_toggle Logical indicating whether there are any categorical
@@ -269,21 +277,21 @@ chart_theme_fn <- function(custom_colors) {
 #'   the output (default TRUE).
 #'
 #' @return A data frame in wide format with one-hot encoded categorical variables,
-#' an intercept column, and all variables ordered according to `all_names`.
+#' an intercept column, and all variables ordered according to `coef_names_all`.
 #'
 #'
 #' @keywords internal
-data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_toggle, remove_target = TRUE) {
+data_dim_helper <- function(frame, coef_names_all, levels_all_cat, response_var, no_cat_toggle, remove_target = TRUE) {
   if (no_cat_toggle) {
     return(frame)
   }
 
-  main_frame <- data.frame(matrix(0, nrow = nrow(frame), ncol = length(all_names))) |>
-    stats::setNames(all_names)
+  main_frame <- data.frame(matrix(0, nrow = nrow(frame), ncol = length(coef_names_all))) |>
+    stats::setNames(coef_names_all)
 
   df_onehot <- frame |>
     fastDummies::dummy_cols(
-      select_columns = names(cat_levels),
+      select_columns = names(levels_all_cat),
       remove_first_dummy = FALSE,
       remove_selected_columns = TRUE
     ) |>
@@ -291,10 +299,10 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
 
   output_frame <- cbind(
     df_onehot,
-    main_frame[, setdiff(all_names, colnames(df_onehot))]
+    main_frame[, setdiff(coef_names_all, colnames(df_onehot))]
   ) |>
     dplyr::mutate("(Intercept)" = 1) |>
-    dplyr::select(dplyr::all_of(all_names))
+    dplyr::select(dplyr::all_of(coef_names_all))
 
   if (remove_target) {
     output_frame <- output_frame |> dplyr::select(-dplyr::any_of(response_var))
@@ -309,7 +317,7 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
 #'
 #' @param shap_raw Data frame containing raw SHAP values from XGBoost.
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
-#' @param cat_levels Named list of categorical variable levels.
+#' @param levels_all_cat Named list of categorical variable levels.
 #' @param response_var Character string specifying the response_var variable name.
 #' @param no_cat_toggle Logical indicating absence of categorical variables.
 #'
@@ -318,7 +326,7 @@ data_dim_helper <- function(frame, all_names, cat_levels, response_var, no_cat_t
 #' @keywords internal
 shap_dim_helper <- function(shap_raw,
                             wide_input_frame,
-                            cat_levels,
+                            levels_all_cat,
                             response_var,
                             no_cat_toggle) {
   if (no_cat_toggle) {
@@ -330,8 +338,8 @@ shap_dim_helper <- function(shap_raw,
 
     wide_input_frame <- wide_input_frame |> dplyr::select(-dplyr::any_of(c("(Intercept)", response_var)))
 
-    cat_frame <- lapply(names(cat_levels), function(x) {
-      lvl <- cat_levels[[x]]
+    cat_frame <- lapply(names(levels_all_cat), function(x) {
+      lvl <- levels_all_cat[[x]]
       mask <- wide_input_frame |>
         dplyr::select(dplyr::all_of(paste0(x, lvl))) |>
         data.matrix()
@@ -359,7 +367,7 @@ shap_dim_helper <- function(shap_raw,
 #'
 #' @param shap_wide Data frame containing SHAP values from XGBoost that have been converted to wide format by [shap_dim_helper()]
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
-#' @param reference_levels Character vector of reference level names for categorical variables.
+#' @param coef_names_reference_cat Character vector of reference level names for categorical variables.
 #' @param predictor_vars_continuous Character vector of numeric variables.
 #' @param no_cat_toggle Logical indicating absence of categorical variables.
 #'
@@ -373,7 +381,7 @@ shap_dim_helper <- function(shap_raw,
 #' @keywords internal
 beta_corrections_derive <- function(shap_wide,
                             wide_input_frame,
-                            reference_levels,
+                            coef_names_reference_cat,
                             predictor_vars_continuous,
                             no_cat_toggle){
 
@@ -384,7 +392,7 @@ beta_corrections_derive <- function(shap_wide,
     shap_for_cat_ref <- ifelse(
       no_cat_toggle,
       0,
-      rowSums(shap_wide[,reference_levels])
+      rowSums(shap_wide[,coef_names_reference_cat])
       )
 
     beta_corrections <- shap_wide
@@ -410,7 +418,7 @@ beta_corrections_derive <- function(shap_wide,
 #' (i.e. value of 0.05 will only show shaps within 5% --> 95% quantile range for plot)
 #' @param type Character string, must be "kde" or "hist"
 #' @param betas Named numeric vector of GLM coefficients.
-#' @param cat_levels Names list of categorical variables, with each item a vector of the levels
+#' @param levels_all_cat Names list of categorical variables, with each item a vector of the levels
 #' @param wide_input_frame Wide format input data frame.
 #' @param beta_corrections Data frame containing SHAP corrections.
 #' @param x_glm_model The fitted GLM model object.
@@ -443,8 +451,8 @@ beta_corrected_density <- function(
     q = 0.05,
     type="kde",
     betas,
-    cat_levels,
-    reference_levels,
+    levels_all_cat,
+    coef_names_reference_cat,
     wide_input_frame,
     beta_corrections,
     x_glm_model,
@@ -461,7 +469,7 @@ beta_corrected_density <- function(
     vartype <- "numerical"
   } else if (varname %in% predictor_vars_categorical) {
     vartype <- "categorical"
-  } else if (varname %in% reference_levels) {
+  } else if (varname %in% coef_names_reference_cat) {
     stop("varname is reference level. Plot cannot be produced as no beta coefficient exists for this level")
   } else if (varname %in% names(betas)){
     vartype <- "categorical_level"
@@ -472,7 +480,7 @@ beta_corrected_density <- function(
   # if the variable is categorical, we will use recursion to plot each unique level and output a list instead...
   if(vartype %in% "categorical"){
 
-    levels_to_plot <- paste0(varname, cat_levels[[varname]])  |> intersect(names(betas))
+    levels_to_plot <- paste0(varname, levels_all_cat[[varname]])  |> intersect(names(betas))
 
     output <- purrr::map(
       levels_to_plot,
@@ -482,8 +490,8 @@ beta_corrected_density <- function(
           q = q,
           type = type,
           betas = betas,
-          cat_levels = cat_levels,
-          reference_levels = reference_levels,
+          levels_all_cat = levels_all_cat,
+          coef_names_reference_cat = coef_names_reference_cat,
           wide_input_frame = wide_input_frame,
           beta_corrections = beta_corrections,
           x_glm_model = x_glm_model,
@@ -558,15 +566,15 @@ beta_corrected_density <- function(
 #' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
 #' @param excl_outliers Logical. Whether to exclude outliers based on quantile method.
 #' @param betas Named numeric vector. Model coefficients/betas from fitted model.
-#' @param cat_levels Named list. Categorical variable levels.
+#' @param levels_all_cat Named list. Categorical variable levels.
 #' @param wide_input_frame Data frame. Wide format input data used in model fitting.
 #' @param beta_corrections Data frame. Wide format SHAP values corresponding to input data.
 #' @param data Data frame. Original dataset containing variables for coloring.
 #' @param response_var Character. Name of response_var/response variable.
-#' @param reference_levels Character vector. Reference levels for categorical variables.
+#' @param coef_names_reference_cat Character vector. Reference levels for categorical variables.
 #' @param custom_colors Character vector. Custom color palette for plots.
 #' @param chart_theme ggplot2 theme object. Theme to apply to the plot.
-#' @param all_names Character vector. All variable names from the model.
+#' @param coef_names_all Character vector. All variable names from the model.
 #' @param x Model object containing the fitted GLM model (used for standard errors).
 #'
 #' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
@@ -595,17 +603,17 @@ beta_corrected_scatter <- function(varname,
                                          marginal,
                                          excl_outliers,
                                     betas,
-                                    cat_levels,
+                                    levels_all_cat,
                                     wide_input_frame,
                                     beta_corrections,
                                     data,
                                     response_var,
                                     predictor_vars_categorical,
                                     predictor_vars_continuous,
-                                    reference_levels,
+                                    coef_names_reference_cat,
                                     custom_colors,
                                     chart_theme,
-                                    all_names,
+                                    coef_names_all,
                                     x)  {
 
   # TODO: warning or error if reference level passed as varname
@@ -628,8 +636,8 @@ beta_corrected_scatter <- function(varname,
   # is reference level (no glm beta)
   if(vartype=="categorical"){
 
-    matched_names <-  sort(all_names[grep(varname, all_names)]) # potential risk of fuzzy matching if similar reference variable names
-    reference_level <- reference_levels[grep(varname, reference_levels)]
+    matched_names <-  sort(coef_names_all[grep(varname, coef_names_all)]) # potential risk of fuzzy matching if similar reference variable names
+    reference_level <- coef_names_reference_cat[grep(varname, coef_names_reference_cat)]
     helper_names <- matched_names[matched_names!=reference_level]
 
     x <- wide_input_frame[,matched_names]
@@ -713,7 +721,7 @@ beta_corrected_scatter <- function(varname,
 #' @param data Original input data frame.
 #' @param response_var Character string specifying response_var variable name.
 #' @param predictor_vars_continuous Character vector of continuous variable names.
-#' @param reference_levels_raw Named list of reference levels for categorical variables.
+#' @param levels_reference_cat Named list of reference levels for categorical variables.
 #' @param no_cat_toggle Logical indicating absence of categorical variables.
 #' @param custom_colors Character vector of hex colors for plot styling.
 #' @param chart_theme ggplot2 theme object for consistent plot appearance.
@@ -740,7 +748,7 @@ shap_intercept <- function(shap,
                            data,
                            response_var,
                            predictor_vars_continuous,
-                           reference_levels_raw,
+                           levels_reference_cat,
                            no_cat_toggle,
                            custom_colors,
                            chart_theme) {
@@ -758,8 +766,8 @@ shap_intercept <- function(shap,
       dplyr::mutate(
         dplyr::across(dplyr::all_of(predictor_vars_continuous), ~ as.integer(. == 0)),
         dplyr::across(
-          dplyr::all_of(names(reference_levels_raw)),
-          ~ as.integer(. == reference_levels_raw[dplyr::cur_column()])
+          dplyr::all_of(names(levels_reference_cat)),
+          ~ as.integer(. == levels_reference_cat[dplyr::cur_column()])
         )
       )
   }

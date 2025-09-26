@@ -7,7 +7,7 @@
 shap_dim_helper(
   shap_raw,
   wide_input_frame,
-  cat_levels,
+  levels_all_cat,
   response_var,
   no_cat_toggle
 )
@@ -17,7 +17,7 @@ shap_dim_helper(
 
 \item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
 
-\item{cat_levels}{Named list of categorical variable levels.}
+\item{levels_all_cat}{Named list of categorical variable levels.}
 
 \item{response_var}{Character string specifying the response_var variable name.}
 
