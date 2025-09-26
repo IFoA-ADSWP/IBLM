@@ -77,13 +77,15 @@ For "gaussian" family the link function is 'identity' and XGBoost is configured 
 }
 }
 \examples{
+\dontrun{
 library(IBLM)
 
 data <- split_into_train_validate_test(freMTPL2freq)
 
 ensemble_model <- train_glm_xgb(data, response_var = "ClaimRate")
+}
 
 }
 \seealso{
-\code{\link[stats]{glm()}}, \code{\link[xgboost]{xgb.train()}}
+\link[stats]{glm}, \link[xgboost]{xgb.train}
 }

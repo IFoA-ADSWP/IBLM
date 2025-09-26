@@ -13,8 +13,9 @@
 #' @param data A data frame or matrix containing the predictor variables for
 #'   which predictions are desired. Must have the same structure as the
 #'   training data used to fit the ensemble model.
-#' @param trim Numeric value for post-hoc truncating of XGBoost predictions.
-#'   If \code{NA} (default), no trimming is applied.
+#' @param trim Numeric value for post-hoc truncating of XGBoost predictions. If \code{NA} (default) then no trimming is applied.
+#' @param type string, defines the type argument used in GLM/XGBoost. Currently only "response" is supported
+#'
 #'
 #' @return A numeric vector of ensemble predictions computed as the element-wise
 #'   product of GLM response probabilities and (optionally trimmed) XGBoost
@@ -44,11 +45,11 @@
 #' predictions
 #' }
 #'
-#' @seealso \code{\link[stats]{predict.glm()}}, \code{\link[xgboost]{predict.xgb.Booster()}}
+#' @seealso \link[stats]{predict.glm}, \link[xgboost]{predict.xgb.Booster}
 #'
 #' @export
 #'
-predict.ens <- function(model, data, trim = NA, type = "response") {
+predict.ens <- function(model, data, trim = NA_real_, type = "response") {
   if (type != "response") {
     stop("only supported type currently is 'response'")
   }
@@ -59,21 +60,6 @@ predict.ens <- function(model, data, trim = NA, type = "response") {
   xgb <- stats::predict(model$xgb_model, xgboost::xgb.DMatrix(data.matrix(data)), type = type)
 
   if (!is.na(trim)) {
-    # Post hoc trimming based on learned min/max
-
-    # squish_affine does not appear to be used...
-    squish_affine <- function(x) {
-      min_x <- model$min_res
-      max_x <- model$max_res
-
-      transformed <- ifelse(
-        x < 1,
-        1 + (x - 1) * trim * (x - min_x) / (1 - min_x),
-        1 + (x - 1) * trim * (x - 1) / (max_x - 1)
-      )
-
-      return(transformed)
-    }
 
     truncate <- function(x) {
       return(
@@ -100,10 +86,6 @@ predict.ens <- function(model, data, trim = NA, type = "response") {
 
     stop(paste0("relationship attribute was not 'multiplicative' or 'additive' - unable to combine glm and xgb"))
 
-  }
-
-  if (any(is.na(toreturn) | is.nan(toreturn) | toreturn < 0)) {
-    browser()
   }
 
   return(toreturn)

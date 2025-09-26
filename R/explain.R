@@ -418,7 +418,7 @@ beta_corrections_derive <- function(shap_wide,
 #' @param varname Character string specifying the variable name OR coefficient name is accepted as well.
 #' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot (i.e. value of 0.05 will only show shaps within 5pct --> 95pct quantile range for plot)
 #' @param type Character string, must be "kde" or "hist"
-#' @param explain_objects Named list of objects passed through from \code{\link{explain()}} function. These are not meant to be populated directly. Items will include:
+#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include:
 #'   \itemize{
 #'     \item betas
 #'     \item levels_all_cat
@@ -570,7 +570,7 @@ beta_corrected_density <- function(
 #'   Must be present in the model. Currently not supported for categorical variables.
 #' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
 #' @param excl_outliers Logical. Whether to exclude outliers based on quantile method.
-#' @param explain_objects Named list of objects passed through from \code{\link{explain()}} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, custom_colors, chart_theme, coef_names_all, x
+#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, custom_colors, chart_theme, coef_names_all, x
 #'
 #' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
 #'   model coefficient line, and confidence bands. For categorical variables: boxplot
@@ -828,7 +828,7 @@ shap_intercept <- function(shap,
 #' Creates a visualization showing for each record the overall booster component (either multiplicative or additive)
 #'
 #' @param transform_x_scale_by_link TRUE/FALSE, whether to transform the x axis by the link function
-#' @param explain_objects Named list of objects passed through from \code{\link{explain()}} function. These are not meant to be populated directly. Items will include: shap, custom_colors, chart_theme, family, relationship
+#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: shap, custom_colors, chart_theme, family, relationship
 #'
 #' @return A ggplot object showing density of total booster values
 #'

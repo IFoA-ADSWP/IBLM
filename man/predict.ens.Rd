@@ -4,7 +4,7 @@
 \alias{predict.ens}
 \title{Predict method for ensemble models}
 \usage{
-\method{predict}{ens}(model, data, trim = NA, type = "response")
+\method{predict}{ens}(model, data, trim = NA_real_, type = "response")
 }
 \arguments{
 \item{model}{An object of class "ens" containing:
@@ -18,8 +18,9 @@ The object must also contain the attribute "relationship" which describes how th
 which predictions are desired. Must have the same structure as the
 training data used to fit the ensemble model.}
 
-\item{trim}{Numeric value for post-hoc truncating of XGBoost predictions.
-If \code{NA} (default), no trimming is applied.}
+\item{trim}{Numeric value for post-hoc truncating of XGBoost predictions. If \code{NA} (default) then no trimming is applied.}
+
+\item{type}{string, defines the type argument used in GLM/XGBoost. Currently only "response" is supported}
 }
 \value{
 A numeric vector of ensemble predictions computed as the element-wise
@@ -56,5 +57,5 @@ predictions
 
 }
 \seealso{
-\code{\link[stats]{predict.glm()}}, \code{\link[xgboost]{predict.xgb.Booster()}}
+\link[stats]{predict.glm}, \link[xgboost]{predict.xgb.Booster}
 }
