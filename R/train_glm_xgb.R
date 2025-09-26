@@ -18,7 +18,7 @@
 #' @param response_var Character string specifying the name of the response variable
 #'   column in the datasets. The string MUST appear in both `data$train` and `data$validate`.
 #' @param family Character string specifying the distributional family for the model.
-#'   Currently only "poisson", "gamma" and "gaussian" is fully supported. See details for how this impacts fitting.
+#'   Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
 #' @param use_glm Logical indicating whether to use GLM predictions as base margins
 #'   in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
 #'   than zero. Default is FALSE.
@@ -46,12 +46,18 @@
 #'   \item base_score: 1
 #' }
 #'
+#' For "tweedie" family the link function is 'log' (with a var.power = 1.5) and XGBoost is configured with:
+#' \itemize{
+#'   \item objective: "reg:tweedie"
+#'   \item base_score: 1
+#'   \item tweedie_variance_power = 1.5
+#' }
+#'
 #' For "gaussian" family the link function is 'identity' and XGBoost is configured with:
 #' \itemize{
 #'   \item objective: "reg:squarederror"
 #'   \item base_score: 0
 #' }
-#'
 #' @examples
 #' library(IBLM)
 #'
@@ -117,6 +123,17 @@ train_glm_xgb <- function(data,
 
     glm_family <- stats::Gamma(link = "log")
 
+  } else if(family == "tweedie") {
+
+    xgb_family_params <- list(
+      base_score = 1,
+      objective = "reg:tweedie",
+      tweedie_variance_power = 1.5
+    )
+
+    glm_family <- statmod::tweedie(var.power = 1.5, link.power = 0)
+    glm_family$link <- "log"
+
   } else if(family == "gaussian") {
 
     xgb_family_params <- list(
@@ -128,7 +145,7 @@ train_glm_xgb <- function(data,
 
   } else {
 
-    stop(paste0("family was ", family, " but should be one of: poisson, gamma, gaussian"))
+    stop(paste0("family was ", family, " but should be one of: poisson, gamma, tweedie, gaussian"))
 
          }
 

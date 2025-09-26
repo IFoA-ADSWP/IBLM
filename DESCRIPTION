@@ -22,6 +22,7 @@ Imports:
     ggplot2,
     isotree,
     scales,
+    statmod,
     stats,
     tidyr,
     xgboost
