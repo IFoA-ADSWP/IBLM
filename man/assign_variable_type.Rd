@@ -28,6 +28,6 @@ variable is not found in either list, an error is thrown.
 vars_cont <- c("age", "height", "weight")
 vars_cat <- c("gender", "group")
 
-assign_variable_type("age", vars_cont, vars_cat)
+IBLMpackage:::assign_variable_type("age", vars_cont, vars_cat)
 # Returns "numerical"
 }

@@ -27,8 +27,7 @@ Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. 
 in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
 than zero. Default is FALSE.}
 
-\item{xgb_additional_params}{Named list of additional parameters to pass to
-\code{\link[xgboost]{xgb.train()}}.}
+\item{xgb_additional_params}{Named list of additional parameters to pass to \link[xgboost]{xgb.train}}
 }
 \value{
 An object of class "ens" containing:

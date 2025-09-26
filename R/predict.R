@@ -4,12 +4,7 @@
 #' This function generates predictions from an ensemble model consisting of a GLM
 #' and an XGBoost model.
 #'
-#' @param model An object of class "ens" containing:
-#'   \itemize{
-#'     \item{glm_model}{ A fitted GLM model object}
-#'     \item{xgb_model}{ A fitted XGBoost model object}
-#'   }
-#'   The object must also contain the attribute "relationship" which describes how the ensemble predictions are combined
+#' @param model An object of class "ens", as produced by \link[IBLMpackage]{train_glm_xgb}
 #' @param data A data frame or matrix containing the predictor variables for
 #'   which predictions are desired. Must have the same structure as the
 #'   training data used to fit the ensemble model.

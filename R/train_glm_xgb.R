@@ -22,8 +22,7 @@
 #' @param use_glm Logical indicating whether to use GLM predictions as base margins
 #'   in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
 #'   than zero. Default is FALSE.
-#' @param xgb_additional_params Named list of additional parameters to pass to
-#'   \code{\link[xgboost]{xgb.train()}}.
+#' @param xgb_additional_params Named list of additional parameters to pass to \link[xgboost]{xgb.train}
 #'
 #' @return An object of class "ens" containing:
 #'   \item{glm_model}{The fitted GLM model object}
@@ -155,16 +154,16 @@ train_glm_xgb <- function(data,
 
   predictor_vars <- setdiff(names(data[['train']]), response_var)
 
-  formula <- as.formula(paste(response_var, "~", paste(predictor_vars, collapse = " + ")))
+  formula <- stats::as.formula(paste(response_var, "~", paste(predictor_vars, collapse = " + ")))
 
-  glm_model <- glm(formula, data = data[['train']], family = glm_family)
+  glm_model <- stats::glm(formula, data = data[['train']], family = glm_family)
 
   # ==================== Preparing for XGB  ====================
 
   link <- glm_family$link
 
-  train$glm_preds <- unname(predict(glm_model, train$features, type="response"))
-  validate$glm_preds <- unname(predict(glm_model, validate$features, type="response"))
+  train$glm_preds <- unname(stats::predict(glm_model, train$features, type="response"))
+  validate$glm_preds <- unname(stats::predict(glm_model, validate$features, type="response"))
 
   if(link=="log") {
 
@@ -191,10 +190,10 @@ train_glm_xgb <- function(data,
   # PB NOTE: should this 'base_margin' part be deleted, as not clear to me how it would be used!
   if (use_glm && !is.null(glm_model)) {
 
-    glm_predictions_train <- predict(glm_model, train$features, type="link")
+    glm_predictions_train <- stats::predict(glm_model, train$features, type="link")
     xgboost::setinfo(train$xgb_matrix, "base_margin", unname(glm_predictions_train))
 
-    glm_predictions_val <- predict(glm_model, validate$features, type="link")
+    glm_predictions_val <- stats::predict(glm_model, validate$features, type="link")
     xgboost::setinfo(validate$xgb_matrix, "base_margin", unname(glm_predictions_val))
 
   }
@@ -206,7 +205,7 @@ train_glm_xgb <- function(data,
     data = train$xgb_matrix,
     watchlist = list(validation = validate$xgb_matrix)
   )
-  xgb_all_params <- modifyList(xgb_core_params, xgb_additional_params)
+  xgb_all_params <- utils::modifyList(xgb_core_params, xgb_additional_params)
 
   xgb_model <- do.call(xgboost::xgb.train, xgb_all_params)
 

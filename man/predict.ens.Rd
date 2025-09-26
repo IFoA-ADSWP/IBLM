@@ -7,12 +7,7 @@
 \method{predict}{ens}(model, data, trim = NA_real_, type = "response")
 }
 \arguments{
-\item{model}{An object of class "ens" containing:
-\itemize{
-  \item{glm_model}{ A fitted GLM model object}
-  \item{xgb_model}{ A fitted XGBoost model object}
-}
-The object must also contain the attribute "relationship" which describes how the ensemble predictions are combined}
+\item{model}{An object of class "ens", as produced by \link[IBLMpackage]{train_glm_xgb}}
 
 \item{data}{A data frame or matrix containing the predictor variables for
 which predictions are desired. Must have the same structure as the

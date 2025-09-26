@@ -51,7 +51,7 @@ check_required_names <- function(df, required_names) {
 #' vars_cont <- c("age", "height", "weight")
 #' vars_cat <- c("gender", "group")
 #'
-#' assign_variable_type("age", vars_cont, vars_cat)
+#' IBLMpackage:::assign_variable_type("age", vars_cont, vars_cat)
 #' # Returns "numerical"
 assign_variable_type <- function(
     var,

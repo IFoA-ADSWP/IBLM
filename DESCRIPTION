@@ -27,4 +27,5 @@ Imports:
     statmod,
     stats,
     tidyr,
+    utils,
     xgboost

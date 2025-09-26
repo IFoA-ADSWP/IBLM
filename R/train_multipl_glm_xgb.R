@@ -61,7 +61,6 @@
 #' )
 #' }
 #'
-#' @export
 train_multipl_glm_xgb <- function(glm_model,
                                   x, # features of training data
                                   y, # actuals of training data
