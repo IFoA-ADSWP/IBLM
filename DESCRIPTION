@@ -21,6 +21,7 @@ Imports:
     ggExtra,
     ggplot2,
     isotree,
+    magrittr,
     scales,
     statmod,
     stats,
