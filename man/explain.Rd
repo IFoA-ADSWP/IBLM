@@ -4,7 +4,7 @@
 \alias{explain}
 \title{Explain GLM Model Predictions Using SHAP Values}
 \usage{
-explain(x, data, as_contribution = FALSE)
+explain(x, data)
 }
 \arguments{
 \item{x}{A list object of class 'ens'. This should be output by `train_glm_xgb()`}
@@ -12,27 +12,23 @@ explain(x, data, as_contribution = FALSE)
 \item{data}{A data frame containing the data for which explanations are desired.
 
 **This should be the "test" portion of your dataset**}
-
-\item{as_contribution}{Logical, currently unused parameter for future functionality.}
 }
 \value{
 A list containing:
 \describe{
-  \item{beta_corrected_scatter}{Function to create scatter plots showing SHAP corrections vs variable values}
-  \item{beta_corrected_density}{Function to create density plots of SHAP corrections for variables}
+  \item{beta_corrected_scatter}{Function to create scatter plots showing SHAP corrections vs variable values (see \code{\link[IBLMpackage]{beta_corrected_scatter}})}
+  \item{beta_corrected_density}{Function to create density plots of SHAP corrections for variables (see \code{\link[IBLMpackage]{beta_corrected_density}})}
   \item{shap_intercept}{List containing intercept correction visualizations}
-  \item{overall_correction}{Function to show global correction distributions}
+  \item{overall_correction}{Function to show global correction distributions (see \code{\link[IBLMpackage]{overall_correction}})}
   \item{input_frame}{Original input data frame}
   \item{beta_corrections}{Wide format SHAP corrections data frame}
-  \item{raw_shap}{Raw SHAP values from XGBoost}
+  \item{shap}{Raw SHAP values from XGBoost}
   \item{betas}{GLM model coefficients}
   \item{allnames}{Names of all model coefficients except intercept}
 }
 }
 \description{
-Creates an explainer object that generates SHAP (SHapley Additive exPlanations)
-values for GLM model predictions, providing various visualization and analysis
-functions to understand model behavior and feature contributions.
+Creates a list that explains the beta values, and their corrections, of the ensemble IBLM model
 }
 \details{
 The function processes both continuous and categorical variables, handles
