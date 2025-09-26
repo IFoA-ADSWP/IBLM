@@ -2,29 +2,14 @@
 % Please edit documentation in R/explain.R
 \name{overall_correction}
 \alias{overall_correction}
-\title{Generate Σ SHAP Correction Distribution Plot}
+\title{Generate Overall Corrections from Booster as Distribution Plot}
 \usage{
-overall_correction(
-  transform_x_scale_by_link = TRUE,
-  shap,
-  custom_colors,
-  chart_theme,
-  family,
-  relationship
-)
+overall_correction(transform_x_scale_by_link = TRUE, explain_objects)
 }
 \arguments{
 \item{transform_x_scale_by_link}{TRUE/FALSE, whether to transform the x axis by the link function}
 
-\item{shap}{Data frame containing raw SHAP values including BIAS term.}
-
-\item{custom_colors}{Character vector of hex colors for plot styling.}
-
-\item{chart_theme}{ggplot2 theme object for consistent plot appearance.}
-
-\item{family}{object of class "family" containing the link information for the fitted GLM. The can be found in `glm_model$family`}
-
-\item{relationship}{string, should explain what the ensemble relationship is, i.e. "multiplicative" or "additive"}
+\item{explain_objects}{Named list of objects passed through from \code{\link{explain()}} function. These are not meant to be populated directly. Items will include: shap, custom_colors, chart_theme, family, relationship}
 }
 \value{
 A ggplot object showing density of total booster values

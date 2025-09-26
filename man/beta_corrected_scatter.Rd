@@ -10,19 +10,7 @@ beta_corrected_scatter(
   color,
   marginal,
   excl_outliers,
-  betas,
-  levels_all_cat,
-  wide_input_frame,
-  beta_corrections,
-  data,
-  response_var,
-  predictor_vars_categorical,
-  predictor_vars_continuous,
-  coef_names_reference_cat,
-  custom_colors,
-  chart_theme,
-  coef_names_all,
-  x
+  explain_objects
 )
 }
 \arguments{
@@ -38,27 +26,7 @@ Must be present in the model. Currently not supported for categorical variables.
 
 \item{excl_outliers}{Logical. Whether to exclude outliers based on quantile method.}
 
-\item{betas}{Named numeric vector. Model coefficients/betas from fitted model.}
-
-\item{levels_all_cat}{Named list. Categorical variable levels.}
-
-\item{wide_input_frame}{Data frame. Wide format input data used in model fitting.}
-
-\item{beta_corrections}{Data frame. Wide format SHAP values corresponding to input data.}
-
-\item{data}{Data frame. Original dataset containing variables for coloring.}
-
-\item{response_var}{Character. Name of response_var/response variable.}
-
-\item{coef_names_reference_cat}{Character vector. Reference levels for categorical variables.}
-
-\item{custom_colors}{Character vector. Custom color palette for plots.}
-
-\item{chart_theme}{ggplot2 theme object. Theme to apply to the plot.}
-
-\item{coef_names_all}{Character vector. All variable names from the model.}
-
-\item{x}{Model object containing the fitted GLM model (used for standard errors).}
+\item{explain_objects}{Named list of objects passed through from \code{\link{explain()}} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, custom_colors, chart_theme, coef_names_all, x}
 }
 \value{
 A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,

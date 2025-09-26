@@ -4,46 +4,29 @@
 \alias{beta_corrected_density}
 \title{Create Density Plot of Corrected Beta values for a Variable}
 \usage{
-beta_corrected_density(
-  varname,
-  q = 0.05,
-  type = "kde",
-  betas,
-  levels_all_cat,
-  coef_names_reference_cat,
-  wide_input_frame,
-  beta_corrections,
-  x_glm_model,
-  data,
-  predictor_vars_continuous,
-  predictor_vars_categorical,
-  custom_colors,
-  chart_theme
-)
+beta_corrected_density(varname, q = 0.05, type = "kde", explain_objects)
 }
 \arguments{
 \item{varname}{Character string specifying the variable name OR coefficient name is accepted as well.}
 
-\item{q}{Number, must be between 0 and 0.5. Determines the quantile range of the plot
-(i.e. value of 0.05 will only show shaps within 5% --> 95% quantile range for plot)}
+\item{q}{Number, must be between 0 and 0.5. Determines the quantile range of the plot (i.e. value of 0.05 will only show shaps within 5pct --> 95pct quantile range for plot)}
 
 \item{type}{Character string, must be "kde" or "hist"}
 
-\item{betas}{Named numeric vector of GLM coefficients.}
-
-\item{levels_all_cat}{Names list of categorical variables, with each item a vector of the levels}
-
-\item{wide_input_frame}{Wide format input data frame.}
-
-\item{beta_corrections}{Data frame containing SHAP corrections.}
-
-\item{x_glm_model}{The fitted GLM model object.}
-
-\item{data}{Original input data frame.}
-
-\item{custom_colors}{Character vector of hex colors for plot styling.}
-
-\item{chart_theme}{ggplot2 theme object for consistent plot appearance.}
+\item{explain_objects}{Named list of objects passed through from \code{\link{explain()}} function. These are not meant to be populated directly. Items will include:
+\itemize{
+  \item betas
+  \item levels_all_cat
+  \item coef_names_reference_cat
+  \item wide_input_frame
+  \item beta_corrections
+  \item x_glm_model
+  \item data
+  \item predictor_vars_continuous
+  \item predictor_vars_categorical
+  \item custom_colors
+  \item chart_theme
+}}
 }
 \value{
 ggplot object(s) showing the density distribution of corrected beta coefficients

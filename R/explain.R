@@ -151,19 +151,21 @@ explain <- function(x, data, as_contribution = FALSE){
           color = color,
           marginal = marginal,
           excl_outliers = excl_outliers,
-          betas = betas,
-          levels_all_cat = levels_all_cat,
-          wide_input_frame = wide_input_frame,
-          beta_corrections = beta_corrections,
-          data = data,
-          response_var = response_var,
-          predictor_vars_categorical = predictor_vars_categorical,
-          predictor_vars_continuous = predictor_vars_continuous,
-          coef_names_reference_cat = coef_names_reference_cat,
-          custom_colors = custom_colors,
-          chart_theme = chart_theme,
-          coef_names_all = coef_names_all,
-          x = x
+          explain_objects = list(
+            betas = betas,
+            levels_all_cat = levels_all_cat,
+            wide_input_frame = wide_input_frame,
+            beta_corrections = beta_corrections,
+            data = data,
+            response_var = response_var,
+            predictor_vars_categorical = predictor_vars_categorical,
+            predictor_vars_continuous = predictor_vars_continuous,
+            coef_names_reference_cat = coef_names_reference_cat,
+            custom_colors = custom_colors,
+            chart_theme = chart_theme,
+            coef_names_all = coef_names_all,
+            x = x
+          )
         )
       },
 
@@ -176,17 +178,19 @@ explain <- function(x, data, as_contribution = FALSE){
           varname = varname,
           q=q,
           type=type,
-          betas = betas,
-          levels_all_cat = levels_all_cat,
-          coef_names_reference_cat = coef_names_reference_cat,
-          wide_input_frame = wide_input_frame,
-          beta_corrections = beta_corrections,
-          x_glm_model = x$glm_model,
-          data = data,
-          predictor_vars_continuous = predictor_vars_continuous,
-          predictor_vars_categorical = predictor_vars_categorical,
-          custom_colors = custom_colors,
-          chart_theme = chart_theme
+          explain_objects = list(
+            betas = betas,
+            levels_all_cat = levels_all_cat,
+            coef_names_reference_cat = coef_names_reference_cat,
+            wide_input_frame = wide_input_frame,
+            beta_corrections = beta_corrections,
+            x_glm_model = x$glm_model,
+            data = data,
+            predictor_vars_continuous = predictor_vars_continuous,
+            predictor_vars_categorical = predictor_vars_categorical,
+            custom_colors = custom_colors,
+            chart_theme = chart_theme
+          )
         )
       },
 
@@ -207,11 +211,13 @@ explain <- function(x, data, as_contribution = FALSE){
       ) {
       overall_correction(
         transform_x_scale_by_link = transform_x_scale_by_link,
-        shap = shap,
-        custom_colors = custom_colors,
-        chart_theme = chart_theme,
-        family = x$glm_model$family,
-        relationship = attr(x, "relationship")
+        explain_objects = list(
+          shap = shap,
+          custom_colors = custom_colors,
+          chart_theme = chart_theme,
+          family = x$glm_model$family,
+          relationship = attr(x, "relationship")
+        )
         )
       },
 
@@ -414,17 +420,22 @@ beta_corrections_derive <- function(shap_wide,
 #' to a GLM coefficient, along with the original Beta coefficient, and standard error bounds around it.
 #'
 #' @param varname Character string specifying the variable name OR coefficient name is accepted as well.
-#' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot
-#' (i.e. value of 0.05 will only show shaps within 5% --> 95% quantile range for plot)
+#' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot (i.e. value of 0.05 will only show shaps within 5pct --> 95pct quantile range for plot)
 #' @param type Character string, must be "kde" or "hist"
-#' @param betas Named numeric vector of GLM coefficients.
-#' @param levels_all_cat Names list of categorical variables, with each item a vector of the levels
-#' @param wide_input_frame Wide format input data frame.
-#' @param beta_corrections Data frame containing SHAP corrections.
-#' @param x_glm_model The fitted GLM model object.
-#' @param data Original input data frame.
-#' @param custom_colors Character vector of hex colors for plot styling.
-#' @param chart_theme ggplot2 theme object for consistent plot appearance.
+#' @param explain_objects Named list of objects passed through from \code{\link{explain()}} function. These are not meant to be populated directly. Items will include:
+#'   \itemize{
+#'     \item betas
+#'     \item levels_all_cat
+#'     \item coef_names_reference_cat
+#'     \item wide_input_frame
+#'     \item beta_corrections
+#'     \item x_glm_model
+#'     \item data
+#'     \item predictor_vars_continuous
+#'     \item predictor_vars_categorical
+#'     \item custom_colors
+#'     \item chart_theme
+#'   }
 #'
 #' @return ggplot object(s) showing the density distribution of corrected beta coefficients
 #' with vertical lines indicating the original coefficient value and standard error bounds.
@@ -450,18 +461,26 @@ beta_corrected_density <- function(
     varname,
     q = 0.05,
     type="kde",
-    betas,
-    levels_all_cat,
-    coef_names_reference_cat,
-    wide_input_frame,
-    beta_corrections,
-    x_glm_model,
-    data,
-    predictor_vars_continuous,
-    predictor_vars_categorical,
-    custom_colors,
-    chart_theme
+    explain_objects
     ) {
+
+  explain_object_names <- c(
+    "betas",
+    "levels_all_cat",
+    "coef_names_reference_cat",
+    "wide_input_frame",
+    "beta_corrections",
+    "x_glm_model",
+    "data",
+    "predictor_vars_continuous",
+    "predictor_vars_categorical",
+    "custom_colors",
+    "chart_theme"
+  )
+
+  check_required_names(explain_objects, explain_object_names)
+
+  list2env(explain_objects[explain_object_names], envir = as.environment(-1))
 
   stopifnot(is.numeric(q), q >= 0 , q < 0.5)
 
@@ -489,17 +508,7 @@ beta_corrected_density <- function(
           varname = x,
           q = q,
           type = type,
-          betas = betas,
-          levels_all_cat = levels_all_cat,
-          coef_names_reference_cat = coef_names_reference_cat,
-          wide_input_frame = wide_input_frame,
-          beta_corrections = beta_corrections,
-          x_glm_model = x_glm_model,
-          data = data,
-          predictor_vars_continuous = predictor_vars_continuous,
-          predictor_vars_categorical = predictor_vars_categorical,
-          custom_colors = custom_colors,
-          chart_theme = chart_theme
+          explain_objects = explain_objects
         )
       }
     ) |> stats::setNames(levels_to_plot)
@@ -565,17 +574,7 @@ beta_corrected_density <- function(
 #'   Must be present in the model. Currently not supported for categorical variables.
 #' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
 #' @param excl_outliers Logical. Whether to exclude outliers based on quantile method.
-#' @param betas Named numeric vector. Model coefficients/betas from fitted model.
-#' @param levels_all_cat Named list. Categorical variable levels.
-#' @param wide_input_frame Data frame. Wide format input data used in model fitting.
-#' @param beta_corrections Data frame. Wide format SHAP values corresponding to input data.
-#' @param data Data frame. Original dataset containing variables for coloring.
-#' @param response_var Character. Name of response_var/response variable.
-#' @param coef_names_reference_cat Character vector. Reference levels for categorical variables.
-#' @param custom_colors Character vector. Custom color palette for plots.
-#' @param chart_theme ggplot2 theme object. Theme to apply to the plot.
-#' @param coef_names_all Character vector. All variable names from the model.
-#' @param x Model object containing the fitted GLM model (used for standard errors).
+#' @param explain_objects Named list of objects passed through from \code{\link{explain()}} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, custom_colors, chart_theme, coef_names_all, x
 #'
 #' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
 #'   model coefficient line, and confidence bands. For categorical variables: boxplot
@@ -602,19 +601,27 @@ beta_corrected_scatter <- function(varname,
                                          color,
                                          marginal,
                                          excl_outliers,
-                                    betas,
-                                    levels_all_cat,
-                                    wide_input_frame,
-                                    beta_corrections,
-                                    data,
-                                    response_var,
-                                    predictor_vars_categorical,
-                                    predictor_vars_continuous,
-                                    coef_names_reference_cat,
-                                    custom_colors,
-                                    chart_theme,
-                                    coef_names_all,
-                                    x)  {
+                                   explain_objects)  {
+
+  explain_object_names <- c(
+    "betas",
+    "levels_all_cat",
+    "wide_input_frame",
+    "beta_corrections",
+    "data",
+    "response_var",
+    "predictor_vars_categorical",
+    "predictor_vars_continuous",
+    "coef_names_reference_cat",
+    "custom_colors",
+    "chart_theme",
+    "coef_names_all",
+    "x"
+  )
+
+  check_required_names(explain_objects, explain_object_names)
+
+  list2env(explain_objects[explain_object_names], envir = as.environment(-1))
 
   # TODO: warning or error if reference level passed as varname
   color_vartype <- "numerical"
@@ -820,23 +827,31 @@ shap_intercept <- function(shap,
               boxplot = boxplot))
 }
 
-#' Generate Σ SHAP Correction Distribution Plot
+#' Generate Overall Corrections from Booster as Distribution Plot
 #'
 #' Creates a visualization showing for each record the overall booster component (either multiplicative or additive)
 #'
 #' @param transform_x_scale_by_link TRUE/FALSE, whether to transform the x axis by the link function
-#' @param shap Data frame containing raw SHAP values including BIAS term.
-#' @param custom_colors Character vector of hex colors for plot styling.
-#' @param chart_theme ggplot2 theme object for consistent plot appearance.
-#' @param family object of class "family" containing the link information for the fitted GLM. The can be found in `glm_model$family`
-#' @param relationship string, should explain what the ensemble relationship is, i.e. "multiplicative" or "additive"
+#' @param explain_objects Named list of objects passed through from \code{\link{explain()}} function. These are not meant to be populated directly. Items will include: shap, custom_colors, chart_theme, family, relationship
 #'
 #' @return A ggplot object showing density of total booster values
 #'
 #' @keywords internal
 #'
 #' @import ggplot2
-overall_correction <- function(transform_x_scale_by_link = TRUE, shap, custom_colors, chart_theme, family, relationship) {
+overall_correction <- function(transform_x_scale_by_link = TRUE, explain_objects) {
+
+  explain_object_names <- c(
+    "shap",
+    "custom_colors",
+    "chart_theme",
+    "family",
+    "relationship"
+    )
+
+  check_required_names(explain_objects, explain_object_names)
+
+  list2env(explain_objects[explain_object_names], envir = as.environment(-1))
 
   dt <- shap |>
     dplyr::mutate(
