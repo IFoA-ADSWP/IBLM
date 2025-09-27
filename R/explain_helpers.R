@@ -6,15 +6,17 @@
 #' @param response_var Response variable name to exclude
 #' @param betas Named vector of GLM coefficients
 #' @param levels_all_cat Named list of categorical variable levels
+#' @param levels_reference_cat Vector of reference level for each categorical
 #' @param predictor_vars_categorical Character vector of categorical variable names
 #' @param predictor_vars_continuous Character vector of continuous variable names
 #'
 #' @return Data frame with predictor coefficients, plus a bias column
-data_beta_coeff_glm <- function(
+data_beta_coeff_glm_helper <- function(
     data,
     response_var,
     betas,
     levels_all_cat,
+    levels_reference_cat,
     predictor_vars_categorical,
     predictor_vars_continuous) {
 
@@ -66,7 +68,7 @@ data_beta_coeff_glm <- function(
 #' @param beta_corrections A data frame or matrix containing beta correction values for all variables and bias
 #'
 #' @return A data frame with beta coefficient corrections for all predictor variables plus bias term
-data_beta_coeff_shap <- function(data,
+data_beta_coeff_shap_helper <- function(data,
                                  levels_all_cat,
                                  levels_reference_cat,
                                  response_var,
