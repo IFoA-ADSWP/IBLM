@@ -7,12 +7,11 @@
 #'
 #' @param varname Character. Name of the variable to plot SHAP corrections for.
 #'   Must be present in the fitted model.
-#' @param q Numeric. Quantile threshold for outlier detection (when excl_outliers = TRUE).
+#' @param q Numeric. Quantile threshold for outlier removal. When 0 (default) the function will not remove any outliers
 #' @param color Character or NULL. Name of variable to use for point coloring.
 #'   Must be present in the model. Currently not supported for categorical variables.
 #' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
-#' @param excl_outliers Logical. Whether to exclude outliers based on quantile method.
-#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, iblm_colors, chart_theme, coef_names_all, x
+#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: data_beta_coeff, data, predictor_vars_categorical, predictor_vars_continuous, x_glm_model
 #'
 #' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
 #'   model coefficient line, and confidence bands. For categorical variables: boxplot
@@ -33,11 +32,10 @@
 #' @keywords internal
 #'
 #' @import ggplot2
-beta_corrected_scatter_alt <- function(varname = "DrivAge",
-                                   q = 0.05,
+beta_corrected_scatter <- function(varname = "DrivAge",
+                                   q = 0,
                                    color=NULL,
                                    marginal=FALSE,
-                                   excl_outliers=FALSE,
                                    explain_objects)  {
 
   explain_object_names <- c(
@@ -86,10 +84,10 @@ beta_corrected_scatter_alt <- function(varname = "DrivAge",
     plot_beta_coeff_names <- intersect(data_beta_coeff_names, glm_beta_coeff_names)
     reference_level <- setdiff(data_beta_coeff_names, plot_beta_coeff_names) |> stringr::str_replace(paste0("^", varname), "")
 
-    beta_lines_df <- data.frame(
+    beta_glm_coeff_df <- data.frame(
       x = plot_beta_coeff_names |> stringr::str_replace(paste0("^", varname), ""),
-      beta_coeff = as.numeric(glm_betas[plot_beta_coeff_names])
-    )
+      y = as.numeric(glm_betas[plot_beta_coeff_names])
+    ) |> stats::setNames(c(varname, "beta_coeff"))
 
     plot_data <- plot_data |> dplyr::filter(get(varname) != reference_level)
 
@@ -97,12 +95,15 @@ beta_corrected_scatter_alt <- function(varname = "DrivAge",
       message("'color' argument not supported when vartype=='categorical' and will be ignored")
     }
 
+    if (q>0) {
+      message("'q' values other than 0 are not supported when vartype=='categorical' and will be ignored")
+    }
+
     # Add the lines to the plot
     p <- ggplot(plot_data, aes(x = get(varname), y = beta_coeff)) +
       geom_boxplot() +
       geom_point(
-        data = beta_lines_df,
-        aes(x = x, y = beta_coeff),
+        data = beta_glm_coeff_df,
         color = "#4096C0",
       ) +
       labs(
@@ -114,14 +115,13 @@ beta_corrected_scatter_alt <- function(varname = "DrivAge",
 
   } else {
 
+    if(q>0) {
+      plot_data <- plot_data |>
+        dplyr::filter(detect_outliers(beta_coeff, method = "quantile",q=q))
+    }
+
     stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
     beta <- glm_betas[varname]
-
-    if(excl_outliers) {
-      plot_data <- plot_data |>
-        dplyr::mutate(outlier = !detect_outliers(beta_coeff, method = "quantile",q=0.01)) |>
-        dplyr::filter(!outlier)
-    }
 
     p  <- plot_data |>
       ggplot()+

@@ -52,9 +52,9 @@ explain <- function(x, data){
   # create data objects that explain variables
 
   response_var <- all.vars(x$glm_model$formula)[1]
-  predictor_vars_all <- names(vartypes)
+  predictor_vars_all <- names(vartypes) |> setdiff(response_var)
   predictor_vars_categorical <- predictor_vars_all[(!vartypes %in% c("integer", "double") | varclasses == "factor")]
-  predictor_vars_continuous <- predictor_vars_all |> setdiff(response_var) |> setdiff(predictor_vars_categorical)
+  predictor_vars_continuous <- predictor_vars_all |> setdiff(predictor_vars_categorical)
 
   # Factor levels for categorical variables
 
@@ -130,40 +130,51 @@ explain <- function(x, data){
       no_cat_toggle = no_cat_toggle
     )
 
+  # Prepare beta values after corrections
+  data_beta_coeff_glm <- data_beta_coeff_glm_helper(
+    data = data,
+    response_var = response_var,
+    betas = betas,
+    levels_all_cat = levels_all_cat,
+    levels_reference_cat = levels_reference_cat,
+    predictor_vars_categorical = predictor_vars_categorical,
+    predictor_vars_continuous = predictor_vars_continuous)
+
+  data_beta_coeff_shap <- data_beta_coeff_shap_helper(
+      data,
+     levels_all_cat,
+     levels_reference_cat,
+     response_var,
+     predictor_vars_categorical,
+     predictor_vars_continuous,
+     beta_corrections)
+
+  data_beta_coeff <- data_beta_coeff_glm + data_beta_coeff_shap
+
 
   # Return explainer object with plotting functions
   list(
 
     beta_corrected_scatter = function(
-      varname = "DrivAge",
-      q = 0.05,
-      color=NULL,
-      marginal=FALSE,
-      excl_outliers=FALSE
-      ) {
-        beta_corrected_scatter(
-          varname = varname,
-          q = q,
-          color = color,
-          marginal = marginal,
-          excl_outliers = excl_outliers,
-          explain_objects = list(
-            betas = betas,
-            levels_all_cat = levels_all_cat,
-            wide_input_frame = wide_input_frame,
-            beta_corrections = beta_corrections,
-            data = data,
-            response_var = response_var,
-            predictor_vars_categorical = predictor_vars_categorical,
-            predictor_vars_continuous = predictor_vars_continuous,
-            coef_names_reference_cat = coef_names_reference_cat,
-            custom_colors = custom_colors,
-            chart_theme = chart_theme,
-            coef_names_all = coef_names_all,
-            x = x
-          )
+    varname = "DrivAge",
+    q = 0,
+    color=NULL,
+    marginal=FALSE
+    ) {
+      beta_corrected_scatter(
+        varname = varname,
+        q = q,
+        color = color,
+        marginal = marginal,
+        explain_objects = list(
+          data_beta_coeff = data_beta_coeff,
+          data = data,
+          predictor_vars_categorical = predictor_vars_categorical,
+          predictor_vars_continuous = predictor_vars_continuous,
+          x_glm_model = x$glm_model
         )
-      },
+      )
+    },
 
     beta_corrected_density = function(
       varname = "DrivAge",
@@ -604,7 +615,7 @@ beta_corrected_density <- function(
 #'
 #' @import ggplot2
 #' @importFrom magrittr %>%
-beta_corrected_scatter <- function(varname,
+beta_corrected_scatter_deprecated <- function(varname,
                                          q,
                                          color,
                                          marginal,
