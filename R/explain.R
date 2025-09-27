@@ -476,7 +476,19 @@ beta_corrected_density <- function(
 
   check_required_names(explain_objects, explain_object_names)
 
-  list2env(explain_objects[explain_object_names], envir = as.environment(-1))
+  # list2env(explain_objects[explain_object_names], envir = as.environment(-1))
+
+  betas <- explain_objects[["betas"]]
+  levels_all_cat <- explain_objects[["levels_all_cat"]]
+  coef_names_reference_cat <- explain_objects[["coef_names_reference_cat"]]
+  wide_input_frame <- explain_objects[["wide_input_frame"]]
+  beta_corrections <- explain_objects[["beta_corrections"]]
+  x_glm_model <- explain_objects[["x_glm_model"]]
+  data <- explain_objects[["data"]]
+  predictor_vars_continuous <- explain_objects[["predictor_vars_continuous"]]
+  predictor_vars_categorical <- explain_objects[["predictor_vars_categorical"]]
+  custom_colors <- explain_objects[["custom_colors"]]
+  chart_theme <- explain_objects[["chart_theme"]]
 
   stopifnot(is.numeric(q), q >= 0 , q < 0.5)
 
@@ -617,7 +629,21 @@ beta_corrected_scatter <- function(varname,
 
   check_required_names(explain_objects, explain_object_names)
 
-  list2env(explain_objects[explain_object_names], envir = as.environment(-1))
+  # list2env(explain_objects[explain_object_names], envir = as.environment(-1))
+
+  betas <- explain_objects[["betas"]]
+  levels_all_cat <- explain_objects[["levels_all_cat"]]
+  wide_input_frame <- explain_objects[["wide_input_frame"]]
+  beta_corrections <- explain_objects[["beta_corrections"]]
+  data <- explain_objects[["data"]]
+  response_var <- explain_objects[["response_var"]]
+  predictor_vars_categorical <- explain_objects[["predictor_vars_categorical"]]
+  predictor_vars_continuous <- explain_objects[["predictor_vars_continuous"]]
+  coef_names_reference_cat <- explain_objects[["coef_names_reference_cat"]]
+  custom_colors <- explain_objects[["custom_colors"]]
+  chart_theme <- explain_objects[["chart_theme"]]
+  coef_names_all <- explain_objects[["coef_names_all"]]
+  x <- explain_objects[["x"]]
 
   # TODO: warning or error if reference level passed as varname
   color_vartype <- "numerical"
@@ -847,7 +873,12 @@ overall_correction <- function(transform_x_scale_by_link = TRUE, explain_objects
 
   check_required_names(explain_objects, explain_object_names)
 
-  list2env(explain_objects[explain_object_names], envir = as.environment(-1))
+  # list2env(explain_objects[explain_object_names], envir = as.environment(-1))
+  shap <- explain_objects[["shap"]]
+  custom_colors <- explain_objects[["custom_colors"]]
+  chart_theme <- explain_objects[["chart_theme"]]
+  family <- explain_objects[["family"]]
+  relationship <- explain_objects[["relationship"]]
 
   dt <- shap |>
     dplyr::mutate(
