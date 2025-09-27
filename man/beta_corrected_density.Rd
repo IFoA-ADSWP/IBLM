@@ -24,8 +24,6 @@ beta_corrected_density(varname, q = 0.05, type = "kde", explain_objects)
   \item data
   \item predictor_vars_continuous
   \item predictor_vars_categorical
-  \item custom_colors
-  \item chart_theme
 }}
 }
 \value{

@@ -11,9 +11,7 @@ shap_intercept(
   response_var,
   predictor_vars_continuous,
   levels_reference_cat,
-  no_cat_toggle,
-  custom_colors,
-  chart_theme
+  no_cat_toggle
 )
 }
 \arguments{
@@ -30,10 +28,6 @@ shap_intercept(
 \item{levels_reference_cat}{Named list of reference levels for categorical variables.}
 
 \item{no_cat_toggle}{Logical indicating absence of categorical variables.}
-
-\item{custom_colors}{Character vector of hex colors for plot styling.}
-
-\item{chart_theme}{ggplot2 theme object for consistent plot appearance.}
 }
 \value{
 A list containing:

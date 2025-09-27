@@ -26,7 +26,7 @@ Must be present in the model. Currently not supported for categorical variables.
 
 \item{excl_outliers}{Logical. Whether to exclude outliers based on quantile method.}
 
-\item{explain_objects}{Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, custom_colors, chart_theme, coef_names_all, x}
+\item{explain_objects}{Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, coef_names_all, x}
 }
 \value{
 A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,

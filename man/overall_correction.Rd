@@ -9,7 +9,7 @@ overall_correction(transform_x_scale_by_link = TRUE, explain_objects)
 \arguments{
 \item{transform_x_scale_by_link}{TRUE/FALSE, whether to transform the x axis by the link function}
 
-\item{explain_objects}{Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: shap, custom_colors, chart_theme, family, relationship}
+\item{explain_objects}{Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: shap, family, relationship}
 }
 \value{
 A ggplot object showing density of total booster values

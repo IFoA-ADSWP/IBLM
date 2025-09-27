@@ -85,12 +85,7 @@ explain <- function(x, data){
 
   coef_names_reference_cat <- setdiff(coef_names_all, coef_names_glm)
 
-
-
   no_cat_toggle <- (length(predictor_vars_categorical) == 0)
-
-  custom_colors <- c("#113458", "#D9AB16", "#4096C0", "#DCDCD9", "#113458","#2166AC", "#FFFFFF", "#B2182B")
-  chart_theme <- chart_theme_fn(custom_colors)
 
   # Generate SHAP values
   shap <- stats::predict(
@@ -194,9 +189,7 @@ explain <- function(x, data){
             x_glm_model = x$glm_model,
             data = data,
             predictor_vars_continuous = predictor_vars_continuous,
-            predictor_vars_categorical = predictor_vars_categorical,
-            custom_colors = custom_colors,
-            chart_theme = chart_theme
+            predictor_vars_categorical = predictor_vars_categorical
           )
         )
       },
@@ -208,9 +201,7 @@ explain <- function(x, data){
       response_var = response_var,
       predictor_vars_continuous = predictor_vars_continuous,
       levels_reference_cat = levels_reference_cat,
-      no_cat_toggle = no_cat_toggle,
-      custom_colors = custom_colors,
-      chart_theme = chart_theme
+      no_cat_toggle = no_cat_toggle
     ),
 
     overall_correction = function(
@@ -220,8 +211,6 @@ explain <- function(x, data){
         transform_x_scale_by_link = transform_x_scale_by_link,
         explain_objects = list(
           shap = shap,
-          custom_colors = custom_colors,
-          chart_theme = chart_theme,
           family = x$glm_model$family,
           relationship = attr(x, "relationship")
         )
@@ -247,32 +236,6 @@ explain <- function(x, data){
 
 # ========================= Helper functions for `explain` ========================
 
-#' Create Custom ggplot2 Theme for SHAP Visualizations
-#'
-#' Generates a custom ggplot2 theme with specific color scheme and styling
-#' optimized for SHAP explanation plots.
-#'
-#' @param custom_colors A character vector of 8 hex color codes used throughout
-#'   the plotting functions for consistent theming.
-#'
-#' @return A ggplot2 theme object that can be added to plots.
-#'
-#' @details The theme applies minimal styling with custom colors for titles,
-#' subtitles, and grid lines to maintain visual consistency across all
-#' SHAP explanation plots.
-#'
-#' @keywords internal
-#'
-#' @import ggplot2
-chart_theme_fn <- function(custom_colors) {
-  theme_minimal() +
-    theme(
-      plot.title = element_text(color = custom_colors[5], face = "bold", size = 14),
-      plot.subtitle = element_text(color = custom_colors[2], size = 12),
-      panel.grid.major = element_line(color = custom_colors[4], linewidth = 0.3),
-      panel.grid.minor = element_line(color = custom_colors[4], linewidth = 0.2)
-    )
-}
 
 #' Convert Data Frame to Wide One-Hot Encoded Format
 #'
@@ -440,8 +403,6 @@ beta_corrections_derive <- function(shap_wide,
 #'     \item data
 #'     \item predictor_vars_continuous
 #'     \item predictor_vars_categorical
-#'     \item custom_colors
-#'     \item chart_theme
 #'   }
 #'
 #' @return ggplot object(s) showing the density distribution of corrected beta coefficients
@@ -480,9 +441,7 @@ beta_corrected_density <- function(
     "x_glm_model",
     "data",
     "predictor_vars_continuous",
-    "predictor_vars_categorical",
-    "custom_colors",
-    "chart_theme"
+    "predictor_vars_categorical"
   )
 
   check_required_names(explain_objects, explain_object_names)
@@ -498,8 +457,6 @@ beta_corrected_density <- function(
   data <- explain_objects[["data"]]
   predictor_vars_continuous <- explain_objects[["predictor_vars_continuous"]]
   predictor_vars_categorical <- explain_objects[["predictor_vars_categorical"]]
-  custom_colors <- explain_objects[["custom_colors"]]
-  chart_theme <- explain_objects[["chart_theme"]]
 
   stopifnot(is.numeric(q), q >= 0 , q < 0.5)
 
@@ -555,9 +512,9 @@ beta_corrected_density <- function(
   upper_bound <- max(shap_quantiles[2], beta + stderror)
 
   if(type == "kde") {
-    geom_corrections_density <- list(geom_density(color = custom_colors[1], fill = custom_colors[4], alpha = 0.3))
+    geom_corrections_density <- list(geom_density(color = iblm_colors[1], fill = iblm_colors[4], alpha = 0.3))
     } else if(type == "hist") {
-    geom_corrections_density <- list(geom_histogram(color = custom_colors[1], fill = custom_colors[4], alpha = 0.3, bins = 100))
+    geom_corrections_density <- list(geom_histogram(color = iblm_colors[1], fill = iblm_colors[4], alpha = 0.3, bins = 100))
     } else {
   stop("type was not 'kde' or 'hist'")
       }
@@ -565,16 +522,16 @@ beta_corrected_density <- function(
   data.frame(x = beta + shap_deviations) |>
     ggplot(aes(x = x)) +
     geom_corrections_density +
-    geom_vline(xintercept = beta, color = custom_colors[2], linewidth = 0.5) +
-    geom_vline(xintercept = beta - stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
-    geom_vline(xintercept = beta + stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
+    geom_vline(xintercept = beta, color = iblm_colors[2], linewidth = 0.5) +
+    geom_vline(xintercept = beta - stderror, linetype = "dashed", color = iblm_colors[3], linewidth = 0.5) +
+    geom_vline(xintercept = beta + stderror, linetype = "dashed", color = iblm_colors[3], linewidth = 0.5) +
     labs(
       title = paste("Beta density after SHAP corrections for", varname),
       subtitle = paste0(varname, " beta: ", round(beta, 3), ", SE: +/-", round(stderror, 4)),
       ) +
     xlab("Beta Coefficients") +
     xlim(lower_bound, upper_bound) +
-    chart_theme
+    theme_iblm()
 
 }
 
@@ -593,7 +550,7 @@ beta_corrected_density <- function(
 #'   Must be present in the model. Currently not supported for categorical variables.
 #' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
 #' @param excl_outliers Logical. Whether to exclude outliers based on quantile method.
-#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, custom_colors, chart_theme, coef_names_all, x
+#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, coef_names_all, x
 #'
 #' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
 #'   model coefficient line, and confidence bands. For categorical variables: boxplot
@@ -632,8 +589,6 @@ beta_corrected_scatter_deprecated <- function(varname,
     "predictor_vars_categorical",
     "predictor_vars_continuous",
     "coef_names_reference_cat",
-    "custom_colors",
-    "chart_theme",
     "coef_names_all",
     "x"
   )
@@ -651,8 +606,6 @@ beta_corrected_scatter_deprecated <- function(varname,
   predictor_vars_categorical <- explain_objects[["predictor_vars_categorical"]]
   predictor_vars_continuous <- explain_objects[["predictor_vars_continuous"]]
   coef_names_reference_cat <- explain_objects[["coef_names_reference_cat"]]
-  custom_colors <- explain_objects[["custom_colors"]]
-  chart_theme <- explain_objects[["chart_theme"]]
   coef_names_all <- explain_objects[["coef_names_all"]]
   x <- explain_objects[["x"]]
 
@@ -709,7 +662,7 @@ beta_corrected_scatter_deprecated <- function(varname,
         x = varname,
         y = "Beta Coefficients"
       )+
-      chart_theme
+      theme_iblm()
 
   }else{
 
@@ -727,17 +680,17 @@ beta_corrected_scatter_deprecated <- function(varname,
       ggplot()+
       geom_point(aes(x = x,y=shp,group = color, color=color),alpha=0.4)+
       geom_smooth(aes(x = x,y=shp))+
-      {if(color_vartype=="numerical") scale_color_gradientn(name = color,colors = custom_colors[c(2,1)])}+
+      {if(color_vartype=="numerical") scale_color_gradientn(name = color,colors = iblm_colors[c(2,1)])}+
       labs(
         title = paste("Beta Coefficients after SHAP corrections for", varname),
         subtitle = paste0(varname, " beta: ", round(beta, 4), ", SE: ", round(stderror, 4)),
         x = varname,
         y = "Beta Coefficients"
         )+
-      geom_hline(yintercept = beta, color = custom_colors[2], size = 0.5) +
-      geom_hline(yintercept = beta - stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
-      geom_hline(yintercept = beta + stderror, linetype = "dashed", color = custom_colors[3], linewidth = 0.5) +
-      chart_theme
+      geom_hline(yintercept = beta, color = iblm_colors[2], size = 0.5) +
+      geom_hline(yintercept = beta - stderror, linetype = "dashed", color = iblm_colors[3], linewidth = 0.5) +
+      geom_hline(yintercept = beta + stderror, linetype = "dashed", color = iblm_colors[3], linewidth = 0.5) +
+      theme_iblm()
 
     if(marginal){
       p = ggExtra::ggMarginal(p,type = "density",groupColour = F, groupFill = F)
@@ -763,8 +716,6 @@ beta_corrected_scatter_deprecated <- function(varname,
 #' @param predictor_vars_continuous Character vector of continuous variable names.
 #' @param levels_reference_cat Named list of reference levels for categorical variables.
 #' @param no_cat_toggle Logical indicating absence of categorical variables.
-#' @param custom_colors Character vector of hex colors for plot styling.
-#' @param chart_theme ggplot2 theme object for consistent plot appearance.
 #'
 #' @return A list containing:
 #' \describe{
@@ -789,9 +740,7 @@ shap_intercept <- function(shap,
                            response_var,
                            predictor_vars_continuous,
                            levels_reference_cat,
-                           no_cat_toggle,
-                           custom_colors,
-                           chart_theme) {
+                           no_cat_toggle) {
   beta_0 <- x_glm_model$coefficients["(Intercept)"] |> as.numeric()
   beta_0_SE <- summary(x_glm_model)$coefficients["(Intercept)", "Std. Error"]
   baseline <- shap$BIAS[1]
@@ -821,11 +770,11 @@ shap_intercept <- function(shap,
     dplyr::mutate(total_correction = rowSums(dplyr::across(dplyr::everything())) + baseline + beta_0) |>
     ggplot(aes(x = total_correction)) +
     geom_density() +
-    geom_vline(xintercept = baseline + beta_0, color = custom_colors[2], linewidth = 0.5) +
-    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = custom_colors[1], linewidth = 0.5) +
-    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = custom_colors[1], linewidth = 0.5) +
+    geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5) +
+    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], linewidth = 0.5) +
+    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], linewidth = 0.5) +
     ggtitle("Overall intercept correction distribution") +
-    chart_theme
+    theme_iblm()
 
   intercept_shap_long <- intercept_shap |>
     tidyr::pivot_longer(cols = dplyr::everything()) |>
@@ -837,23 +786,23 @@ shap_intercept <- function(shap,
     ggplot(aes(x=value))+
     geom_density()+
     facet_wrap(~name,scales="free")+
-    geom_vline(xintercept = baseline + beta_0, color = custom_colors[2], size = 0.5)+
-    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = custom_colors[1], size = 0.5)+
-    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = custom_colors[1], size = 0.5)+
+    geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], size = 0.5)+
+    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], size = 0.5)+
+    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], size = 0.5)+
     ggtitle("Individual intercept correction distributions")+
     xlab("")+
     ylab("")+
-    chart_theme
+    theme_iblm()
 
   boxplot <- intercept_shap_long |>
     ggplot(aes(x = name,y=value))+
     geom_boxplot()+
-    geom_hline(yintercept = baseline + beta_0, color = custom_colors[2], size = 0.5)+
+    geom_hline(yintercept = baseline + beta_0, color = iblm_colors[2], size = 0.5)+
     ggtitle(paste0("Jitter chart of beta corrections for intercept"),
             subtitle = paste0("Intercept: ", round(beta_0,2)," with shap baseline: ",round(baseline,2)))+
     xlab("")+
     ylab("")+
-    chart_theme
+    theme_iblm()
 
   return(list(overall_density = overall_density,
               grouped_density = grouped_density,
@@ -865,7 +814,7 @@ shap_intercept <- function(shap,
 #' Creates a visualization showing for each record the overall booster component (either multiplicative or additive)
 #'
 #' @param transform_x_scale_by_link TRUE/FALSE, whether to transform the x axis by the link function
-#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: shap, custom_colors, chart_theme, family, relationship
+#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: shap, family, relationship
 #'
 #' @return A ggplot object showing density of total booster values
 #'
@@ -876,8 +825,6 @@ overall_correction <- function(transform_x_scale_by_link = TRUE, explain_objects
 
   explain_object_names <- c(
     "shap",
-    "custom_colors",
-    "chart_theme",
     "family",
     "relationship"
     )
@@ -886,8 +833,6 @@ overall_correction <- function(transform_x_scale_by_link = TRUE, explain_objects
 
   # list2env(explain_objects[explain_object_names], envir = as.environment(-1))
   shap <- explain_objects[["shap"]]
-  custom_colors <- explain_objects[["custom_colors"]]
-  chart_theme <- explain_objects[["chart_theme"]]
   family <- explain_objects[["family"]]
   relationship <- explain_objects[["relationship"]]
 
@@ -929,7 +874,7 @@ overall_correction <- function(transform_x_scale_by_link = TRUE, explain_objects
     ggplot(aes(x = total_invlink)) +
     geom_density() +
     geom_vline(xintercept = family$linkinv(0)) +
-    chart_theme +
+    theme_iblm() +
     scale_x_link +
     labs(
       title = paste0("Distribution of ", relationship, " corrections to GLM prediction"),
