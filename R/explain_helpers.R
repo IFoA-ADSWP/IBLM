@@ -4,7 +4,7 @@
 #'
 #' @param data Data frame with predictor variables
 #' @param response_var Response variable name to exclude
-#' @param betas Named vector of GLM coefficients
+#' @param glm_beta_coeff Named vector of GLM coefficients
 #' @param levels_all_cat Named list of categorical variable levels
 #' @param levels_reference_cat Vector of reference level for each categorical
 #' @param predictor_vars_categorical Character vector of categorical variable names
@@ -14,7 +14,7 @@
 data_beta_coeff_glm_helper <- function(
     data,
     response_var,
-    betas,
+    glm_beta_coeff,
     levels_all_cat,
     levels_reference_cat,
     predictor_vars_categorical,
@@ -28,7 +28,7 @@ data_beta_coeff_glm_helper <- function(
       dplyr::if_else(
         levels_reference_cat[i] == x,
         0,
-        betas[coeff_name]
+        glm_beta_coeff[coeff_name]
       ) |> unname()
     }
   )
@@ -45,10 +45,10 @@ data_beta_coeff_glm_helper <- function(
         }),
       dplyr::across(
         predictor_vars_continuous,
-        function(x) betas[[dplyr::cur_column()]]
+        function(x) glm_beta_coeff[[dplyr::cur_column()]]
       )
     ) |>
-    dplyr::mutate(bias = betas[["(Intercept)"]], .before = 1)
+    dplyr::mutate(bias = glm_beta_coeff[["(Intercept)"]], .before = 1)
 
 
 }

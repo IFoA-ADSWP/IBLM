@@ -16,7 +16,7 @@
 #'   \item{input_frame}{Original input data frame}
 #'   \item{beta_corrections}{Wide format SHAP corrections data frame}
 #'   \item{shap}{Raw SHAP values from XGBoost}
-#'   \item{betas}{GLM model coefficients}
+#'   \item{ glm_beta_coeff}{GLM model coefficients}
 #'   \item{allnames}{Names of all model coefficients except intercept}
 #' }
 #'
@@ -43,8 +43,8 @@ explain <- function(x, data){
   rownames(data) <- NULL
 
   # Definitions and global variables
-  betas <- x$glm_model$coefficients
-  coef_names_glm <- names(betas)
+   glm_beta_coeff <- x$glm_model$coefficients
+  coef_names_glm <- names(glm_beta_coeff)
 
   vartypes <- lapply(x$glm_model$data, typeof) |> unlist()
   varclasses <- lapply(x$glm_model$data, class) |> unlist()
@@ -129,7 +129,7 @@ explain <- function(x, data){
   data_beta_coeff_glm <- data_beta_coeff_glm_helper(
     data = data,
     response_var = response_var,
-    betas = betas,
+     glm_beta_coeff =  glm_beta_coeff,
     levels_all_cat = levels_all_cat,
     levels_reference_cat = levels_reference_cat,
     predictor_vars_categorical = predictor_vars_categorical,
@@ -181,7 +181,7 @@ explain <- function(x, data){
           q=q,
           type=type,
           explain_objects = list(
-            betas = betas,
+             glm_beta_coeff =  glm_beta_coeff,
             levels_all_cat = levels_all_cat,
             coef_names_reference_cat = coef_names_reference_cat,
             wide_input_frame = wide_input_frame,
@@ -223,7 +223,9 @@ explain <- function(x, data){
 
     shap = shap,
 
-    betas = betas,
+     glm_beta_coeff =  glm_beta_coeff,
+
+    data_beta_coeff = data_beta_coeff,
 
     allnames = coef_names_glm |> setdiff("(Intercept)")
   )
@@ -394,7 +396,7 @@ beta_corrections_derive <- function(shap_wide,
 #' @param type Character string, must be "kde" or "hist"
 #' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include:
 #'   \itemize{
-#'     \item betas
+#'     \item  glm_beta_coeff
 #'     \item levels_all_cat
 #'     \item coef_names_reference_cat
 #'     \item wide_input_frame
@@ -433,7 +435,7 @@ beta_corrected_density <- function(
     ) {
 
   explain_object_names <- c(
-    "betas",
+    "glm_beta_coeff",
     "levels_all_cat",
     "coef_names_reference_cat",
     "wide_input_frame",
@@ -448,7 +450,7 @@ beta_corrected_density <- function(
 
   # list2env(explain_objects[explain_object_names], envir = as.environment(-1))
 
-  betas <- explain_objects[["betas"]]
+   glm_beta_coeff <- explain_objects[["glm_beta_coeff"]]
   levels_all_cat <- explain_objects[["levels_all_cat"]]
   coef_names_reference_cat <- explain_objects[["coef_names_reference_cat"]]
   wide_input_frame <- explain_objects[["wide_input_frame"]]
@@ -466,7 +468,7 @@ beta_corrected_density <- function(
     vartype <- "categorical"
   } else if (varname %in% coef_names_reference_cat) {
     stop("varname is reference level. Plot cannot be produced as no beta coefficient exists for this level")
-  } else if (varname %in% names(betas)){
+  } else if (varname %in% names(glm_beta_coeff)){
     vartype <- "categorical_level"
   } else {
     stop("varname not found in model!")
@@ -475,7 +477,7 @@ beta_corrected_density <- function(
   # if the variable is categorical, we will use recursion to plot each unique level and output a list instead...
   if(vartype %in% "categorical"){
 
-    levels_to_plot <- paste0(varname, levels_all_cat[[varname]])  |> intersect(names(betas))
+    levels_to_plot <- paste0(varname, levels_all_cat[[varname]])  |> intersect(names(glm_beta_coeff))
 
     output <- purrr::map(
       levels_to_plot,
@@ -497,7 +499,7 @@ beta_corrected_density <- function(
   # if the variable is numerical, or if we are dealing with only one categorical_level, there is only 1 Beta value
   if(vartype %in% c("numerical","categorical_level")){
     stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
-    beta <- betas[varname]
+    beta <-  glm_beta_coeff[varname]
     shap_deviations <- beta_corrections[, varname]
   }
 
@@ -550,7 +552,7 @@ beta_corrected_density <- function(
 #'   Must be present in the model. Currently not supported for categorical variables.
 #' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
 #' @param excl_outliers Logical. Whether to exclude outliers based on quantile method.
-#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: betas, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, coef_names_all, x
+#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include:  glm_beta_coeff, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, coef_names_all, x
 #'
 #' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
 #'   model coefficient line, and confidence bands. For categorical variables: boxplot
@@ -580,7 +582,7 @@ beta_corrected_scatter_deprecated <- function(varname,
                                    explain_objects)  {
 
   explain_object_names <- c(
-    "betas",
+    "glm_beta_coeff",
     "levels_all_cat",
     "wide_input_frame",
     "beta_corrections",
@@ -597,7 +599,7 @@ beta_corrected_scatter_deprecated <- function(varname,
 
   # list2env(explain_objects[explain_object_names], envir = as.environment(-1))
 
-  betas <- explain_objects[["betas"]]
+   glm_beta_coeff <- explain_objects[["glm_beta_coeff"]]
   levels_all_cat <- explain_objects[["levels_all_cat"]]
   wide_input_frame <- explain_objects[["wide_input_frame"]]
   beta_corrections <- explain_objects[["beta_corrections"]]
@@ -636,7 +638,7 @@ beta_corrected_scatter_deprecated <- function(varname,
     x <- wide_input_frame[,matched_names]
     shap_deviations <- beta_corrections[,matched_names]
 
-    beta = c(0,betas[helper_names]) |> stats::setNames(c(reference_level, helper_names))
+    beta = c(0, glm_beta_coeff[helper_names]) |> stats::setNames(c(reference_level, helper_names))
 
     after_shap <- sweep(shap_deviations, 2, beta[matched_names], FUN = "+")   |>
       tidyr::pivot_longer(cols = (matched_names),names_to = "x",values_to="shp")
@@ -667,7 +669,7 @@ beta_corrected_scatter_deprecated <- function(varname,
   }else{
 
     stderror = summary(x$glm_model)$coefficients[varname, "Std. Error"]
-    beta = betas[varname]
+    beta =  glm_beta_coeff[varname]
 
     x = wide_input_frame[,varname]
     shap_deviations = beta_corrections[,varname]

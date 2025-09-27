@@ -7,7 +7,7 @@
 data_beta_coeff_glm_helper(
   data,
   response_var,
-  betas,
+  glm_beta_coeff,
   levels_all_cat,
   levels_reference_cat,
   predictor_vars_categorical,
@@ -19,7 +19,7 @@ data_beta_coeff_glm_helper(
 
 \item{response_var}{Response variable name to exclude}
 
-\item{betas}{Named vector of GLM coefficients}
+\item{glm_beta_coeff}{Named vector of GLM coefficients}
 
 \item{levels_all_cat}{Named list of categorical variable levels}
 

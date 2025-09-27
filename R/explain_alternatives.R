@@ -54,7 +54,7 @@ beta_corrected_scatter <- function(varname = "DrivAge",
   predictor_vars_continuous <- explain_objects[["predictor_vars_continuous"]]
   x_glm_model <- explain_objects[["x_glm_model"]]
 
-  glm_betas <- x_glm_model$coefficients
+  glm_beta_coeff <- x_glm_model$coefficients
 
 
   vartype <- assign_variable_type(
@@ -80,13 +80,13 @@ beta_corrected_scatter <- function(varname = "DrivAge",
 
     cat_levels <- data[[varname]] |> unique() |> sort()
     data_beta_coeff_names <- paste0(varname, cat_levels)
-    glm_beta_coeff_names <- names(glm_betas)
+    glm_beta_coeff_names <- names(glm_beta_coeff)
     plot_beta_coeff_names <- intersect(data_beta_coeff_names, glm_beta_coeff_names)
     reference_level <- setdiff(data_beta_coeff_names, plot_beta_coeff_names) |> stringr::str_replace(paste0("^", varname), "")
 
     beta_glm_coeff_df <- data.frame(
       x = plot_beta_coeff_names |> stringr::str_replace(paste0("^", varname), ""),
-      y = as.numeric(glm_betas[plot_beta_coeff_names])
+      y = as.numeric(glm_beta_coeff[plot_beta_coeff_names])
     ) |> stats::setNames(c(varname, "beta_coeff"))
 
     plot_data <- plot_data |> dplyr::filter(get(varname) != reference_level)
@@ -121,7 +121,7 @@ beta_corrected_scatter <- function(varname = "DrivAge",
     }
 
     stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
-    beta <- glm_betas[varname]
+    beta <- glm_beta_coeff[varname]
 
     p  <- plot_data |>
       ggplot()+

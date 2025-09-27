@@ -15,7 +15,7 @@ beta_corrected_density(varname, q = 0.05, type = "kde", explain_objects)
 
 \item{explain_objects}{Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include:
 \itemize{
-  \item betas
+  \item  glm_beta_coeff
   \item levels_all_cat
   \item coef_names_reference_cat
   \item wide_input_frame

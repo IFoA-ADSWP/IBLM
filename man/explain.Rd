@@ -23,7 +23,7 @@ A list containing:
   \item{input_frame}{Original input data frame}
   \item{beta_corrections}{Wide format SHAP corrections data frame}
   \item{shap}{Raw SHAP values from XGBoost}
-  \item{betas}{GLM model coefficients}
+  \item{ glm_beta_coeff}{GLM model coefficients}
   \item{allnames}{Names of all model coefficients except intercept}
 }
 }
