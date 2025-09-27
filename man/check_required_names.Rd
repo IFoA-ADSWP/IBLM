@@ -4,12 +4,12 @@
 \alias{check_required_names}
 \title{Check Required Names in a List or Data Frame}
 \usage{
-check_required_names(df, required_names)
+check_required_names(x, required_names)
 }
 \arguments{
-\item{df}{A data frame (or list) to check.}
+\item{x}{A list (including dataframes) to check.}
 
-\item{required_names}{A character vector of names that must be present in `df`.}
+\item{required_names}{A character vector of names that must be present in `x`.}
 }
 \value{
 Returns \code{TRUE} if all required names are present. Throws an error otherwise.
@@ -19,8 +19,7 @@ Verifies that all required names are present in a list or data frame.
 Throws an informative error if any required names are missing.
 }
 \examples{
-check_required_names(mtcars, c("mpg", "cyl"))
 \dontrun{
-check_required_names(mtcars, c("mpg", "cyl", "idonotexist"))
+IBLMpackage:::check_required_names(datasets::mtcars, c("mpg", "cyl", "idonotexist"))
 }
 }

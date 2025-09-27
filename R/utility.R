@@ -3,24 +3,23 @@
 #' Verifies that all required names are present in a list or data frame.
 #' Throws an informative error if any required names are missing.
 #'
-#' @param df A data frame (or list) to check.
-#' @param required_names A character vector of names that must be present in `df`.
+#' @param x A list (including dataframes) to check.
+#' @param required_names A character vector of names that must be present in `x`.
 #'
 #' @return Returns \code{TRUE} if all required names are present. Throws an error otherwise.
 #'
 #' @examples
-#' check_required_names(mtcars, c("mpg", "cyl"))
 #' \dontrun{
-#' check_required_names(mtcars, c("mpg", "cyl", "idonotexist"))
+#' IBLMpackage:::check_required_names(datasets::mtcars, c("mpg", "cyl", "idonotexist"))
 #' }
-check_required_names <- function(df, required_names) {
+check_required_names <- function(x, required_names) {
   # Check input type
-  if (!is.list(df)) {
+  if (!is.list(x)) {
     stop("Input must be a list or data.frame.")
   }
 
   # Find missing names
-  missing <- setdiff(required_names, names(df))
+  missing <- setdiff(required_names, names(x))
 
   # Throw error if any are missing
   if (length(missing) > 0) {
