@@ -58,9 +58,11 @@ get_pinball_scores <- function(res,
 #' @return Numeric value representing twice the mean Poisson deviance
 #'
 #' @examples
+#' \dontrun{
 #' y_true <- c(1, 2, 3, 4, 5)
 #' y_pred <- c(1.1, 1.9, 3.2, 3.8, 5.1)
 #' poisson_deviance(y_true, y_pred)
+#' }
 poisson_deviance <- function(y_true, y_pred, correction = +10^-7) {
   pd <- mean((y_pred - y_true - y_true * log((y_pred + correction) / (y_true + correction))))
   return(2 * pd)

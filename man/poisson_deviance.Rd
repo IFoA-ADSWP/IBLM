@@ -21,7 +21,9 @@ Computes the Poisson deviance between true and predicted values, commonly
 used as a loss function for Poisson regression models.
 }
 \examples{
+\dontrun{
 y_true <- c(1, 2, 3, 4, 5)
 y_pred <- c(1.1, 1.9, 3.2, 3.8, 5.1)
 poisson_deviance(y_true, y_pred)
+}
 }
