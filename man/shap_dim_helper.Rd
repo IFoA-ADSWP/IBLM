@@ -5,7 +5,7 @@
 \title{Convert Shap values to Wide One-Hot Encoded Format}
 \usage{
 shap_dim_helper(
-  shap_raw,
+  shap,
   wide_input_frame,
   levels_all_cat,
   response_var,
@@ -13,7 +13,7 @@ shap_dim_helper(
 )
 }
 \arguments{
-\item{shap_raw}{Data frame containing raw SHAP values from XGBoost.}
+\item{shap}{Data frame containing raw SHAP values from XGBoost.}
 
 \item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
 

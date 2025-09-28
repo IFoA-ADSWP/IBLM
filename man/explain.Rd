@@ -4,12 +4,14 @@
 \alias{explain}
 \title{Explain GLM Model Predictions Using SHAP Values}
 \usage{
-explain(x, data)
+explain(x, data, migrate_reference_to_bias = FALSE)
 }
 \arguments{
 \item{x}{A list object of class 'ens'. This should be output by `train_glm_xgb()`}
 
-\item{data}{A data frame containing the data for which explanations are desired.
+\item{data}{A data frame containing the data for which explanations are desired.}
+
+\item{migrate_reference_to_bias}{TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
 
 **This should be the "test" portion of your dataset**}
 }

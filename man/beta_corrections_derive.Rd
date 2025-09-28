@@ -9,7 +9,7 @@ beta_corrections_derive(
   wide_input_frame,
   coef_names_reference_cat,
   predictor_vars_continuous,
-  no_cat_toggle
+  migrate_reference_to_bias = FALSE
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ beta_corrections_derive(
 
 \item{predictor_vars_continuous}{Character vector of numeric variables.}
 
-\item{no_cat_toggle}{Logical indicating absence of categorical variables.}
+\item{migrate_reference_to_bias}{Logical, do we want to migrate the shap values for reference coefficients to the bias?}
 }
 \value{
 A data frame with beta corrections where:

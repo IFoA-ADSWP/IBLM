@@ -4,6 +4,7 @@
 #'
 #' @param x A list object of class 'ens'. This should be output by `train_glm_xgb()`
 #' @param data A data frame containing the data for which explanations are desired.
+#' @param migrate_reference_to_bias TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
 #'
 #' **This should be the "test" portion of your dataset**
 #'
@@ -39,7 +40,7 @@
 #' }
 #'
 #' @export
-explain <- function(x, data){
+explain <- function(x, data, migrate_reference_to_bias = FALSE){
   rownames(data) <- NULL
 
   # Definitions and global variables
@@ -109,7 +110,7 @@ explain <- function(x, data){
 
   # Prepare wide shap corrections... this converts `shap` values to wide format for categoricals
   shap_wide <- shap_dim_helper(
-    shap_raw = shap,
+    shap = shap,
     wide_input_frame = wide_input_frame,
     levels_all_cat = levels_all_cat,
     response_var = response_var,
@@ -122,7 +123,7 @@ explain <- function(x, data){
       wide_input_frame = wide_input_frame,
       coef_names_reference_cat = coef_names_reference_cat,
       predictor_vars_continuous = predictor_vars_continuous,
-      no_cat_toggle = no_cat_toggle
+      migrate_reference_to_bias = migrate_reference_to_bias
     )
 
   # Prepare beta values after corrections
@@ -293,7 +294,7 @@ data_dim_helper <- function(frame, coef_names_all, levels_all_cat, response_var,
 #'
 #' Transforms categorical variables in a data frame into one-hot encoded format
 #'
-#' @param shap_raw Data frame containing raw SHAP values from XGBoost.
+#' @param shap Data frame containing raw SHAP values from XGBoost.
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
 #' @param levels_all_cat Named list of categorical variable levels.
 #' @param response_var Character string specifying the response_var variable name.
@@ -302,15 +303,15 @@ data_dim_helper <- function(frame, coef_names_all, levels_all_cat, response_var,
 #' @return A data frame where SHAP values are in wide format for categorical variables.
 #'
 #' @keywords internal
-shap_dim_helper <- function(shap_raw,
+shap_dim_helper <- function(shap,
                             wide_input_frame,
                             levels_all_cat,
                             response_var,
                             no_cat_toggle) {
   if (no_cat_toggle) {
 
-    shap_wide <- shap_raw |>
-      dplyr::mutate(bias = shap_raw$BIAS[1], .before = dplyr::everything())
+    shap_wide <- shap |>
+      dplyr::mutate(bias = shap$BIAS[1], .before = dplyr::everything())
 
   } else {
 
@@ -321,16 +322,16 @@ shap_dim_helper <- function(shap_raw,
       mask <- wide_input_frame |>
         dplyr::select(dplyr::all_of(paste0(x, lvl))) |>
         data.matrix()
-      matrix(rep(shap_raw[, x], length(lvl)), byrow = FALSE, ncol = length(lvl)) * mask
+      matrix(rep(shap[, x], length(lvl)), byrow = FALSE, ncol = length(lvl)) * mask
     }) |>
       dplyr::bind_cols()
 
     shap_wide <- cbind(
-      shap_raw[, setdiff(colnames(wide_input_frame), colnames(cat_frame))],
+      shap[, setdiff(colnames(wide_input_frame), colnames(cat_frame))],
       cat_frame
     ) |>
       dplyr::select(colnames(wide_input_frame)) |>
-      dplyr::mutate(bias = shap_raw$BIAS[1], .before = dplyr::everything())
+      dplyr::mutate(bias = shap$BIAS[1], .before = dplyr::everything())
   }
 
   return(shap_wide)
@@ -347,7 +348,7 @@ shap_dim_helper <- function(shap_raw,
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
 #' @param coef_names_reference_cat Character vector of reference level names for categorical variables.
 #' @param predictor_vars_continuous Character vector of numeric variables.
-#' @param no_cat_toggle Logical indicating absence of categorical variables.
+#' @param migrate_reference_to_bias Logical, do we want to migrate the shap values for reference coefficients to the bias?
 #'
 #' @return A data frame with beta corrections where:
 #' \itemize{
@@ -361,19 +362,25 @@ beta_corrections_derive <- function(shap_wide,
                             wide_input_frame,
                             coef_names_reference_cat,
                             predictor_vars_continuous,
-                            no_cat_toggle){
+                            migrate_reference_to_bias = FALSE){
+
+  beta_corrections <- shap_wide
 
     shap_for_zeros <- rowSums(
       ((wide_input_frame[, predictor_vars_continuous] == 0) * 1) * shap_wide[, predictor_vars_continuous]
       )
 
-    shap_for_cat_ref <- ifelse(
-      no_cat_toggle,
-      0,
-      rowSums(shap_wide[,coef_names_reference_cat])
-      )
+    if(migrate_reference_to_bias) {
 
-    beta_corrections <- shap_wide
+    shap_for_cat_ref <- rowSums(shap_wide[,coef_names_reference_cat])
+
+    beta_corrections[, coef_names_reference_cat] <- 0
+
+    } else {
+
+      shap_for_cat_ref <- 0
+
+    }
 
     beta_corrections$bias <- beta_corrections$bias + shap_for_zeros + shap_for_cat_ref
 
