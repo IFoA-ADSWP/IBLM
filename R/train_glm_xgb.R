@@ -19,9 +19,6 @@
 #'   column in the datasets. The string MUST appear in both `data$train` and `data$validate`.
 #' @param family Character string specifying the distributional family for the model.
 #'   Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
-#' @param use_glm Logical indicating whether to use GLM predictions as base margins
-#'   in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
-#'   than zero. Default is FALSE.
 #' @param xgb_additional_params Named list of additional parameters to pass to \link[xgboost]{xgb.train}
 #'
 #' @return An object of class "ens" containing:
@@ -73,7 +70,6 @@
 train_glm_xgb <- function(data,
                           response_var,
                           family= "poisson",
-                          use_glm = FALSE,
                           xgb_additional_params = list(
                             nrounds = 1000,
                             verbose = 0,
@@ -186,17 +182,6 @@ train_glm_xgb <- function(data,
   train$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(train$features), label = train$targets)
   validate$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(validate$features), label = validate$targets)
 
-  # Initialize with GLM predictions if use_glm is TRUE
-  # PB NOTE: should this 'base_margin' part be deleted, as not clear to me how it would be used!
-  if (use_glm && !is.null(glm_model)) {
-
-    glm_predictions_train <- stats::predict(glm_model, train$features, type="link")
-    xgboost::setinfo(train$xgb_matrix, "base_margin", unname(glm_predictions_train))
-
-    glm_predictions_val <- stats::predict(glm_model, validate$features, type="link")
-    xgboost::setinfo(validate$xgb_matrix, "base_margin", unname(glm_predictions_val))
-
-  }
 
   # ==================== Fitting XGB  ====================
 

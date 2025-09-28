@@ -8,7 +8,6 @@ train_glm_xgb(
   data,
   response_var,
   family = "poisson",
-  use_glm = FALSE,
   xgb_additional_params = list(nrounds = 1000, verbose = 0, early_stopping_rounds = 25)
 )
 }
@@ -22,10 +21,6 @@ column in the datasets. The string MUST appear in both `data$train` and `data$va
 
 \item{family}{Character string specifying the distributional family for the model.
 Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.}
-
-\item{use_glm}{Logical indicating whether to use GLM predictions as base margins
-in XGBoost training. When TRUE, XGBoost starts from GLM link predictions rather
-than zero. Default is FALSE.}
 
 \item{xgb_additional_params}{Named list of additional parameters to pass to \link[xgboost]{xgb.train}}
 }
