@@ -8,18 +8,15 @@ testthat::test_that("test against Karol original script", {
   # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
   # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
-  data <- data |>
+  splits <- data |>
     purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(tidyselect::where(is.factor), function(field) as.character(field)))) |>
     purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate")) |>
     purrr::modify(.f = function(x) dplyr::mutate(x, ClaimNb = round(ClaimNb)))
 
-  # the input data for KG script is called `splits`
-  splits <- data
-
   # ============================ IBLM package process =====================
 
   IBLM_nu <- train_glm_xgb(
-    data,
+    splits,
     response_var = "ClaimNb",
     family= "poisson"
   )
