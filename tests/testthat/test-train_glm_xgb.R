@@ -18,13 +18,13 @@ testthat::test_that("test against Karol original script", {
 
   # ============================ IBLM package process =====================
 
-  IBLM2 <- train_glm_xgb(
+  IBLM_nu <- train_glm_xgb(
     data,
     response_var = "ClaimNb",
     family= "poisson"
   )
 
-  # ============================ OG Karol process =====================
+  # ============================ Karol (og) process =====================
 
   withr::local_package("tidyverse")
   withr::local_package("xgboost")
@@ -90,7 +90,7 @@ testthat::test_that("test against Karol original script", {
 
   }
 
-  IBLM = train_multipl_GLM_XGB(
+  IBLM_og = train_multipl_GLM_XGB(
     glm_model = base_glm,
     params = list(
       base_score = 1,
@@ -106,20 +106,20 @@ testthat::test_that("test against Karol original script", {
 
   # was GLM fitted the same coefficients?
   testthat::expect_equal(
-    IBLM$glm_model$coefficients,
-    IBLM2$glm_model$coefficients
+    IBLM_og$glm_model$coefficients,
+    IBLM_nu$glm_model$coefficients
   )
 
   # was XGBoost fitted with the same log?
   testthat::expect_equal(
-    IBLM$xgb_model$evaluation_log,
-    IBLM2$xgb_model$evaluation_log
+    IBLM_og$xgb_model$evaluation_log,
+    IBLM_nu$xgb_model$evaluation_log
   )
 
   # was XGBoost fitted with the same trees?
   testthat::expect_equal(
-    IBLM$xgb_model |> xgboost::xgb.dump(),
-    IBLM2$xgb_model |> xgboost::xgb.dump()
+    IBLM_og$xgb_model |> xgboost::xgb.dump(),
+    IBLM_nu$xgb_model |> xgboost::xgb.dump()
   )
 
 })
