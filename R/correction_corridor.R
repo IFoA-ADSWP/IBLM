@@ -1,5 +1,34 @@
+#' Plot Correction Corridor for Ensemble Predictions
+#'
+#' Generates a diagnostic plot comparing predictions from a GLM model and an ensemble
+#' across a range of trimming values. This helps visualize how the ensemble predictions
+#' deviate from the GLM baseline under different trim levels.
+#'
+#' @param ensemble An ensemble model object containing at least a fitted `glm_model`.
+#' @param explainer A DALEX explainer or similar object with an `input_frame` data frame.
+#' @param response_var Character string specifying the name of the response variable
+#' @param trim_vals Numeric vector of trimming values to test. Defaults to
+#'   `c(NA_real_, 4, 1, 0.2, 0.15, 0.1, 0.05, 0)`.
+#' @param sample_perc Numeric scalar in (0,1]; fraction of data to sample for plotting.
+#'   Defaults to `0.2`.
+#' @param var Optional string giving the name of a variable to color points by.
+#'
+#' @return A `ggplot2` object showing ensemble vs. GLM predictions for each trim value.
+#'
+#' @examples
+#' \dontrun{
+#' p <- correction_corridor(ensemble = my_ensemble,
+#'                          explainer = my_explainer,
+#'                          var = "Age")
+#' p
+#' }
+#'
+#' @import ggplot2
+#'
+#' @export
 correction_corridor <- function(ensemble,
                                 explainer,
+                                response_var,
                                 trim_vals = c(NA_real_, 4, 1, 0.2, 0.15, 0.1, 0.05, 0),
                                 sample_perc = 0.2,
                                 var = NA) {
@@ -20,7 +49,7 @@ correction_corridor <- function(ensemble,
     ens_pred <- stats::predict(
       model = ensemble,
       dt = df |>
-        dplyr::select(-ClaimNb),
+        dplyr::select(-dplyr::all_of(response_var)),
       trim = trim_val
     )
 
@@ -42,23 +71,23 @@ correction_corridor <- function(ensemble,
   df_all <- dplyr::bind_rows(df_list)
 
   # Start ggplot
-  p <- ggplot2::ggplot(df_all, ggplot2::aes(x = glm, y = ens)) +
+  p <- ggplot(df_all, aes(x = .data$glm, y = .data$ens)) +
     {
       if (!is.na(var)) {
-        ggplot2::geom_point(ggplot2::aes(color = .data[[var]]), alpha = 0.4)
+        geom_point(aes(color = .data[[var]]), alpha = 0.4)
       } else {
-        ggplot2::geom_point(alpha = 0.4)
+        geom_point(alpha = 0.4)
       }
     } +
-    ggplot2::facet_wrap(~ trim, ncol = min(4, length(trim_vals))) +
-    ggplot2::labs(
+    facet_wrap(~ trim, ncol = min(4, length(trim_vals))) +
+    labs(
       x = "GLM Prediction",
       y = "Ensemble Prediction",
       title = "Correction Corridor by Trim Value",
       color = if (!is.na(var)) var else NULL
     ) +
-    ggplot2::geom_abline(slope = 1, intercept = 0) +
-    ggplot2::theme_minimal()
+    geom_abline(slope = 1, intercept = 0) +
+    theme_minimal()
 
   return(p)
 }

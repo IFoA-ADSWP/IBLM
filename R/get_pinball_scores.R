@@ -4,10 +4,10 @@
 #' Computes Poisson deviance and relative pinball scores for multiple models
 #' compared to a homogeneous baseline model.
 #'
-#' @param res Data frame containing model predictions and target variable
+#' @param res Data frame containing model predictions and response_var variable
 #' @param models Character vector of model names (column names in res).
 #'   Default is c("homog", "GLM", "XGB", "IBLM")
-#' @param target Character string specifying the target variable column name.
+#' @param response_var Character string specifying the response_var variable column name.
 #'   Default is "ClaimNb"
 #' @param return_both Logical indicating whether to return both Poisson deviance
 #'   and pinball scores. Default is FALSE (returns only pinball scores)
@@ -22,14 +22,14 @@
 #'
 #' @examples
 #' # Assuming 'results' is a data frame with model predictions
-#' # get_pinball_scores(results, models = c("homog", "GLM"), target = "ClaimNb")
+#' # get_pinball_scores(results, models = c("homog", "GLM"), response_var = "ClaimNb")
 #'
 #' @export
 get_pinball_scores <- function(res,
                                models = c("homog", "GLM", "XGB", "IBLM"),
-                               target = "ClaimNb",
+                               response_var,
                                return_both = FALSE) {
-  x <- lapply(models, FUN = function(x) poisson_deviance(y_true = res[[target]], y_pred = res[[x]])) |>
+  x <- lapply(models, FUN = function(x) poisson_deviance(y_true = res[[response_var]], y_pred = res[[x]])) |>
     stats::setNames(models) |>
     as.data.frame()
   if (return_both) {

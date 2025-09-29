@@ -488,14 +488,12 @@ beta_corrected_density <- function(
 
     output <- purrr::map(
       levels_to_plot,
-      function(x) {
-        beta_corrected_density(
-          varname = x,
+      ~beta_corrected_density(
+          varname = .x,
           q = q,
           type = type,
           explain_objects = explain_objects
         )
-      }
     ) |> stats::setNames(levels_to_plot)
 
     return(output)
@@ -529,7 +527,7 @@ beta_corrected_density <- function(
       }
 
   data.frame(x = beta + shap_deviations) |>
-    ggplot(aes(x = x)) +
+    ggplot(aes(x = .data$x)) +
     geom_corrections_density +
     geom_vline(xintercept = beta, color = iblm_colors[2], linewidth = 0.5) +
     geom_vline(xintercept = beta - stderror, linetype = "dashed", color = iblm_colors[3], linewidth = 0.5) +
@@ -777,7 +775,7 @@ shap_intercept <- function(shap,
 
   overall_density <- intercept_shap |>
     dplyr::mutate(total_correction = rowSums(dplyr::across(dplyr::everything())) + baseline + beta_0) |>
-    ggplot(aes(x = total_correction)) +
+    ggplot(aes(x = .data$total_correction)) +
     geom_density() +
     geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5) +
     geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], linewidth = 0.5) +
@@ -786,15 +784,15 @@ shap_intercept <- function(shap,
     theme_iblm()
 
   intercept_shap_long <- intercept_shap |>
-    tidyr::pivot_longer(cols = dplyr::everything()) |>
-    dplyr::filter(value!=0) |>
-    dplyr::mutate(name = factor(name, levels = names(sort(-colSums(intercept_shap!=0)))),
-                  value = value + baseline + beta_0)
+    tidyr::pivot_longer(cols = dplyr::everything(), names_to = "name", values_to = "value") |>
+    dplyr::filter(.data$value!=0) |>
+    dplyr::mutate(name = factor(.data$name, levels = names(sort(-colSums(intercept_shap!=0)))),
+                  value = .data$value + baseline + beta_0)
 
   grouped_density = intercept_shap_long |>
-    ggplot(aes(x=value))+
+    ggplot(aes(x=.data$value))+
     geom_density()+
-    facet_wrap(~name,scales="free")+
+    facet_wrap(vars(name),scales="free")+
     geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], size = 0.5)+
     geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], size = 0.5)+
     geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], size = 0.5)+
@@ -804,7 +802,7 @@ shap_intercept <- function(shap,
     theme_iblm()
 
   boxplot <- intercept_shap_long |>
-    ggplot(aes(x = name,y=value))+
+    ggplot(aes(x = .data$name,y=.data$value))+
     geom_boxplot()+
     geom_hline(yintercept = baseline + beta_0, color = iblm_colors[2], size = 0.5)+
     ggtitle(paste0("Jitter chart of beta corrections for intercept"),
@@ -848,8 +846,7 @@ overall_correction <- function(transform_x_scale_by_link = TRUE, explain_objects
   dt <- shap |>
     dplyr::mutate(
       total = rowSums(dplyr::across(dplyr::everything())),
-      total_exp = exp(total),
-      total_invlink = family$linkinv(total)
+      total_invlink = family$linkinv(.data$total)
     )
 
   out_the_box_transformations <- c("asn", "atanh", "boxcox", "date", "exp", "hms", "identity", "log", "log10", "log1p", "log2", "logit", "modulus", "probability", "probit", "pseudo_log", "reciprocal", "reverse", "sqrt", "time")
@@ -880,7 +877,7 @@ overall_correction <- function(transform_x_scale_by_link = TRUE, explain_objects
   }
 
   dt |>
-    ggplot(aes(x = total_invlink)) +
+    ggplot(aes(x = .data$total_invlink)) +
     geom_density() +
     geom_vline(xintercept = family$linkinv(0)) +
     theme_iblm() +

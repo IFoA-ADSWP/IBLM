@@ -7,17 +7,17 @@
 get_pinball_scores(
   res,
   models = c("homog", "GLM", "XGB", "IBLM"),
-  target = "ClaimNb",
+  response_var,
   return_both = FALSE
 )
 }
 \arguments{
-\item{res}{Data frame containing model predictions and target variable}
+\item{res}{Data frame containing model predictions and response_var variable}
 
 \item{models}{Character vector of model names (column names in res).
 Default is c("homog", "GLM", "XGB", "IBLM")}
 
-\item{target}{Character string specifying the target variable column name.
+\item{response_var}{Character string specifying the response_var variable column name.
 Default is "ClaimNb"}
 
 \item{return_both}{Logical indicating whether to return both Poisson deviance
@@ -38,6 +38,6 @@ representing the relative improvement over the homogeneous model.
 }
 \examples{
 # Assuming 'results' is a data frame with model predictions
-# get_pinball_scores(results, models = c("homog", "GLM"), target = "ClaimNb")
+# get_pinball_scores(results, models = c("homog", "GLM"), response_var = "ClaimNb")
 
 }

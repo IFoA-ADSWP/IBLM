@@ -100,7 +100,7 @@ beta_corrected_scatter <- function(varname = "DrivAge",
     }
 
     # Add the lines to the plot
-    p <- ggplot(plot_data, aes(x = get(varname), y = beta_coeff)) +
+    p <- ggplot(plot_data, aes(x = get(varname), y = .data$beta_coeff)) +
       geom_boxplot() +
       geom_point(
         data = beta_glm_coeff_df,
