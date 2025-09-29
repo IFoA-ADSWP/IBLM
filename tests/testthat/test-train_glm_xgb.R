@@ -11,7 +11,7 @@ testthat::test_that("test against Karol original script", {
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
   # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
   splits <- data |>
-    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(tidyselect::where(is.factor), function(field) as.character(field)))) |>
+    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field)))) |>
     purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate")) |>
     purrr::modify(.f = function(x) dplyr::mutate(x, ClaimNb = round(ClaimNb)))
 
@@ -81,7 +81,7 @@ testthat::test_that("test against Karol original script", {
     )
 
   IBLM_og$xgb_model$evaluation_log <-
-    data.table::data.table(
+    data.frame(
       iter = seq(1, 54, by = 1),
       validation_poisson_nloglik = c(
         4.0571781027445875, 4.050404666061162, 4.046339817199387, 4.042641579459507,
@@ -113,7 +113,7 @@ testthat::test_that("test against Karol original script", {
   # was XGBoost fitted with the same log?
   testthat::expect_equal(
     IBLM_og$xgb_model$evaluation_log,
-    IBLM_nu$xgb_model$evaluation_log
+    IBLM_nu$xgb_model$evaluation_log |> as.data.frame()
   )
 
 })
