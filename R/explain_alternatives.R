@@ -117,7 +117,7 @@ beta_corrected_scatter <- function(varname = "DrivAge",
 
     if(q>0) {
       plot_data <- plot_data |>
-        dplyr::filter(detect_outliers(beta_coeff, method = "quantile",q=q))
+        dplyr::filter(detect_outliers(.data$beta_coeff, method = "quantile",q=q))
     }
 
     stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
@@ -127,11 +127,11 @@ beta_corrected_scatter <- function(varname = "DrivAge",
       ggplot()+
       geom_point(
         aes(x = get(varname),
-            y=beta_coeff,
+            y=.data$beta_coeff,
             group = if(is.null(color)) NULL else get(color),
             color=if(is.null(color)) NULL else get(color))
         ,alpha=0.4) +
-      geom_smooth(aes(x = get(varname), y=beta_coeff))+
+      geom_smooth(aes(x = get(varname), y=.data$beta_coeff))+
       {if(color_vartype=="numerical") scale_color_gradientn(name = color,colors = iblm_colors[c(2,1)])}+
       labs(
         title = paste("Beta Coefficients after SHAP corrections for", varname),

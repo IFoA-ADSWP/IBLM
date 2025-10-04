@@ -792,7 +792,7 @@ shap_intercept <- function(shap,
   grouped_density = intercept_shap_long |>
     ggplot(aes(x=.data$value))+
     geom_density()+
-    facet_wrap(vars(name),scales="free")+
+    facet_wrap(~name,scales="free")+
     geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], size = 0.5)+
     geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], size = 0.5)+
     geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], size = 0.5)+
