@@ -12,7 +12,7 @@ get_pinball_scores_iblm(
 )
 }
 \arguments{
-\item{data}{Data frame containing predictors and response variable.}
+\item{data}{Data frame containing predictors and response variable. If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.}
 
 \item{iblm_model}{Fitted IBLM model object of class "ens"}
 
