@@ -41,6 +41,9 @@
 #'
 #' @export
 explain <- function(x, data, migrate_reference_to_bias = FALSE){
+
+  check_iblm_model(iblm_model)
+
   rownames(data) <- NULL
 
   # Definitions and global variables

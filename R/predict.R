@@ -45,6 +45,9 @@
 #' @export
 #'
 predict.ens <- function(model, data, trim = NA_real_, type = "response") {
+
+  check_iblm_model(model)
+
   if (type != "response") {
     stop("only supported type currently is 'response'")
   }

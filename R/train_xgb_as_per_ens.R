@@ -31,19 +31,24 @@ train_xgb_as_per_ens <- function(
 
   check_required_names(data, c("train", "validate"))
 
-  stopifnot()
+  check_iblm_model(iblm_model)
 
-  if(!("ens" %in% class(iblm_model))) {
-    stop("'iblm_model' is not of class 'ens'. To generate an 'ens' model use 'train_glm_xgb()'")
+  # Check if residual model is xgb.Booster
+  if (!("xgb.Booster" %in% class(iblm_model$xgb_model))) {
+    cli::cli_abort(c(
+      "Residual model must be of class {.cls xgb.Booster}.",
+      "x" = "You supplied a residual model of class {.cls {class(iblm_model$xgb_model)}}.",
+      "i" = "The ensemble model must use XGBoost for this function to work."
+    ))
   }
 
-
-  if(!("xgb.Booster" %in% class(iblm_model$xgb_model))) {
-    stop("'iblm_model' residual model was not of class 'xgb.Booster'. The ensemble model must use xgb for this function to be useful")
-  }
-
-  if(!dplyr::setequal(data[["train"]], iblm_model$glm_model$data)) {
-    stop("'data$train' is not equivalent to training data used for 'iblm_model'")
+  # Check if training data matches
+  if (!dplyr::setequal(data[["train"]], iblm_model$glm_model$data)) {
+    cli::cli_abort(c(
+      "{.arg data$train} must match the training data used for {.arg iblm_model}.",
+      "x" = "The supplied training data is not equivalent to the model's training data.",
+      "i" = "Ensure you're using the same data that was used to train the model."
+    ))
   }
 
   # ==================== input generation ====================

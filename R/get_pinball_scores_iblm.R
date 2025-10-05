@@ -23,6 +23,8 @@ get_pinball_scores_iblm <- function(data,
                                     additional_models = list()
                                     ) {
 
+  check_iblm_model(iblm_model)
+
   response_var <- all.vars(iblm_model$glm_model$formula)[1]
 
   data_predictors <- data |> dplyr::select(-dplyr::all_of(response_var))
