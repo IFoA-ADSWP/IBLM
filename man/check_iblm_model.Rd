@@ -15,4 +15,3 @@ Invisible TRUE if all checks pass
 \description{
 Validates an ensemble model object has required structure and attributes.
 }
-\keyword{internal}

@@ -5,7 +5,8 @@
 #' @param model Model object to validate, expected class "ens"
 #'
 #' @return Invisible TRUE if all checks pass
-#' @keywords internal
+#'
+#' @export
 check_iblm_model <- function(model) {
   # Check model class
   if (!"ens" %in% class(model)) {
