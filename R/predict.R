@@ -49,6 +49,10 @@ predict.ens <- function(model, data, trim = NA_real_, type = "response") {
     stop("only supported type currently is 'response'")
   }
 
+  response_var <- all.vars(model$glm_model$formula)[1]
+
+  data <- data |> dplyr::select(-dplyr::any_of(response_var))
+
   relationship <- attr(model, "relationship")
 
   glm <- unname(stats::predict(model$glm_model, data, type = type))
