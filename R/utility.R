@@ -10,6 +10,10 @@
 #'
 #' @examples
 #' \dontrun{
+#' # pass error check...
+#' IBLMpackage:::check_required_names(datasets::mtcars, c("mpg", "cyl"))
+#'
+#' # fail error check due to column missing...
 #' IBLMpackage:::check_required_names(datasets::mtcars, c("mpg", "cyl", "idonotexist"))
 #' }
 check_required_names <- function(x, required_names) {

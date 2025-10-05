@@ -20,6 +20,10 @@ Throws an informative error if any required names are missing.
 }
 \examples{
 \dontrun{
+# pass error check...
+IBLMpackage:::check_required_names(datasets::mtcars, c("mpg", "cyl"))
+
+# fail error check due to column missing...
 IBLMpackage:::check_required_names(datasets::mtcars, c("mpg", "cyl", "idonotexist"))
 }
 }
