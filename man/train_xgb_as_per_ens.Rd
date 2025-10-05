@@ -27,15 +27,6 @@ Trained XGBoost model object (class "xgb.Booster").
 Trains an XGBoost model using parameters extracted from the booster residual component of the ensemble model.
 This is a convenient way to fit an XGBoost model for comparison with the ensemble.
 }
-\examples{
-\dontrun{
-xgb_model <- train_xgb_as_per_ens(
-  data = list(train = train_df, validate = val_df),
-  iblm_model = ens_model
-)
-}
-
-}
 \seealso{
 \link[xgboost]{xgb.train}
 }

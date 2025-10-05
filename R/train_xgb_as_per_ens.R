@@ -31,10 +31,19 @@ train_xgb_as_per_ens <- function(
 
   check_required_names(data, c("train", "validate"))
 
-  stopifnot("ens" %in% class(iblm_model))
+  stopifnot()
 
-  if(!identical(data[["train"]], iblm_model$glm_model$data)) {
-    stop("'data$train' is not identical to training data used for 'iblm_model'")
+  if(!("ens" %in% class(iblm_model))) {
+    stop("'iblm_model' is not of class 'ens'. To generate an 'ens' model use 'train_glm_xgb()'")
+  }
+
+
+  if(!("xgb.Booster" %in% class(iblm_model$xgb_model))) {
+    stop("'iblm_model' residual model was not of class 'xgb.Booster'. The ensemble model must use xgb for this function to be useful")
+  }
+
+  if(!dplyr::setequal(data[["train"]], iblm_model$glm_model$data)) {
+    stop("'data$train' is not equivalent to training data used for 'iblm_model'")
   }
 
   # ==================== input generation ====================
