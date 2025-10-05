@@ -12,7 +12,7 @@
 #' This gets XGBoost to effectively learn the residual patterns that the GLM couldn't
 #' capture. Optionally, GLM predictions can be used as base margins for XGBoost training.
 #'
-#' @param data A named list containing training and validation datasets. Must have
+#' @param dfs A named list containing training and validation datasets. Must have
 #'   elements named "train" and "validate", each containing data frames with the
 #'   same structure. This item is naturally output from the function [split_into_train_validate_test()]
 #' @param response_var Character string specifying the name of the response variable
@@ -67,7 +67,7 @@
 #' \link[stats]{glm}, \link[xgboost]{xgb.train}
 #'
 #' @export
-train_glm_xgb <- function(data,
+train_glm_xgb <- function(dfs,
                           response_var,
                           family= "poisson",
                           xgb_additional_params = list(
@@ -207,70 +207,3 @@ train_glm_xgb <- function(data,
 }
 
 
-
-
-
-
-#' Split a data frame into training, validation, and test sets
-#'
-#' This function randomly splits a data frame into three subsets for machine
-#' learning workflows: training, validation, and test sets. The proportions
-#' can be customized and must sum to 1.
-#'
-#' @param df A data frame to be split into subsets.
-#' @param train_prop A numeric value between 0 and 1 specifying the proportion
-#'   of data to allocate to the training set.
-#' @param validate_prop A numeric value between 0 and 1 specifying the proportion
-#'   of data to allocate to the validation set.
-#' @param test_prop A numeric value between 0 and 1 specifying the proportion
-#'   of data to allocate to the test set.
-#'
-#' @return A named list with three elements:
-#' \describe{
-#'   \item{train}{A data frame containing the training subset}
-#'   \item{validate}{A data frame containing the validation subset}
-#'   \item{test}{A data frame containing the test subset}
-#' }
-#'
-#' @details The function uses random sampling with replacement to assign each
-#'   row to one of the three sets according to the specified proportions. The
-#'   proportions must sum to 1 (with some tolerance for floating point precision).
-#'
-#' @examples
-#' # Custom proportions
-#' splits <- split_into_train_validate_test(
-#'   mtcars,
-#'   train_prop = 0.8,
-#'   validate_prop = 0.1,
-#'   test_prop = 0.1
-#' )
-#'
-#' @export
-split_into_train_validate_test <- function(
-    df,
-    train_prop = 0.7,
-    validate_prop = 0.15,
-    test_prop = 0.15
-) {
-
-  stopifnot(
-    is.data.frame(df),
-    dplyr::near(sum(train_prop, validate_prop, test_prop), 1)
-  )
-
-  split <- sample(
-    c("train", "validate", "test"),
-    size = nrow(df),
-    replace = TRUE,
-    prob = c(train_prop, validate_prop, test_prop)
-  )
-
-  splits <- lapply(
-    c("train", "validate", "test"),
-    FUN = function(train_features){df[split==train_features,]}
-  ) |>
-    stats::setNames(c("train", "validate", "test"))
-
-  return(splits)
-
-}

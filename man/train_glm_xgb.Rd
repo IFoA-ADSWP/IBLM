@@ -5,14 +5,14 @@
 \title{Train GLM-XGBoost Ensemble Model}
 \usage{
 train_glm_xgb(
-  data,
+  dfs,
   response_var,
   family = "poisson",
   xgb_additional_params = list(nrounds = 1000, verbose = 0, early_stopping_rounds = 25)
 )
 }
 \arguments{
-\item{data}{A named list containing training and validation datasets. Must have
+\item{dfs}{A named list containing training and validation datasets. Must have
 elements named "train" and "validate", each containing data frames with the
 same structure. This item is naturally output from the function [split_into_train_validate_test()]}
 
