@@ -2,46 +2,37 @@
 % Please edit documentation in R/correction_corridor.R
 \name{correction_corridor}
 \alias{correction_corridor}
-\title{Plot Correction Corridor for Ensemble Predictions}
+\title{Plot Correction Corridor for IBLM Model}
 \usage{
 correction_corridor(
-  ensemble,
-  explainer,
-  response_var,
-  trim_vals = c(NA_real_, 4, 1, 0.2, 0.15, 0.1, 0.05, 0),
+  iblm_model,
+  data,
+  trim_vals = c(NA_real_, 4, 1, 0.2, 0.1, 0),
   sample_perc = 0.2,
-  var = NA
+  color = NA,
+  ...
 )
 }
 \arguments{
-\item{ensemble}{An ensemble model object containing at least a fitted `glm_model`.}
+\item{iblm_model}{An IBLM model object of class "ens".}
 
-\item{explainer}{A DALEX explainer or similar object with an `input_frame` data frame.}
+\item{data}{Data frame. Typically the test proportion of your dataset.}
 
-\item{response_var}{Character string specifying the name of the response variable}
+\item{trim_vals}{Numeric vector of trim values to compare.
+The length of this vector will dictate the no. of facets shown in plot output}
 
-\item{trim_vals}{Numeric vector of trimming values to test. Defaults to
-`c(NA_real_, 4, 1, 0.2, 0.15, 0.1, 0.05, 0)`.}
+\item{sample_perc}{Proportion of data to randomly sample for plotting (0 to 1).
+Default is 0.2 to improve performance with large datasets}
 
-\item{sample_perc}{Numeric scalar in (0,1]; fraction of data to sample for plotting.
-Defaults to `0.2`.}
+\item{color}{Optional. Name of a variable in `data` to color points by}
 
-\item{var}{Optional string giving the name of a variable to color points by.}
+\item{...}{Additional arguments passed to `geom_point()`}
 }
 \value{
-A `ggplot2` object showing ensemble vs. GLM predictions for each trim value.
+A ggplot object showing GLM vs ensemble predictions faceted by trim value.
+  The diagonal line (y = x) represents perfect agreement between models
 }
 \description{
-Generates a diagnostic plot comparing predictions from a GLM model and an ensemble
-across a range of trimming values. This helps visualize how the ensemble predictions
-deviate from the GLM baseline under different trim levels.
-}
-\examples{
-\dontrun{
-p <- correction_corridor(ensemble = my_ensemble,
-                         explainer = my_explainer,
-                         var = "Age")
-p
-}
-
+Creates a faceted scatter plot comparing GLM predictions to ensemble predictions
+across different trim values, showing how the ensemble corrects the base GLM model.
 }
