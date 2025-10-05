@@ -15,17 +15,17 @@
 check_required_names <- function(x, required_names) {
   # Check input type
   if (!is.list(x)) {
-    stop("Input must be a list or data.frame.")
+    cli::cli_abort("Input must be a list or data.frame.")
   }
-
   # Find missing names
   missing <- setdiff(required_names, names(x))
-
   # Throw error if any are missing
   if (length(missing) > 0) {
-    stop("Missing required names: ", paste(missing, collapse = ", "))
+    cli::cli_abort(c(
+      "Missing required names:",
+      stats::setNames(missing, rep("*", length(missing)))
+    ))
   }
-
   # Return TRUE if all checks pass
   invisible(TRUE)
 }
