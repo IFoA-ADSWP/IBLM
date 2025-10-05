@@ -3,7 +3,8 @@
 #' Computes Poisson deviance and pinball scores for an IBLM model alongside
 #' homogeneous, GLM, and optional additional models.
 #'
-#' @param data Data frame containing predictors and response variable. If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
+#' @param data Data frame.
+#' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
 #' @param iblm_model Fitted IBLM model object of class "ens"
 #' @param trim Numeric trimming parameter for IBLM predictions. Default is `NA_real_`.
 #' @param additional_models (Named) list of fitted models for comparison. These models MUST be fitted on the same data as `iblm_model` for sensible results.

@@ -4,7 +4,8 @@
 #' across different trim values, showing how the ensemble corrects the base GLM model.
 #'
 #' @param iblm_model An IBLM model object of class "ens".
-#' @param data Data frame. Typically the test proportion of your dataset.
+#' @param data Data frame.
+#' If you have used `split_into_train_validate_test()` this will usually be the "test" portion of your data.
 #' @param trim_vals Numeric vector of trim values to compare.
 #' The length of this vector will dictate the no. of facets shown in plot output
 #' @param sample_perc Proportion of data to randomly sample for plotting (0 to 1).

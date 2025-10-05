@@ -16,7 +16,8 @@ correction_corridor(
 \arguments{
 \item{iblm_model}{An IBLM model object of class "ens".}
 
-\item{data}{Data frame. Typically the test proportion of your dataset.}
+\item{data}{Data frame.
+If you have used `split_into_train_validate_test()` this will usually be the "test" portion of your data.}
 
 \item{trim_vals}{Numeric vector of trim values to compare.
 The length of this vector will dictate the no. of facets shown in plot output}

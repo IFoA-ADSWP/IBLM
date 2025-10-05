@@ -3,7 +3,8 @@
 #' Creates a list that explains the beta values, and their corrections, of the ensemble IBLM model
 #'
 #' @param x A list object of class 'ens'. This should be output by `train_glm_xgb()`
-#' @param data A data frame containing the data for which explanations are desired.
+#' @param data Data frame.
+#' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
 #' @param migrate_reference_to_bias TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
 #'
 #' **This should be the "test" portion of your dataset**

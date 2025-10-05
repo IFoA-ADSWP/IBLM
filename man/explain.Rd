@@ -9,7 +9,8 @@ explain(x, data, migrate_reference_to_bias = FALSE)
 \arguments{
 \item{x}{A list object of class 'ens'. This should be output by `train_glm_xgb()`}
 
-\item{data}{A data frame containing the data for which explanations are desired.}
+\item{data}{Data frame.
+If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.}
 
 \item{migrate_reference_to_bias}{TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
 
