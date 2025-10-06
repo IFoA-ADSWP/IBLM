@@ -4,7 +4,7 @@
 #' This function generates predictions from an ensemble model consisting of a GLM
 #' and an XGBoost model.
 #'
-#' @param model An object of class "ens", as produced by \link[IBLMpackage]{train_glm_xgb}
+#' @param model An object of class "ens", as produced by train_glm_xgb()
 #' @param data A data frame or matrix containing the predictor variables for
 #'   which predictions are desired. Must have the same structure as the
 #'   training data used to fit the ensemble model.
@@ -22,7 +22,7 @@
 #'   \item Generate GLM predictions using \code{type="response"}
 #'   \item Generate XGBoost predictions on a DMatrix conversion of the input data
 #'   \item If trimming is specified, apply to XGBoost predictions
-#'   \item Multiply **or** Add the GLM and XGBoost predictions to get the ensemble predictions
+#'   \item Multiply **or** Add the GLM and XGBoost predictions (depending on link function) to get the ensemble predictions
 #' }
 #'
 #' @examples
@@ -49,15 +49,17 @@ predict.ens <- function(model, data, trim = NA_real_, type = "response") {
   check_iblm_model(model)
 
   if (type != "response") {
-    stop("only supported type currently is 'response'")
+
+    cli::cli_abort(c(
+      "x" = "Only supported type currently is {.val response}",
+      "i" = "You supplied {.val {type}}"
+    ))
+
   }
 
   response_var <- all.vars(model$glm_model$formula)[1]
-
   data <- data |> dplyr::select(-dplyr::any_of(response_var))
-
   relationship <- attr(model, "relationship")
-
   glm <- unname(stats::predict(model$glm_model, data, type = type))
   xgb <- stats::predict(model$xgb_model, xgboost::xgb.DMatrix(data.matrix(data)), type = type)
 
@@ -71,9 +73,9 @@ predict.ens <- function(model, data, trim = NA_real_, type = "response") {
         )
       )
     }
-
     xgb <- truncate(xgb)
     xgb <- xgb * 1 / mean(xgb)
+
   }
 
   if (relationship == "multiplicative") {
@@ -86,8 +88,10 @@ predict.ens <- function(model, data, trim = NA_real_, type = "response") {
 
   } else {
 
-    stop(paste0("relationship attribute was not 'multiplicative' or 'additive' - unable to combine glm and xgb"))
-
+    cli::cli_abort(c(
+      "x" = "Invalid relationship attribute: {.val {relationship}}",
+      "i" = "Relationship must be either {.val multiplicative} or {.val additive}"
+    ))
   }
 
   return(toreturn)

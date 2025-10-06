@@ -7,7 +7,7 @@
 \method{predict}{ens}(model, data, trim = NA_real_, type = "response")
 }
 \arguments{
-\item{model}{An object of class "ens", as produced by \link[IBLMpackage]{train_glm_xgb}}
+\item{model}{An object of class "ens", as produced by train_glm_xgb()}
 
 \item{data}{A data frame or matrix containing the predictor variables for
 which predictions are desired. Must have the same structure as the
@@ -32,7 +32,7 @@ The prediction process involves the following steps:
   \item Generate GLM predictions using \code{type="response"}
   \item Generate XGBoost predictions on a DMatrix conversion of the input data
   \item If trimming is specified, apply to XGBoost predictions
-  \item Multiply **or** Add the GLM and XGBoost predictions to get the ensemble predictions
+  \item Multiply **or** Add the GLM and XGBoost predictions (depending on link function) to get the ensemble predictions
 }
 }
 \examples{
