@@ -5,19 +5,19 @@
 \title{Train GLM-XGBoost Ensemble Model}
 \usage{
 train_glm_xgb(
-  dfs,
+  df_list,
   response_var,
   family = "poisson",
   xgb_additional_params = list(nrounds = 1000, verbose = 0, early_stopping_rounds = 25)
 )
 }
 \arguments{
-\item{dfs}{A named list containing training and validation datasets. Must have
-elements named "train" and "validate", each containing data frames with the
+\item{df_list}{A named list containing training and validation datasets. Must have
+elements named "train" and "validate", each containing df_list frames with the
 same structure. This item is naturally output from the function [split_into_train_validate_test()]}
 
 \item{response_var}{Character string specifying the name of the response variable
-column in the datasets. The string MUST appear in both `data$train` and `data$validate`.}
+column in the datasets. The string MUST appear in both `df_list$train` and `df_list$validate`.}
 
 \item{family}{Character string specifying the distributional family for the model.
 Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.}
@@ -74,9 +74,9 @@ For "gaussian" family the link function is 'identity' and XGBoost is configured 
 \dontrun{
 library(IBLM)
 
-data <- split_into_train_validate_test(freMTPL2freq)
+df_list <- split_into_train_validate_test(freMTPL2freq)
 
-ensemble_model <- train_glm_xgb(data, response_var = "ClaimRate")
+ensemble_model <- train_glm_xgb(df_list, response_var = "ClaimRate")
 }
 
 }

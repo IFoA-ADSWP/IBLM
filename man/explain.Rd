@@ -4,10 +4,10 @@
 \alias{explain}
 \title{Explain GLM Model Predictions Using SHAP Values}
 \usage{
-explain(x, data, migrate_reference_to_bias = FALSE)
+explain(iblm_model, data, migrate_reference_to_bias = FALSE)
 }
 \arguments{
-\item{x}{A list object of class 'ens'. This should be output by `train_glm_xgb()`}
+\item{iblm_model}{An object of class 'ens'. This should be output by `train_glm_xgb()`}
 
 \item{data}{Data frame.
 If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.}

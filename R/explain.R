@@ -2,7 +2,7 @@
 #'
 #' Creates a list that explains the beta values, and their corrections, of the ensemble IBLM model
 #'
-#' @param x A list object of class 'ens'. This should be output by `train_glm_xgb()`
+#' @param iblm_model An object of class 'ens'. This should be output by `train_glm_xgb()`
 #' @param data Data frame.
 #' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
 #' @param migrate_reference_to_bias TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
@@ -41,22 +41,22 @@
 #' }
 #'
 #' @export
-explain <- function(x, data, migrate_reference_to_bias = FALSE){
+explain <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 
   check_iblm_model(iblm_model)
 
   rownames(data) <- NULL
 
   # Definitions and global variables
-   glm_beta_coeff <- x$glm_model$coefficients
+   glm_beta_coeff <- iblm_model$glm_model$coefficients
   coef_names_glm <- names(glm_beta_coeff)
 
-  vartypes <- lapply(x$glm_model$data, typeof) |> unlist()
-  varclasses <- lapply(x$glm_model$data, class) |> unlist()
+  vartypes <- lapply(iblm_model$glm_model$data, typeof) |> unlist()
+  varclasses <- lapply(iblm_model$glm_model$data, class) |> unlist()
 
   # create data objects that explain variables
 
-  response_var <- all.vars(x$glm_model$formula)[1]
+  response_var <- all.vars(iblm_model$glm_model$formula)[1]
   predictor_vars_all <- names(vartypes) |> setdiff(response_var)
   predictor_vars_categorical <- predictor_vars_all[(!vartypes %in% c("integer", "double") | varclasses == "factor")]
   predictor_vars_continuous <- predictor_vars_all |> setdiff(predictor_vars_categorical)
@@ -64,7 +64,7 @@ explain <- function(x, data, migrate_reference_to_bias = FALSE){
   # Factor levels for categorical variables
 
   levels_all_cat <- lapply(
-    x$glm_model$data |> dplyr::select(dplyr::all_of(predictor_vars_categorical)),
+    iblm_model$glm_model$data |> dplyr::select(dplyr::all_of(predictor_vars_categorical)),
     function(x) sort(unique(x))
   )
 
@@ -94,7 +94,7 @@ explain <- function(x, data, migrate_reference_to_bias = FALSE){
 
   # Generate SHAP values
   shap <- stats::predict(
-    x$xgb_model,
+    iblm_model$xgb_model,
     newdata = xgboost::xgb.DMatrix(
       data.matrix(
         dplyr::select(data, -dplyr::all_of(response_var))
@@ -171,7 +171,7 @@ explain <- function(x, data, migrate_reference_to_bias = FALSE){
           data = data,
           predictor_vars_categorical = predictor_vars_categorical,
           predictor_vars_continuous = predictor_vars_continuous,
-          x_glm_model = x$glm_model
+          x_glm_model = iblm_model$glm_model
         )
       )
     },
@@ -191,7 +191,7 @@ explain <- function(x, data, migrate_reference_to_bias = FALSE){
             coef_names_reference_cat = coef_names_reference_cat,
             wide_input_frame = wide_input_frame,
             beta_corrections = beta_corrections,
-            x_glm_model = x$glm_model,
+            x_glm_model = iblm_model$glm_model,
             data = data,
             predictor_vars_continuous = predictor_vars_continuous,
             predictor_vars_categorical = predictor_vars_categorical
@@ -201,7 +201,7 @@ explain <- function(x, data, migrate_reference_to_bias = FALSE){
 
     shap_intercept = shap_intercept(
       shap = shap,
-      x_glm_model = x$glm_model,
+      x_glm_model = iblm_model$glm_model,
       data = data,
       response_var = response_var,
       predictor_vars_continuous = predictor_vars_continuous,
@@ -216,8 +216,8 @@ explain <- function(x, data, migrate_reference_to_bias = FALSE){
         transform_x_scale_by_link = transform_x_scale_by_link,
         explain_objects = list(
           shap = shap,
-          family = x$glm_model$family,
-          relationship = attr(x, "relationship")
+          family = iblm_model$glm_model$family,
+          relationship = attr(iblm_model, "relationship")
         )
         )
       },
@@ -601,7 +601,7 @@ beta_corrected_scatter_deprecated <- function(varname,
     "predictor_vars_continuous",
     "coef_names_reference_cat",
     "coef_names_all",
-    "x"
+    "iblm_model"
   )
 
   check_required_names(explain_objects, explain_object_names)
@@ -618,7 +618,7 @@ beta_corrected_scatter_deprecated <- function(varname,
   predictor_vars_continuous <- explain_objects[["predictor_vars_continuous"]]
   coef_names_reference_cat <- explain_objects[["coef_names_reference_cat"]]
   coef_names_all <- explain_objects[["coef_names_all"]]
-  x <- explain_objects[["x"]]
+  iblm_model <- explain_objects[["iblm_model"]]
 
   # TODO: warning or error if reference level passed as varname
   color_vartype <- "numerical"
@@ -677,7 +677,7 @@ beta_corrected_scatter_deprecated <- function(varname,
 
   }else{
 
-    stderror = summary(x$glm_model)$coefficients[varname, "Std. Error"]
+    stderror = summary(iblm_model$glm_model)$coefficients[varname, "Std. Error"]
     beta =  glm_beta_coeff[varname]
 
     x = wide_input_frame[,varname]

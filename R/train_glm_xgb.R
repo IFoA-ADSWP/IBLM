@@ -12,11 +12,11 @@
 #' This gets XGBoost to effectively learn the residual patterns that the GLM couldn't
 #' capture. Optionally, GLM predictions can be used as base margins for XGBoost training.
 #'
-#' @param dfs A named list containing training and validation datasets. Must have
-#'   elements named "train" and "validate", each containing data frames with the
+#' @param df_list A named list containing training and validation datasets. Must have
+#'   elements named "train" and "validate", each containing df_list frames with the
 #'   same structure. This item is naturally output from the function [split_into_train_validate_test()]
 #' @param response_var Character string specifying the name of the response variable
-#'   column in the datasets. The string MUST appear in both `data$train` and `data$validate`.
+#'   column in the datasets. The string MUST appear in both `df_list$train` and `df_list$validate`.
 #' @param family Character string specifying the distributional family for the model.
 #'   Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
 #' @param xgb_additional_params Named list of additional parameters to pass to \link[xgboost]{xgb.train}
@@ -58,16 +58,16 @@
 #' \dontrun{
 #' library(IBLM)
 #'
-#' data <- split_into_train_validate_test(freMTPL2freq)
+#' df_list <- split_into_train_validate_test(freMTPL2freq)
 #'
-#' ensemble_model <- train_glm_xgb(data, response_var = "ClaimRate")
+#' ensemble_model <- train_glm_xgb(df_list, response_var = "ClaimRate")
 #' }
 #'
 #' @seealso
 #' \link[stats]{glm}, \link[xgboost]{xgb.train}
 #'
 #' @export
-train_glm_xgb <- function(dfs,
+train_glm_xgb <- function(df_list,
                           response_var,
                           family= "poisson",
                           xgb_additional_params = list(
@@ -79,12 +79,12 @@ train_glm_xgb <- function(dfs,
 
   # ==================== checks ====================
 
-  check_required_names(data, c("train", "validate"))
-  check_required_names(data[['train']], response_var)
-  check_required_names(data[['validate']], response_var)
+  check_required_names(df_list, c("train", "validate"))
+  check_required_names(df_list[['train']], response_var)
+  check_required_names(df_list[['validate']], response_var)
   stopifnot(
     length(response_var) == 1,
-    names(data[['train']]) == names(data[['validate']])
+    names(df_list[['train']]) == names(df_list[['validate']])
   )
 
   # ==================== input generation ====================
@@ -92,13 +92,13 @@ train_glm_xgb <- function(dfs,
   train <- list()
   validate <- list()
 
-  predictor_vars <- setdiff(names(data[['train']]), response_var)
+  predictor_vars <- setdiff(names(df_list[['train']]), response_var)
 
-  train$responses <- data[['train']] |>  dplyr::pull(response_var)
-  validate$responses <- data[['validate']] |>  dplyr::pull(response_var)
+  train$responses <- df_list[['train']] |>  dplyr::pull(response_var)
+  validate$responses <- df_list[['validate']] |>  dplyr::pull(response_var)
 
-  train$features <- data[['train']] |>  dplyr::select(-dplyr::all_of(response_var))
-  validate$features <- data[['validate']] |>  dplyr::select(-dplyr::all_of(response_var))
+  train$features <- df_list[['train']] |>  dplyr::select(-dplyr::all_of(response_var))
+  validate$features <- df_list[['validate']] |>  dplyr::select(-dplyr::all_of(response_var))
 
   # ==================== glm/xgb distribution and link choices ====================
 
@@ -148,11 +148,11 @@ train_glm_xgb <- function(dfs,
 
   # ==================== GLM fitting ====================
 
-  predictor_vars <- setdiff(names(data[['train']]), response_var)
+  predictor_vars <- setdiff(names(df_list[['train']]), response_var)
 
   formula <- stats::as.formula(paste(response_var, "~", paste(predictor_vars, collapse = " + ")))
 
-  glm_model <- stats::glm(formula, data = data[['train']], family = glm_family)
+  glm_model <- stats::glm(formula, data = df_list[['train']], family = glm_family)
 
   # ==================== Preparing for XGB  ====================
 
