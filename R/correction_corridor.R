@@ -72,7 +72,7 @@ correction_corridor <- function(iblm_model,
         geom_point(...)
       }
     } +
-    facet_wrap(~ trim, ncol = min(4, length(trim_vals))) +
+    facet_wrap(~ trim)+
     labs(
       x = "GLM Prediction",
       y = "Ensemble Prediction",
