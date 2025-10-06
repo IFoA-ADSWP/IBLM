@@ -31,7 +31,7 @@
 #' \dontrun{
 #' # Assuming you have fitted both GLM and XGBoost models
 #' models <- list(glm_model = my_glm, xgb_model = my_xgb)
-#' explainer <- explain(models, test_data)
+#' explainer <- explain_iblm(models, test_data)
 #'
 #' # Generate scatter plot for a variable
 #' explainer$beta_corrected_scatter("age")
@@ -41,7 +41,7 @@
 #' }
 #'
 #' @export
-explain <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
+explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 
   check_iblm_model(iblm_model)
 

@@ -23,7 +23,7 @@ testthat::test_that("test against Karol original script", {
   )
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
-  explainer_nu <- IBLMpackage::explain(x = IBLM, data = splits$test, migrate_reference_to_bias = FALSE)
+  explainer_nu <- explain_iblm(x = IBLM, data = splits$test, migrate_reference_to_bias = FALSE)
 
 
   # ============================ Karol (og) process =====================
