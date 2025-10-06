@@ -44,7 +44,7 @@ train_xgb_as_per_ens <- function(
   }
 
   # Check if training data matches
-  is_identical_data <- dplyr::setequal(df_list[["train"]], iblm_model$glm_model$data) & (dim(df_list[["train"]]) == dim(iblm_model$glm_model$data))
+  is_identical_data <- dplyr::setequal(df_list[["train"]], iblm_model$glm_model$data) & all(dim(df_list[["train"]]) == dim(iblm_model$glm_model$data))
   if (!is_identical_data) {
     cli::cli_abort(c(
       "{.arg data$train} must match the training data used for {.arg iblm_model}.",
