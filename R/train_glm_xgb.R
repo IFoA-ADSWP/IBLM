@@ -1,5 +1,5 @@
 
-#' Train GLM-XGBoost Ensemble Model
+#' Train IBLM Model (with XGBoost for residuals)
 #'
 #' @description
 #' This function trains an ensemble model combining a Generalized Linear Model (GLM)
@@ -202,19 +202,10 @@ train_glm_xgb <- function(df_list,
 
   stripGlmLR <- function(cm) {
     cm$y = c()
-    cm$model = c()
 
     cm$residuals = c()
     cm$fitted.values = c()
-    cm$effects = c()
-    cm$qr$qr = c()
-    cm$linear.predictors = c()
-    cm$weights = c()
-    cm$prior.weights = c()
     cm$data = c()
-
-    attr(cm$terms,".Environment") = c()
-    attr(cm$formula,".Environment") = c()
 
     cm
   }

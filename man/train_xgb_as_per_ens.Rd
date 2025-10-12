@@ -5,18 +5,13 @@
 \title{Train XGBoost Model Using the Ensemble Booster Model Parameters}
 \usage{
 train_xgb_as_per_ens(
-  df_list,
   iblm_model,
   xgb_additional_params = list(nrounds = 1000, verbose = 0, early_stopping_rounds = 25)
 )
 }
 \arguments{
-\item{df_list}{List with at least \code{train} and \code{validate} data frames. Training
-  data MUST match the `df_list` input that was used to create the ensemble model.
-If you have used `split_into_train_validate_test()` this will be the "train" portion of your data.}
-
 \item{iblm_model}{Ensemble model object of class "iblm" containing GLM and
-XGBoost model components.}
+XGBoost model components. Also contains data that was used to train it.}
 
 \item{xgb_additional_params}{Named list of XGBoost parameters. Defaults:
 \code{nrounds = 1000}, \code{verbose = 0}, \code{early_stopping_rounds = 25}.}

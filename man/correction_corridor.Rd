@@ -30,7 +30,7 @@ Default is 0.2 to improve performance with large datasets}
 \item{...}{Additional arguments passed to `geom_point()`}
 }
 \value{
-A ggplot object showing GLM vs ensemble predictions faceted by trim value.
+A ggplot object showing GLM vs IBLM predictions faceted by trim value.
   The diagonal line (y = x) represents perfect agreement between models
 }
 \description{

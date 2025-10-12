@@ -90,7 +90,6 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 
   data_beta_coeff <- data_beta_coeff_glm + data_beta_coeff_shap
 
-
   # Return explainer object with plotting functions
   list(
 

@@ -26,9 +26,9 @@ get_pinball_scores_iblm <- function(data,
 
   check_iblm_model(iblm_model)
 
-  response_var <- all.vars(iblm_model$glm_model$formula)[1]
+  response_var <- iblm_model$response_var
 
-  data_predictors <- data |> dplyr::select(-dplyr::all_of(response_var))
+  data_predictors <- data |> dplyr::select(dplyr::all_of(iblm_model$predictor_vars$all))
 
   actual <- data[[response_var]]
 
@@ -36,7 +36,7 @@ get_pinball_scores_iblm <- function(data,
 
   model_predictions <-
     data.frame(
-      homog = iblm_model$glm_model$data[[response_var]] |> mean(),
+      homog = iblm_model$data$train[[response_var]] |> mean(),
       glm = stats::predict(iblm_model$glm_model, data_predictors, type = "response") |> as.vector(),
       iblm = stats::predict(
         iblm_model,

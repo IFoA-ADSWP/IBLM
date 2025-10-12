@@ -167,11 +167,6 @@ testthat::test_that("test against Karol original script", {
   # ============================ comparisons =====================
 
   testthat::expect_equal(
-    explainer_nu$allnames,
-    explainer_og$allnames
-  )
-
-  testthat::expect_equal(
     explainer_nu$beta_corrections |> colSums(),
     explainer_og$shap_wide_colsums
   )

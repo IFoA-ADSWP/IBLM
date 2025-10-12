@@ -2,7 +2,7 @@
 % Please edit documentation in R/train_glm_xgb.R
 \name{train_glm_xgb}
 \alias{train_glm_xgb}
-\title{Train GLM-XGBoost Ensemble Model}
+\title{Train IBLM Model (with XGBoost for residuals)}
 \usage{
 train_glm_xgb(
   df_list,

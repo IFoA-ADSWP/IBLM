@@ -13,7 +13,7 @@
 #' @param color Optional. Name of a variable in `data` to color points by
 #' @param ... Additional arguments passed to `geom_point()`
 #'
-#' @return A ggplot object showing GLM vs ensemble predictions faceted by trim value.
+#' @return A ggplot object showing GLM vs IBLM predictions faceted by trim value.
 #'   The diagonal line (y = x) represents perfect agreement between models
 #'
 #' @export
@@ -40,7 +40,7 @@ correction_corridor <- function(iblm_model,
 
   # Generate predictions for each trim value
   df_list <- lapply(trim_vals, function(trim_val) {
-    ens_pred <- stats::predict(
+    iblm_pred <- stats::predict(
       model = iblm_model,
       data = df,
       trim = trim_val
@@ -48,7 +48,7 @@ correction_corridor <- function(iblm_model,
 
     out <- data.frame(
       glm = glm_pred,
-      iblm = ens_pred,
+      iblm = iblm_pred,
       trim = ifelse(is.na(trim_val), "NA", as.character(trim_val))
     )
 
@@ -75,7 +75,7 @@ correction_corridor <- function(iblm_model,
     facet_wrap(~ trim)+
     labs(
       x = "GLM Prediction",
-      y = "Ensemble Prediction",
+      y = "IBLM Prediction",
       title = "Correction Corridor by Trim Value",
       color = if (!is.na(color)) color else NULL
     ) +

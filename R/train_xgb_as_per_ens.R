@@ -3,11 +3,8 @@
 #' Trains an XGBoost model using parameters extracted from the booster residual component of the ensemble model.
 #' This is a convenient way to fit an XGBoost model for comparison with the ensemble.
 #'
-#' @param df_list List with at least \code{train} and \code{validate} data frames. Training
-#'   data MUST match the `df_list` input that was used to create the ensemble model.
-#' If you have used `split_into_train_validate_test()` this will be the "train" portion of your data.
 #' @param iblm_model Ensemble model object of class "iblm" containing GLM and
-#'   XGBoost model components.
+#'   XGBoost model components. Also contains data that was used to train it.
 #' @param xgb_additional_params Named list of XGBoost parameters. Defaults:
 #'   \code{nrounds = 1000}, \code{verbose = 0}, \code{early_stopping_rounds = 25}.
 #'
@@ -20,7 +17,6 @@
 #'
 #' @export
 train_xgb_as_per_ens <- function(
-    df_list,
     iblm_model,
     xgb_additional_params = list(
       nrounds = 1000,
@@ -29,8 +25,6 @@ train_xgb_as_per_ens <- function(
     )) {
 
   # ==================== checks ====================
-
-  check_required_names(df_list, c("train", "validate"))
 
   check_iblm_model(iblm_model)
 
@@ -43,31 +37,21 @@ train_xgb_as_per_ens <- function(
     ))
   }
 
-  # Check if training data matches
-  is_identical_data <- dplyr::setequal(df_list[["train"]], iblm_model$glm_model$data) & all(dim(df_list[["train"]]) == dim(iblm_model$glm_model$data))
-  if (!is_identical_data) {
-    cli::cli_abort(c(
-      "{.arg data$train} must match the training data used for {.arg iblm_model}.",
-      "x" = "The supplied training data is not equivalent to the model's training data.",
-      "i" = "Ensure you're using the same data that was used to train the model."
-    ))
-  }
-
   # ==================== input generation ====================
 
 
-  response_var <- all.vars(iblm_model$glm_model$formula)[1]
+  response_var <- iblm_model$response_var
 
   xgb_family_params <- iblm_model$xgb_model$params
 
   train <- list()
   validate <- list()
 
-  train$targets <- df_list[["train"]] |> dplyr::pull(response_var)
-  validate$targets <- df_list[["validate"]] |> dplyr::pull(response_var)
+  train$targets <- iblm_model$data$train |> dplyr::pull(response_var)
+  validate$targets <- iblm_model$data$validate |> dplyr::pull(response_var)
 
-  train$features <- df_list[["train"]] |> dplyr::select(-dplyr::all_of(response_var))
-  validate$features <- df_list[["validate"]] |> dplyr::select(-dplyr::all_of(response_var))
+  train$features <- iblm_model$data$train |> dplyr::select(-dplyr::all_of(response_var))
+  validate$features <- iblm_model$data$validate |> dplyr::select(-dplyr::all_of(response_var))
 
 
   # ==================== Preparing for XGB  ====================
