@@ -21,7 +21,7 @@
 #'   Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
 #' @param xgb_additional_params Named list of additional parameters to pass to \link[xgboost]{xgb.train}
 #'
-#' @return An object of class "ens" containing:
+#' @return An object of class "iblm" containing:
 #'   \item{glm_model}{The fitted GLM model object}
 #'   \item{xgb_model}{The trained XGBoost model object}
 #'
@@ -74,7 +74,8 @@ train_glm_xgb <- function(df_list,
                             nrounds = 1000,
                             verbose = 0,
                             early_stopping_rounds = 25
-                          )
+                          ),
+                          strip_glm = TRUE
 ){
 
   # ==================== checks ====================
@@ -194,16 +195,103 @@ train_glm_xgb <- function(df_list,
 
   xgb_model <- do.call(xgboost::xgb.train, xgb_all_params)
 
-  # ==================== Collating Output  ====================
+  # ==================== Stripping glm object of data  ===================
 
-  toreturn = list(glm_model = glm_model,
-                  xgb_model = xgb_model)
 
-  attr(toreturn, "relationship") <- relationship
+  if(strip_glm) {
 
-  class(toreturn) <- "ens"
+  stripGlmLR <- function(cm) {
+    cm$y = c()
+    cm$model = c()
 
-  return(toreturn)
+    cm$residuals = c()
+    cm$fitted.values = c()
+    cm$effects = c()
+    cm$qr$qr = c()
+    cm$linear.predictors = c()
+    cm$weights = c()
+    cm$prior.weights = c()
+    cm$data = c()
+
+    attr(cm$terms,".Environment") = c()
+    attr(cm$formula,".Environment") = c()
+
+    cm
+  }
+
+  glm_model <- stripGlmLR(glm_model)
+
+  }
+
+
+  # ==================== Initial 'iblm' Class  ====================
+
+  iblm_model <- list()
+
+  iblm_model$glm_model <- glm_model
+  iblm_model$xgb_model <- xgb_model
+  iblm_model$data$train <- df_list$train
+  iblm_model$data$validate <- df_list$validate
+  iblm_model$relationship <- relationship
+
+  # ==================== Additional 'iblm' Metadata  ====================
+
+  # Definitions and global variables
+  glm_beta_coeff <- iblm_model$glm_model$coefficients
+  coef_names_glm <- names(glm_beta_coeff)
+
+  vartypes <- lapply(df_list$train, typeof) |> unlist()
+  varclasses <- lapply(df_list$train, class) |> unlist()
+
+  # create data objects that explain variables
+
+  response_var <- all.vars(iblm_model$glm_model$formula)[1]
+
+  predictor_vars <- list()
+  predictor_vars$all <- names(vartypes) |> setdiff(response_var)
+  predictor_vars$categorical <- predictor_vars$all[(!vartypes %in% c("integer", "double") | varclasses == "factor")]
+  predictor_vars$continuous <- predictor_vars$all |> setdiff(predictor_vars$categorical)
+
+  # Factor levels for categorical variables
+
+  cat_levels <- list()
+  coeff_names <- list()
+
+  cat_levels$all <- lapply(
+    df_list$train |> dplyr::select(dplyr::all_of(predictor_vars$categorical)),
+    function(x) sort(unique(x))
+  )
+
+  cat_levels$reference <- sapply(
+    names(cat_levels$all),
+    function(var) {
+      all_levels <- cat_levels$all[[var]]
+      present_levels <- coef_names_glm[startsWith(coef_names_glm, var)]
+      present_levels_clean <- gsub(paste0("^", var), "", present_levels)
+      setdiff(all_levels, present_levels_clean)
+    },
+    USE.NAMES = TRUE
+  )
+
+  coeff_names$all_cat <- lapply(
+    names(cat_levels$all),
+    function(x) paste0(x, cat_levels$all[[x]])
+  ) |> unlist()
+
+  coeff_names$all <- c("(Intercept)", predictor_vars$continuous, coeff_names$all_cat)
+
+  coeff_names$reference_cat <- setdiff(coeff_names$all, coef_names_glm)
+
+  # ==================== Add Additional 'iblm' Metadata  ====================
+
+  iblm_model$response_var <- response_var
+  iblm_model$predictor_vars <- predictor_vars
+  iblm_model$cat_levels <- cat_levels
+  iblm_model$coeff_names <- coeff_names
+
+  class(iblm_model) <- "iblm"
+
+  return(iblm_model)
 }
 
 

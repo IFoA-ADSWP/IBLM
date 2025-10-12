@@ -2,29 +2,29 @@
 #'
 #' Validates an ensemble model object has required structure and attributes.
 #'
-#' @param model Model object to validate, expected class "ens"
+#' @param model Model object to validate, expected class "iblm"
 #'
 #' @return Invisible TRUE if all checks pass
 #'
 #' @export
 check_iblm_model <- function(model) {
   # Check model class
-  if (!"ens" %in% class(model)) {
+  if (!"iblm" %in% class(model)) {
     cli::cli_abort(c(
-      "x" = "Model must be of class {.cls ens}",
+      "x" = "Model must be of class {.cls iblm}",
       "i" = "Got class: {.cls {class(model)}}"
     ))
   }
 
   # Check relationship attribute exists
-  if (!"relationship" %in% names(attributes(model))) {
+  if (!"relationship" %in% names(model)) {
     cli::cli_abort(c(
       "x" = "Model missing required {.field relationship} attribute"
     ))
   }
 
   # Check relationship value
-  rel <- attr(model, "relationship")
+  rel <- model["relationship"]
   if (!rel %in% c("additive", "multiplicative")) {
     cli::cli_abort(c(
       "x" = "Invalid relationship type: {.val {rel}}",

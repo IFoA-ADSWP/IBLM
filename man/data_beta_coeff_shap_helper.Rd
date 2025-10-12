@@ -4,30 +4,14 @@
 \alias{data_beta_coeff_shap_helper}
 \title{Show Shap Beta Corrections for tabular data}
 \usage{
-data_beta_coeff_shap_helper(
-  data,
-  levels_all_cat,
-  levels_reference_cat,
-  response_var,
-  predictor_vars_categorical,
-  predictor_vars_continuous,
-  beta_corrections
-)
+data_beta_coeff_shap_helper(data, beta_corrections, iblm_model)
 }
 \arguments{
 \item{data}{A data frame containing the dataset for analysis}
 
-\item{levels_all_cat}{A named list containing all categorical levels for each categorical variable}
-
-\item{levels_reference_cat}{A named vector specifying the reference category for each categorical variable}
-
-\item{response_var}{Character string specifying the name of the response variable to exclude}
-
-\item{predictor_vars_categorical}{Character vector of categorical predictor variable names}
-
-\item{predictor_vars_continuous}{Character vector of continuous predictor variable names}
-
 \item{beta_corrections}{A data frame or matrix containing beta correction values for all variables and bias}
+
+\item{iblm_model}{Object of class 'iblm'}
 }
 \value{
 A data frame with beta coefficient corrections for all predictor variables plus bias term

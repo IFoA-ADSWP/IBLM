@@ -3,7 +3,7 @@
 #' Creates a faceted scatter plot comparing GLM predictions to ensemble predictions
 #' across different trim values, showing how the ensemble corrects the base GLM model.
 #'
-#' @param iblm_model An IBLM model object of class "ens".
+#' @param iblm_model An IBLM model object of class "iblm".
 #' @param data Data frame.
 #' If you have used `split_into_train_validate_test()` this will usually be the "test" portion of your data.
 #' @param trim_vals Numeric vector of trim values to compare.
@@ -48,7 +48,7 @@ correction_corridor <- function(iblm_model,
 
     out <- data.frame(
       glm = glm_pred,
-      ens = ens_pred,
+      iblm = ens_pred,
       trim = ifelse(is.na(trim_val), "NA", as.character(trim_val))
     )
 
@@ -64,7 +64,7 @@ correction_corridor <- function(iblm_model,
   df_all <- dplyr::bind_rows(df_list)
 
   # Start ggplot
-  p <- ggplot(df_all, aes(x = .data$glm, y = .data$ens)) +
+  p <- ggplot(df_all, aes(x = .data$glm, y = .data$iblm)) +
     {
       if (!is.na(color)) {
         geom_point(aes(color = .data[[color]]), ...)

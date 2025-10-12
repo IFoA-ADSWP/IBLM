@@ -4,24 +4,14 @@
 \alias{shap_dim_helper}
 \title{Convert Shap values to Wide One-Hot Encoded Format}
 \usage{
-shap_dim_helper(
-  shap,
-  wide_input_frame,
-  levels_all_cat,
-  response_var,
-  no_cat_toggle
-)
+shap_dim_helper(shap, wide_input_frame, iblm_model)
 }
 \arguments{
 \item{shap}{Data frame containing raw SHAP values from XGBoost.}
 
 \item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
 
-\item{levels_all_cat}{Named list of categorical variable levels.}
-
-\item{response_var}{Character string specifying the response_var variable name.}
-
-\item{no_cat_toggle}{Logical indicating absence of categorical variables.}
+\item{iblm_model}{Object of class 'iblm'}
 }
 \value{
 A data frame where SHAP values are in wide format for categorical variables.

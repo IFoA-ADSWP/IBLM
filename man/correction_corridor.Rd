@@ -14,7 +14,7 @@ correction_corridor(
 )
 }
 \arguments{
-\item{iblm_model}{An IBLM model object of class "ens".}
+\item{iblm_model}{An IBLM model object of class "iblm".}
 
 \item{data}{Data frame.
 If you have used `split_into_train_validate_test()` this will usually be the "test" portion of your data.}

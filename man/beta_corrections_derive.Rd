@@ -7,9 +7,8 @@
 beta_corrections_derive(
   shap_wide,
   wide_input_frame,
-  coef_names_reference_cat,
-  predictor_vars_continuous,
-  migrate_reference_to_bias = FALSE
+  migrate_reference_to_bias = FALSE,
+  iblm_model
 )
 }
 \arguments{
@@ -17,11 +16,9 @@ beta_corrections_derive(
 
 \item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
 
-\item{coef_names_reference_cat}{Character vector of reference level names for categorical variables.}
-
-\item{predictor_vars_continuous}{Character vector of numeric variables.}
-
 \item{migrate_reference_to_bias}{Logical, do we want to migrate the shap values for reference coefficients to the bias?}
+
+\item{iblm_model}{Object of class 'iblm'}
 }
 \value{
 A data frame with beta corrections where:

@@ -15,7 +15,7 @@ train_xgb_as_per_ens(
   data MUST match the `df_list` input that was used to create the ensemble model.
 If you have used `split_into_train_validate_test()` this will be the "train" portion of your data.}
 
-\item{iblm_model}{Ensemble model object of class "ens" containing GLM and
+\item{iblm_model}{Ensemble model object of class "iblm" containing GLM and
 XGBoost model components.}
 
 \item{xgb_additional_params}{Named list of XGBoost parameters. Defaults:

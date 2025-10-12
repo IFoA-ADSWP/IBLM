@@ -9,7 +9,9 @@ beta_corrected_scatter(
   q = 0,
   color = NULL,
   marginal = FALSE,
-  explain_objects
+  data_beta_coeff,
+  data,
+  iblm_model
 )
 }
 \arguments{
@@ -23,7 +25,11 @@ Must be present in the model. Currently not supported for categorical variables.
 
 \item{marginal}{Logical. Whether to add marginal density plots (numerical variables only).}
 
-\item{explain_objects}{Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: data_beta_coeff, data, predictor_vars_categorical, predictor_vars_continuous, x_glm_model}
+\item{data_beta_coeff}{Dataframe, Contains the corrected beta coefficients for each row of the data}
+
+\item{data}{Dataframe. The testing data.}
+
+\item{iblm_model}{Object of class 'iblm'}
 }
 \value{
 A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,

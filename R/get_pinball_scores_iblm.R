@@ -5,7 +5,7 @@
 #'
 #' @param data Data frame.
 #' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
-#' @param iblm_model Fitted IBLM model object of class "ens"
+#' @param iblm_model Fitted IBLM model object of class "iblm"
 #' @param trim Numeric trimming parameter for IBLM predictions. Default is `NA_real_`.
 #' @param additional_models (Named) list of fitted models for comparison. These models MUST be fitted on the same data as `iblm_model` for sensible results.
 #' If unnamed, models are labeled by their class.

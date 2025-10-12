@@ -4,7 +4,15 @@
 \alias{beta_corrected_density}
 \title{Create Density Plot of Corrected Beta values for a Variable}
 \usage{
-beta_corrected_density(varname, q = 0.05, type = "kde", explain_objects)
+beta_corrected_density(
+  varname,
+  q = 0.05,
+  type = "kde",
+  wide_input_frame,
+  beta_corrections,
+  data,
+  iblm_model
+)
 }
 \arguments{
 \item{varname}{Character string specifying the variable name OR coefficient name is accepted as well.}
@@ -13,18 +21,13 @@ beta_corrected_density(varname, q = 0.05, type = "kde", explain_objects)
 
 \item{type}{Character string, must be "kde" or "hist"}
 
-\item{explain_objects}{Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include:
-\itemize{
-  \item  glm_beta_coeff
-  \item levels_all_cat
-  \item coef_names_reference_cat
-  \item wide_input_frame
-  \item beta_corrections
-  \item x_glm_model
-  \item data
-  \item predictor_vars_continuous
-  \item predictor_vars_categorical
-}}
+\item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
+
+\item{beta_corrections}{Dataframe. This can be output from [beta_corrections_derive]}
+
+\item{data}{Dataframe. The testing data.}
+
+\item{iblm_model}{Object of class 'iblm'}
 }
 \value{
 ggplot object(s) showing the density distribution of corrected beta coefficients

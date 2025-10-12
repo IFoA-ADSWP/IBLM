@@ -4,30 +4,12 @@
 \alias{data_beta_coeff_glm_helper}
 \title{Show GLM Beta Coefficients for tabular data}
 \usage{
-data_beta_coeff_glm_helper(
-  data,
-  response_var,
-  glm_beta_coeff,
-  levels_all_cat,
-  levels_reference_cat,
-  predictor_vars_categorical,
-  predictor_vars_continuous
-)
+data_beta_coeff_glm_helper(data, iblm_model)
 }
 \arguments{
 \item{data}{Data frame with predictor variables}
 
-\item{response_var}{Response variable name to exclude}
-
-\item{glm_beta_coeff}{Named vector of GLM coefficients}
-
-\item{levels_all_cat}{Named list of categorical variable levels}
-
-\item{levels_reference_cat}{Vector of reference level for each categorical}
-
-\item{predictor_vars_categorical}{Character vector of categorical variable names}
-
-\item{predictor_vars_continuous}{Character vector of continuous variable names}
+\item{iblm_model}{Object of class 'iblm'}
 }
 \value{
 Data frame with predictor coefficients, plus a bias column

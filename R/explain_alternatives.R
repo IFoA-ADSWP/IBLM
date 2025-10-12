@@ -11,7 +11,9 @@
 #' @param color Character or NULL. Name of variable to use for point coloring.
 #'   Must be present in the model. Currently not supported for categorical variables.
 #' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
-#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: data_beta_coeff, data, predictor_vars_categorical, predictor_vars_continuous, x_glm_model
+#' @param data_beta_coeff Dataframe, Contains the corrected beta coefficients for each row of the data
+#' @param data Dataframe. The testing data.
+#' @param iblm_model Object of class 'iblm'
 #'
 #' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
 #'   model coefficient line, and confidence bands. For categorical variables: boxplot
@@ -36,25 +38,14 @@ beta_corrected_scatter <- function(varname = "DrivAge",
                                    q = 0,
                                    color=NULL,
                                    marginal=FALSE,
-                                   explain_objects)  {
+                                   data_beta_coeff,
+                                   data,
+                                   iblm_model)  {
 
-  explain_object_names <- c(
-    "data_beta_coeff",
-    "data",
-    "predictor_vars_categorical",
-    "predictor_vars_continuous",
-    "x_glm_model"
-  )
+  predictor_vars_continuous <- iblm_model$predictor_vars$continuous
+  predictor_vars_categorical <- iblm_model$predictor_vars$categorical
 
-  check_required_names(explain_objects, explain_object_names)
-
-  data_beta_coeff <- explain_objects[["data_beta_coeff"]]
-  data <- explain_objects[["data"]]
-  predictor_vars_categorical <- explain_objects[["predictor_vars_categorical"]]
-  predictor_vars_continuous <- explain_objects[["predictor_vars_continuous"]]
-  x_glm_model <- explain_objects[["x_glm_model"]]
-
-  glm_beta_coeff <- x_glm_model$coefficients
+  glm_beta_coeff <- iblm_model$glm_model$coefficients
 
 
   vartype <- assign_variable_type(
@@ -120,7 +111,7 @@ beta_corrected_scatter <- function(varname = "DrivAge",
         dplyr::filter(detect_outliers(.data$beta_coeff, method = "quantile",q=q))
     }
 
-    stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
+    stderror <- summary(iblm_model$glm_model)$coefficients[varname, "Std. Error"]
     beta <- glm_beta_coeff[varname]
 
     p  <- plot_data |>

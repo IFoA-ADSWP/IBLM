@@ -4,12 +4,14 @@
 \alias{overall_correction}
 \title{Generate Overall Corrections from Booster as Distribution Plot}
 \usage{
-overall_correction(transform_x_scale_by_link = TRUE, explain_objects)
+overall_correction(transform_x_scale_by_link = TRUE, shap, iblm_model)
 }
 \arguments{
 \item{transform_x_scale_by_link}{TRUE/FALSE, whether to transform the x axis by the link function}
 
-\item{explain_objects}{Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: shap, family, relationship}
+\item{shap}{Data frame containing raw SHAP values.}
+
+\item{iblm_model}{Object of class 'iblm'}
 }
 \value{
 A ggplot object showing density of total booster values

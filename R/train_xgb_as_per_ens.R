@@ -6,7 +6,7 @@
 #' @param df_list List with at least \code{train} and \code{validate} data frames. Training
 #'   data MUST match the `df_list` input that was used to create the ensemble model.
 #' If you have used `split_into_train_validate_test()` this will be the "train" portion of your data.
-#' @param iblm_model Ensemble model object of class "ens" containing GLM and
+#' @param iblm_model Ensemble model object of class "iblm" containing GLM and
 #'   XGBoost model components.
 #' @param xgb_additional_params Named list of XGBoost parameters. Defaults:
 #'   \code{nrounds = 1000}, \code{verbose = 0}, \code{early_stopping_rounds = 25}.

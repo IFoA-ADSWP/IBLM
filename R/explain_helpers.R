@@ -3,22 +3,20 @@
 #' Creates dataframe of GLM beta coefficients for each row and predictor variable of data
 #'
 #' @param data Data frame with predictor variables
-#' @param response_var Response variable name to exclude
-#' @param glm_beta_coeff Named vector of GLM coefficients
-#' @param levels_all_cat Named list of categorical variable levels
-#' @param levels_reference_cat Vector of reference level for each categorical
-#' @param predictor_vars_categorical Character vector of categorical variable names
-#' @param predictor_vars_continuous Character vector of continuous variable names
+#' @param iblm_model Object of class 'iblm'
 #'
 #' @return Data frame with predictor coefficients, plus a bias column
 data_beta_coeff_glm_helper <- function(
     data,
-    response_var,
-    glm_beta_coeff,
-    levels_all_cat,
-    levels_reference_cat,
-    predictor_vars_categorical,
-    predictor_vars_continuous) {
+    iblm_model
+    ) {
+
+  response_var <- iblm_model$response_var
+  glm_beta_coeff <- iblm_model$glm_model$coefficients
+  levels_all_cat <- iblm_model$cat_levels$all
+  levels_reference_cat <- iblm_model$cat_levels$reference
+  predictor_vars_continuous <- iblm_model$predictor_vars$continuous
+  predictor_vars_categorical <- iblm_model$predictor_vars$categorical
 
 
   glm_coeffs_all_cat <- purrr::imap(
@@ -60,21 +58,20 @@ data_beta_coeff_glm_helper <- function(
 #' Creates dataframe of Shap beta corrections for each row and predictor variable of data
 #'
 #' @param data A data frame containing the dataset for analysis
-#' @param levels_all_cat A named list containing all categorical levels for each categorical variable
-#' @param levels_reference_cat A named vector specifying the reference category for each categorical variable
-#' @param response_var Character string specifying the name of the response variable to exclude
-#' @param predictor_vars_categorical Character vector of categorical predictor variable names
-#' @param predictor_vars_continuous Character vector of continuous predictor variable names
 #' @param beta_corrections A data frame or matrix containing beta correction values for all variables and bias
+#' @param iblm_model Object of class 'iblm'
 #'
 #' @return A data frame with beta coefficient corrections for all predictor variables plus bias term
 data_beta_coeff_shap_helper <- function(data,
-                                 levels_all_cat,
-                                 levels_reference_cat,
-                                 response_var,
-                                 predictor_vars_categorical,
-                                 predictor_vars_continuous,
-                                 beta_corrections) {
+                                        beta_corrections,
+                                        iblm_model
+                                 ) {
+
+  response_var <- iblm_model$response_var
+  levels_all_cat <- iblm_model$cat_levels$all
+  levels_reference_cat <- iblm_model$cat_levels$reference
+  predictor_vars_continuous <- iblm_model$predictor_vars$continuous
+  predictor_vars_categorical <- iblm_model$predictor_vars$categorical
 
   levels_non_ref_cat <- purrr::map(
     names(levels_all_cat),

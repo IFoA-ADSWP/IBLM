@@ -2,7 +2,7 @@
 #'
 #' Creates a list that explains the beta values, and their corrections, of the ensemble IBLM model
 #'
-#' @param iblm_model An object of class 'ens'. This should be output by `train_glm_xgb()`
+#' @param iblm_model An object of class 'iblm'. This should be output by `train_glm_xgb()`
 #' @param data Data frame.
 #' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
 #' @param migrate_reference_to_bias TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
@@ -45,59 +45,12 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 
   check_iblm_model(iblm_model)
 
-  rownames(data) <- NULL
-
-  # Definitions and global variables
-   glm_beta_coeff <- iblm_model$glm_model$coefficients
-  coef_names_glm <- names(glm_beta_coeff)
-
-  vartypes <- lapply(iblm_model$glm_model$data, typeof) |> unlist()
-  varclasses <- lapply(iblm_model$glm_model$data, class) |> unlist()
-
-  # create data objects that explain variables
-
-  response_var <- all.vars(iblm_model$glm_model$formula)[1]
-  predictor_vars_all <- names(vartypes) |> setdiff(response_var)
-  predictor_vars_categorical <- predictor_vars_all[(!vartypes %in% c("integer", "double") | varclasses == "factor")]
-  predictor_vars_continuous <- predictor_vars_all |> setdiff(predictor_vars_categorical)
-
-  # Factor levels for categorical variables
-
-  levels_all_cat <- lapply(
-    iblm_model$glm_model$data |> dplyr::select(dplyr::all_of(predictor_vars_categorical)),
-    function(x) sort(unique(x))
-  )
-
-  levels_reference_cat <- sapply(
-    names(levels_all_cat),
-    function(var) {
-      all_levels <- levels_all_cat[[var]]
-      present_levels <- coef_names_glm[startsWith(coef_names_glm, var)]
-      present_levels_clean <- gsub(paste0("^", var), "", present_levels)
-      setdiff(all_levels, present_levels_clean)
-    },
-    USE.NAMES = TRUE
-  )
-
-
-
-  coef_names_all_cat <- lapply(
-    names(levels_all_cat),
-    function(x) paste0(x, levels_all_cat[[x]])
-  ) |> unlist()
-
-  coef_names_all <- c("(Intercept)", predictor_vars_continuous, coef_names_all_cat)
-
-  coef_names_reference_cat <- setdiff(coef_names_all, coef_names_glm)
-
-  no_cat_toggle <- (length(predictor_vars_categorical) == 0)
-
   # Generate SHAP values
   shap <- stats::predict(
     iblm_model$xgb_model,
     newdata = xgboost::xgb.DMatrix(
       data.matrix(
-        dplyr::select(data, -dplyr::all_of(response_var))
+        dplyr::select(data, -dplyr::all_of(iblm_model$response_var))
       )
     ),
     predcontrib = TRUE
@@ -106,48 +59,34 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
   # Prepare wide input frame... this is `data` but with categoricals converted to one-hot format
   wide_input_frame <- data_dim_helper(
     frame = data,
-    coef_names_all = coef_names_all,
-    levels_all_cat = levels_all_cat,
-    response_var = response_var,
-    no_cat_toggle = no_cat_toggle
+    iblm_model = iblm_model
   )
 
   # Prepare wide shap corrections... this converts `shap` values to wide format for categoricals
   shap_wide <- shap_dim_helper(
     shap = shap,
     wide_input_frame = wide_input_frame,
-    levels_all_cat = levels_all_cat,
-    response_var = response_var,
-    no_cat_toggle = no_cat_toggle
+    iblm_model = iblm_model
   )
 
   # Prepare beta corrections... this converts `shap` values be compatible with feature values
   beta_corrections <- beta_corrections_derive(
       shap_wide = shap_wide,
       wide_input_frame = wide_input_frame,
-      coef_names_reference_cat = coef_names_reference_cat,
-      predictor_vars_continuous = predictor_vars_continuous,
+      iblm_model = iblm_model,
       migrate_reference_to_bias = migrate_reference_to_bias
     )
 
   # Prepare beta values after corrections
   data_beta_coeff_glm <- data_beta_coeff_glm_helper(
     data = data,
-    response_var = response_var,
-     glm_beta_coeff =  glm_beta_coeff,
-    levels_all_cat = levels_all_cat,
-    levels_reference_cat = levels_reference_cat,
-    predictor_vars_categorical = predictor_vars_categorical,
-    predictor_vars_continuous = predictor_vars_continuous)
+    iblm_model = iblm_model)
 
   data_beta_coeff_shap <- data_beta_coeff_shap_helper(
       data,
-     levels_all_cat,
-     levels_reference_cat,
-     response_var,
-     predictor_vars_categorical,
-     predictor_vars_continuous,
-     beta_corrections)
+      beta_corrections = beta_corrections,
+      iblm_model= iblm_model
+     )
 
   data_beta_coeff <- data_beta_coeff_glm + data_beta_coeff_shap
 
@@ -166,14 +105,10 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
         q = q,
         color = color,
         marginal = marginal,
-        explain_objects = list(
-          data_beta_coeff = data_beta_coeff,
-          data = data,
-          predictor_vars_categorical = predictor_vars_categorical,
-          predictor_vars_continuous = predictor_vars_continuous,
-          x_glm_model = iblm_model$glm_model
+        data_beta_coeff = data_beta_coeff,
+        data = data,
+        iblm_model = iblm_model
         )
-      )
     },
 
     beta_corrected_density = function(
@@ -185,28 +120,17 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
           varname = varname,
           q=q,
           type=type,
-          explain_objects = list(
-             glm_beta_coeff =  glm_beta_coeff,
-            levels_all_cat = levels_all_cat,
-            coef_names_reference_cat = coef_names_reference_cat,
-            wide_input_frame = wide_input_frame,
-            beta_corrections = beta_corrections,
-            x_glm_model = iblm_model$glm_model,
-            data = data,
-            predictor_vars_continuous = predictor_vars_continuous,
-            predictor_vars_categorical = predictor_vars_categorical
-          )
+          wide_input_frame = wide_input_frame,
+          beta_corrections = beta_corrections,
+          data = data,
+          iblm_model = iblm_model
         )
       },
 
     shap_intercept = shap_intercept(
       shap = shap,
-      x_glm_model = iblm_model$glm_model,
       data = data,
-      response_var = response_var,
-      predictor_vars_continuous = predictor_vars_continuous,
-      levels_reference_cat = levels_reference_cat,
-      no_cat_toggle = no_cat_toggle
+      iblm_model = iblm_model
     ),
 
     overall_correction = function(
@@ -214,11 +138,8 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
       ) {
       overall_correction(
         transform_x_scale_by_link = transform_x_scale_by_link,
-        explain_objects = list(
-          shap = shap,
-          family = iblm_model$glm_model$family,
-          relationship = attr(iblm_model, "relationship")
-        )
+        shap = shap,
+        iblm_model = iblm_model
         )
       },
 
@@ -228,11 +149,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 
     shap = shap,
 
-     glm_beta_coeff =  glm_beta_coeff,
-
-    data_beta_coeff = data_beta_coeff,
-
-    allnames = coef_names_glm |> setdiff("(Intercept)")
+    data_beta_coeff = data_beta_coeff
   )
 }
 
@@ -249,13 +166,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 #' Transforms categorical variables in a data frame into one-hot encoded format
 #'
 #' @param frame Input data frame to be transformed.
-#' @param coef_names_all Character vector of all expected variable names including
-#'   categorical levels and intercept.
-#' @param levels_all_cat Named list where each element contains the unique levels
-#'   for each categorical variable.
-#' @param response_var Character string specifying the name of the response_var variable.
-#' @param no_cat_toggle Logical indicating whether there are any categorical
-#'   variables in the data.
+#' @param iblm_model Object of class 'iblm'
 #' @param remove_target Logical, whether to remove the response_var variable from
 #'   the output (default TRUE).
 #'
@@ -264,7 +175,13 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 #'
 #'
 #' @keywords internal
-data_dim_helper <- function(frame, coef_names_all, levels_all_cat, response_var, no_cat_toggle, remove_target = TRUE) {
+data_dim_helper <- function(frame, iblm_model, remove_target = TRUE) {
+
+  coef_names_all <- iblm_model$coeff_names$all
+  levels_all_cat <- iblm_model$cat_levels$all
+  response_var <- iblm_model$response_var
+  no_cat_toggle <- length(iblm_model$predictor_vars$categorical) == 0
+
   if (no_cat_toggle) {
     return(frame)
   }
@@ -300,18 +217,20 @@ data_dim_helper <- function(frame, coef_names_all, levels_all_cat, response_var,
 #'
 #' @param shap Data frame containing raw SHAP values from XGBoost.
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
-#' @param levels_all_cat Named list of categorical variable levels.
-#' @param response_var Character string specifying the response_var variable name.
-#' @param no_cat_toggle Logical indicating absence of categorical variables.
+#' @param iblm_model Object of class 'iblm'
 #'
 #' @return A data frame where SHAP values are in wide format for categorical variables.
 #'
 #' @keywords internal
 shap_dim_helper <- function(shap,
                             wide_input_frame,
-                            levels_all_cat,
-                            response_var,
-                            no_cat_toggle) {
+                            iblm_model) {
+
+  levels_all_cat <- iblm_model$cat_levels$all
+  response_var <- iblm_model$response_var
+  no_cat_toggle <- length(iblm_model$predictor_vars$categorical) == 0
+
+
   if (no_cat_toggle) {
 
     shap_wide <- shap |>
@@ -350,9 +269,8 @@ shap_dim_helper <- function(shap,
 #'
 #' @param shap_wide Data frame containing SHAP values from XGBoost that have been converted to wide format by [shap_dim_helper()]
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
-#' @param coef_names_reference_cat Character vector of reference level names for categorical variables.
-#' @param predictor_vars_continuous Character vector of numeric variables.
 #' @param migrate_reference_to_bias Logical, do we want to migrate the shap values for reference coefficients to the bias?
+#' @param iblm_model Object of class 'iblm'
 #'
 #' @return A data frame with beta corrections where:
 #' \itemize{
@@ -364,9 +282,11 @@ shap_dim_helper <- function(shap,
 #' @keywords internal
 beta_corrections_derive <- function(shap_wide,
                             wide_input_frame,
-                            coef_names_reference_cat,
-                            predictor_vars_continuous,
-                            migrate_reference_to_bias = FALSE){
+                            migrate_reference_to_bias = FALSE,
+                            iblm_model){
+
+  coef_names_reference_cat <- iblm_model$coeff_names$reference_cat
+  predictor_vars_continuous <- iblm_model$predictor_vars$continuous
 
   beta_corrections <- shap_wide
 
@@ -405,18 +325,10 @@ beta_corrections_derive <- function(shap_wide,
 #' @param varname Character string specifying the variable name OR coefficient name is accepted as well.
 #' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot (i.e. value of 0.05 will only show shaps within 5pct --> 95pct quantile range for plot)
 #' @param type Character string, must be "kde" or "hist"
-#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include:
-#'   \itemize{
-#'     \item  glm_beta_coeff
-#'     \item levels_all_cat
-#'     \item coef_names_reference_cat
-#'     \item wide_input_frame
-#'     \item beta_corrections
-#'     \item x_glm_model
-#'     \item data
-#'     \item predictor_vars_continuous
-#'     \item predictor_vars_categorical
-#'   }
+#' @param wide_input_frame Wide format input data frame (one-hot encoded).
+#' @param beta_corrections Dataframe. This can be output from [beta_corrections_derive]
+#' @param data Dataframe. The testing data.
+#' @param iblm_model Object of class 'iblm'
 #'
 #' @return ggplot object(s) showing the density distribution of corrected beta coefficients
 #' with vertical lines indicating the original coefficient value and standard error bounds.
@@ -442,34 +354,18 @@ beta_corrected_density <- function(
     varname,
     q = 0.05,
     type="kde",
-    explain_objects
+    wide_input_frame,
+    beta_corrections,
+    data,
+    iblm_model
     ) {
 
-  explain_object_names <- c(
-    "glm_beta_coeff",
-    "levels_all_cat",
-    "coef_names_reference_cat",
-    "wide_input_frame",
-    "beta_corrections",
-    "x_glm_model",
-    "data",
-    "predictor_vars_continuous",
-    "predictor_vars_categorical"
-  )
-
-  check_required_names(explain_objects, explain_object_names)
-
-  # list2env(explain_objects[explain_object_names], envir = as.environment(-1))
-
-   glm_beta_coeff <- explain_objects[["glm_beta_coeff"]]
-  levels_all_cat <- explain_objects[["levels_all_cat"]]
-  coef_names_reference_cat <- explain_objects[["coef_names_reference_cat"]]
-  wide_input_frame <- explain_objects[["wide_input_frame"]]
-  beta_corrections <- explain_objects[["beta_corrections"]]
-  x_glm_model <- explain_objects[["x_glm_model"]]
-  data <- explain_objects[["data"]]
-  predictor_vars_continuous <- explain_objects[["predictor_vars_continuous"]]
-  predictor_vars_categorical <- explain_objects[["predictor_vars_categorical"]]
+  glm_beta_coeff <- iblm_model$glm_model$coefficient
+  levels_all_cat <- iblm_model$cat_levels$all
+  coef_names_reference_cat <- iblm_model$coeff_names$reference_cat
+  x_glm_model <- iblm_model$glm_model
+  predictor_vars_continuous <- iblm_model$predictor_vars$continuous
+  predictor_vars_categorical <- iblm_model$predictor_vars$categorical
 
   stopifnot(is.numeric(q), q >= 0 , q < 0.5)
 
@@ -496,7 +392,10 @@ beta_corrected_density <- function(
           varname = .x,
           q = q,
           type = type,
-          explain_objects = explain_objects
+          wide_input_frame = wide_input_frame,
+          beta_corrections = beta_corrections,
+          data = data,
+          iblm_model = iblm_model
         )
     ) |> stats::setNames(levels_to_plot)
 
@@ -561,7 +460,10 @@ beta_corrected_density <- function(
 #'   Must be present in the model. Currently not supported for categorical variables.
 #' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
 #' @param excl_outliers Logical. Whether to exclude outliers based on quantile method.
-#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include:  glm_beta_coeff, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, coef_names_all, x
+#' @param wide_input_frame Wide format input data frame (one-hot encoded).
+#' @param beta_corrections Dataframe. This can be output from [beta_corrections_derive]
+#' @param data Dataframe. The testing data.
+#' @param iblm_model Object of class 'iblm'
 #'
 #' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
 #'   model coefficient line, and confidence bands. For categorical variables: boxplot
@@ -588,37 +490,21 @@ beta_corrected_scatter_deprecated <- function(varname,
                                          color,
                                          marginal,
                                          excl_outliers,
-                                   explain_objects)  {
+                                         wide_input_frame,
+                                         beta_corrections,
+                                         data,
+                                         iblm_model)  {
 
-  explain_object_names <- c(
-    "glm_beta_coeff",
-    "levels_all_cat",
-    "wide_input_frame",
-    "beta_corrections",
-    "data",
-    "response_var",
-    "predictor_vars_categorical",
-    "predictor_vars_continuous",
-    "coef_names_reference_cat",
-    "coef_names_all",
-    "iblm_model"
-  )
 
-  check_required_names(explain_objects, explain_object_names)
+   glm_beta_coeff <- iblm_model$glm_model$coefficient
+   levels_all_cat <- iblm_model$cat_levels$all
+   coef_names_reference_cat <- coeff_names$reference_cat
+   coef_names_all <- coeff_names$all
+   x_glm_model <- iblm_model$glm_model
+   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
+   predictor_vars_categorical <- iblm_model$predictor_vars$categorical
+   response_var <- iblm_model$response_var
 
-  # list2env(explain_objects[explain_object_names], envir = as.environment(-1))
-
-   glm_beta_coeff <- explain_objects[["glm_beta_coeff"]]
-  levels_all_cat <- explain_objects[["levels_all_cat"]]
-  wide_input_frame <- explain_objects[["wide_input_frame"]]
-  beta_corrections <- explain_objects[["beta_corrections"]]
-  data <- explain_objects[["data"]]
-  response_var <- explain_objects[["response_var"]]
-  predictor_vars_categorical <- explain_objects[["predictor_vars_categorical"]]
-  predictor_vars_continuous <- explain_objects[["predictor_vars_continuous"]]
-  coef_names_reference_cat <- explain_objects[["coef_names_reference_cat"]]
-  coef_names_all <- explain_objects[["coef_names_all"]]
-  iblm_model <- explain_objects[["iblm_model"]]
 
   # TODO: warning or error if reference level passed as varname
   color_vartype <- "numerical"
@@ -721,12 +607,8 @@ beta_corrected_scatter_deprecated <- function(varname,
 #' are at their reference levels.
 #'
 #' @param shap Data frame containing raw SHAP values.
-#' @param x_glm_model The fitted GLM model object.
-#' @param data Original input data frame.
-#' @param response_var Character string specifying response_var variable name.
-#' @param predictor_vars_continuous Character vector of continuous variable names.
-#' @param levels_reference_cat Named list of reference levels for categorical variables.
-#' @param no_cat_toggle Logical indicating absence of categorical variables.
+#' @param data Dataframe. The testing data.
+#' @param iblm_model Object of class 'iblm'
 #'
 #' @return A list containing:
 #' \describe{
@@ -746,12 +628,16 @@ beta_corrected_scatter_deprecated <- function(varname,
 #'
 #' @import ggplot2
 shap_intercept <- function(shap,
-                           x_glm_model,
                            data,
-                           response_var,
-                           predictor_vars_continuous,
-                           levels_reference_cat,
-                           no_cat_toggle) {
+                           iblm_model) {
+
+  levels_reference_cat <- iblm_model$cat_levels$reference
+  x_glm_model <- iblm_model$glm_model
+  predictor_vars_continuous <- iblm_model$predictor_vars$continuous
+  response_var <- iblm_model$response_var
+  no_cat_toggle <- length(iblm_model$predictor_vars$categorical) == 0
+
+
   beta_0 <- x_glm_model$coefficients["(Intercept)"] |> as.numeric()
   beta_0_SE <- summary(x_glm_model)$coefficients["(Intercept)", "Std. Error"]
   baseline <- shap$BIAS[1]
@@ -825,27 +711,18 @@ shap_intercept <- function(shap,
 #' Creates a visualization showing for each record the overall booster component (either multiplicative or additive)
 #'
 #' @param transform_x_scale_by_link TRUE/FALSE, whether to transform the x axis by the link function
-#' @param explain_objects Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include: shap, family, relationship
+#' @param shap Data frame containing raw SHAP values.
+#' @param iblm_model Object of class 'iblm'
 #'
 #' @return A ggplot object showing density of total booster values
 #'
 #' @keywords internal
 #'
 #' @import ggplot2
-overall_correction <- function(transform_x_scale_by_link = TRUE, explain_objects) {
+overall_correction <- function(transform_x_scale_by_link = TRUE, shap, iblm_model) {
 
-  explain_object_names <- c(
-    "shap",
-    "family",
-    "relationship"
-    )
-
-  check_required_names(explain_objects, explain_object_names)
-
-  # list2env(explain_objects[explain_object_names], envir = as.environment(-1))
-  shap <- explain_objects[["shap"]]
-  family <- explain_objects[["family"]]
-  relationship <- explain_objects[["relationship"]]
+  family <- iblm_model$glm_model$family
+  relationship <- iblm_model$relationship
 
   dt <- shap |>
     dplyr::mutate(

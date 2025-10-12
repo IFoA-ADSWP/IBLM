@@ -7,7 +7,7 @@
 check_iblm_model(model)
 }
 \arguments{
-\item{model}{Model object to validate, expected class "ens"}
+\item{model}{Model object to validate, expected class "iblm"}
 }
 \value{
 Invisible TRUE if all checks pass

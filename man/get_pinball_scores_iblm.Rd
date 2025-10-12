@@ -15,7 +15,7 @@ get_pinball_scores_iblm(
 \item{data}{Data frame.
 If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.}
 
-\item{iblm_model}{Fitted IBLM model object of class "ens"}
+\item{iblm_model}{Fitted IBLM model object of class "iblm"}
 
 \item{trim}{Numeric trimming parameter for IBLM predictions. Default is `NA_real_`.}
 

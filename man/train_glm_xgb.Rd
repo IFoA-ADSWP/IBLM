@@ -8,7 +8,8 @@ train_glm_xgb(
   df_list,
   response_var,
   family = "poisson",
-  xgb_additional_params = list(nrounds = 1000, verbose = 0, early_stopping_rounds = 25)
+  xgb_additional_params = list(nrounds = 1000, verbose = 0, early_stopping_rounds = 25),
+  strip_glm = TRUE
 )
 }
 \arguments{
@@ -25,7 +26,7 @@ Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. 
 \item{xgb_additional_params}{Named list of additional parameters to pass to \link[xgboost]{xgb.train}}
 }
 \value{
-An object of class "ens" containing:
+An object of class "iblm" containing:
   \item{glm_model}{The fitted GLM model object}
   \item{xgb_model}{The trained XGBoost model object}
 }

@@ -10,7 +10,10 @@ beta_corrected_scatter_deprecated(
   color,
   marginal,
   excl_outliers,
-  explain_objects
+  wide_input_frame,
+  beta_corrections,
+  data,
+  iblm_model
 )
 }
 \arguments{
@@ -26,7 +29,13 @@ Must be present in the model. Currently not supported for categorical variables.
 
 \item{excl_outliers}{Logical. Whether to exclude outliers based on quantile method.}
 
-\item{explain_objects}{Named list of objects passed through from \link[IBLMPackage]{explain} function. These are not meant to be populated directly. Items will include:  glm_beta_coeff, levels_all_cat, wide_input_frame, beta_corrections, data, response_var, predictor_vars_categorical, predictor_vars_continuous, coef_names_reference_cat, coef_names_all, x}
+\item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
+
+\item{beta_corrections}{Dataframe. This can be output from [beta_corrections_derive]}
+
+\item{data}{Dataframe. The testing data.}
+
+\item{iblm_model}{Object of class 'iblm'}
 }
 \value{
 A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,

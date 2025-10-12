@@ -4,30 +4,14 @@
 \alias{shap_intercept}
 \title{Generate Intercept Correction Analysis and Visualizations}
 \usage{
-shap_intercept(
-  shap,
-  x_glm_model,
-  data,
-  response_var,
-  predictor_vars_continuous,
-  levels_reference_cat,
-  no_cat_toggle
-)
+shap_intercept(shap, data, iblm_model)
 }
 \arguments{
 \item{shap}{Data frame containing raw SHAP values.}
 
-\item{x_glm_model}{The fitted GLM model object.}
+\item{data}{Dataframe. The testing data.}
 
-\item{data}{Original input data frame.}
-
-\item{response_var}{Character string specifying response_var variable name.}
-
-\item{predictor_vars_continuous}{Character vector of continuous variable names.}
-
-\item{levels_reference_cat}{Named list of reference levels for categorical variables.}
-
-\item{no_cat_toggle}{Logical indicating absence of categorical variables.}
+\item{iblm_model}{Object of class 'iblm'}
 }
 \value{
 A list containing:

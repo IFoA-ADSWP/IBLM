@@ -4,28 +4,12 @@
 \alias{data_dim_helper}
 \title{Convert Data Frame to Wide One-Hot Encoded Format}
 \usage{
-data_dim_helper(
-  frame,
-  coef_names_all,
-  levels_all_cat,
-  response_var,
-  no_cat_toggle,
-  remove_target = TRUE
-)
+data_dim_helper(frame, iblm_model, remove_target = TRUE)
 }
 \arguments{
 \item{frame}{Input data frame to be transformed.}
 
-\item{coef_names_all}{Character vector of all expected variable names including
-categorical levels and intercept.}
-
-\item{levels_all_cat}{Named list where each element contains the unique levels
-for each categorical variable.}
-
-\item{response_var}{Character string specifying the name of the response_var variable.}
-
-\item{no_cat_toggle}{Logical indicating whether there are any categorical
-variables in the data.}
+\item{iblm_model}{Object of class 'iblm'}
 
 \item{remove_target}{Logical, whether to remove the response_var variable from
 the output (default TRUE).}

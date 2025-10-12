@@ -7,7 +7,7 @@
 explain_iblm(iblm_model, data, migrate_reference_to_bias = FALSE)
 }
 \arguments{
-\item{iblm_model}{An object of class 'ens'. This should be output by `train_glm_xgb()`}
+\item{iblm_model}{An object of class 'iblm'. This should be output by `train_glm_xgb()`}
 
 \item{data}{Data frame.
 If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.}

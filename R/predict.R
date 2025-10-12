@@ -4,7 +4,7 @@
 #' This function generates predictions from an ensemble model consisting of a GLM
 #' and an XGBoost model.
 #'
-#' @param model An object of class "ens", as produced by train_glm_xgb()
+#' @param model An object of class "iblm", as produced by train_glm_xgb()
 #' @param data A data frame or matrix containing the predictor variables for
 #'   which predictions are desired. Must have the same structure as the
 #'   training data used to fit the ensemble model.
@@ -44,7 +44,7 @@
 #'
 #' @export
 #'
-predict.ens <- function(model, data, trim = NA_real_, type = "response") {
+predict.iblm <- function(model, data, trim = NA_real_, type = "response") {
 
   check_iblm_model(model)
 
@@ -59,7 +59,7 @@ predict.ens <- function(model, data, trim = NA_real_, type = "response") {
 
   response_var <- all.vars(model$glm_model$formula)[1]
   data <- data |> dplyr::select(-dplyr::any_of(response_var))
-  relationship <- attr(model, "relationship")
+  relationship <- model["relationship"]
   glm <- unname(stats::predict(model$glm_model, data, type = type))
   xgb <- stats::predict(model$xgb_model, xgboost::xgb.DMatrix(data.matrix(data)), type = type)
 
