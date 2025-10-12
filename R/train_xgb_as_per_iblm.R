@@ -1,4 +1,4 @@
-#' Train XGBoost Model Using the Ensemble Booster Model Parameters
+#' Train XGBoost Model Using the IBLM Model Parameters
 #'
 #' Trains an XGBoost model using parameters extracted from the booster residual component of the ensemble model.
 #' This is a convenient way to fit an XGBoost model for comparison with the ensemble.
@@ -16,7 +16,7 @@
 #' \link[xgboost]{xgb.train}
 #'
 #' @export
-train_xgb_as_per_ens <- function(
+train_xgb_as_per_iblm <- function(
     iblm_model,
     xgb_additional_params = list(
       nrounds = 1000,
