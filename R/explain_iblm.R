@@ -249,7 +249,7 @@ shap_dim_helper <- function(shap,
       dplyr::bind_cols()
 
     shap_wide <- cbind(
-      shap[, setdiff(colnames(wide_input_frame), colnames(cat_frame))],
+      shap |> dplyr::select(-dplyr::any_of(names(cat_frame))),
       cat_frame
     ) |>
       dplyr::select(colnames(wide_input_frame)) |>
