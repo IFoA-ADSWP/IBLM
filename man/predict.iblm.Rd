@@ -7,6 +7,8 @@
 \method{predict}{iblm}(model, data, trim = NA_real_, type = "response")
 }
 \arguments{
+\item{model}{An object of class 'iblm'. This should be output by `train_iblm()`}
+
 \item{data}{A data frame or matrix containing the predictor variables for
 which predictions are desired. Must have the same structure as the
 training data used to fit the ensemble model.}
@@ -14,8 +16,6 @@ training data used to fit the ensemble model.}
 \item{trim}{Numeric value for post-hoc truncating of XGBoost predictions. If \code{NA} (default) then no trimming is applied.}
 
 \item{type}{string, defines the type argument used in GLM/XGBoost. Currently only "response" is supported}
-
-\item{iblm_model}{An object of class 'iblm'. This should be output by `train_iblm()`}
 }
 \value{
 A numeric vector of ensemble predictions computed as the element-wise

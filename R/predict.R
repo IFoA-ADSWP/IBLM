@@ -4,7 +4,7 @@
 #' This function generates predictions from an ensemble model consisting of a GLM
 #' and an XGBoost model.
 #'
-#' @param iblm_model An object of class 'iblm'. This should be output by `train_iblm()`
+#' @param model An object of class 'iblm'. This should be output by `train_iblm()`
 #' @param data A data frame or matrix containing the predictor variables for
 #'   which predictions are desired. Must have the same structure as the
 #'   training data used to fit the ensemble model.

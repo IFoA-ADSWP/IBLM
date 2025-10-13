@@ -22,12 +22,10 @@ Imports:
     ggExtra,
     ggplot2,
     isotree,
-    magrittr,
     purrr,
     scales,
     statmod,
     stats,
-    stringr,
     tidyr,
     utils,
     xgboost

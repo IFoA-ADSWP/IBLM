@@ -75,10 +75,10 @@ beta_corrected_scatter <- function(varname = "DrivAge",
     data_beta_coeff_names <- paste0(varname, cat_levels)
     glm_beta_coeff_names <- names(glm_beta_coeff)
     plot_beta_coeff_names <- intersect(data_beta_coeff_names, glm_beta_coeff_names)
-    reference_level <- setdiff(data_beta_coeff_names, plot_beta_coeff_names) |> stringr::str_replace(paste0("^", varname), "")
+    reference_level <- sub(paste0("^", varname), "", setdiff(data_beta_coeff_names, plot_beta_coeff_names))
 
     beta_glm_coeff_df <- data.frame(
-      x = plot_beta_coeff_names |> stringr::str_replace(paste0("^", varname), ""),
+      x = sub(paste0("^", varname), "", plot_beta_coeff_names),
       y = as.numeric(glm_beta_coeff[plot_beta_coeff_names])
     ) |> stats::setNames(c(varname, "beta_coeff"))
 
