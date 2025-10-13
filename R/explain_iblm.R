@@ -41,7 +41,7 @@
 #' }
 #'
 #' @export
-explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
+explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE){
 
   check_iblm_model(iblm_model)
 
@@ -264,7 +264,7 @@ shap_dim_helper <- function(shap,
 beta_corrections_derive <- function(shap_wide,
                             wide_input_frame,
                             iblm_model,
-                            migrate_reference_to_bias = FALSE){
+                            migrate_reference_to_bias = TRUE){
 
   check_iblm_model(iblm_model)
 
@@ -274,14 +274,25 @@ beta_corrections_derive <- function(shap_wide,
   beta_corrections <- shap_wide
 
     shap_for_zeros <- rowSums(
-      ((wide_input_frame[, predictor_vars_continuous] == 0) * 1) * shap_wide[, predictor_vars_continuous]
+      (
+        wide_input_frame |>
+          dplyr::select(dplyr::all_of(predictor_vars_continuous)) |>
+          dplyr::mutate(
+            dplyr::across(
+              dplyr::everything(),
+              \(x) dplyr::if_else(x == 0, 1, 0)
+              )
+            )
+        ) * dplyr::select(shap_wide, dplyr::all_of(predictor_vars_continuous))
       )
 
     if(migrate_reference_to_bias) {
 
-    shap_for_cat_ref <- rowSums(shap_wide[,coef_names_reference_cat])
+    shap_for_cat_ref <- rowSums(
+      dplyr::select(shap_wide, dplyr::all_of(coef_names_reference_cat))
+      )
 
-    beta_corrections[, coef_names_reference_cat] <- 0
+    beta_corrections <- beta_corrections |> dplyr::mutate(dplyr::across(coef_names_reference_cat, ~0))
 
     } else {
 
@@ -291,9 +302,17 @@ beta_corrections_derive <- function(shap_wide,
 
     beta_corrections$bias <- beta_corrections$bias + shap_for_zeros + shap_for_cat_ref
 
-    calc <- beta_corrections[, predictor_vars_continuous] / wide_input_frame[, predictor_vars_continuous]
-    calc[apply(calc, 2, is.infinite)] <- 0
-    beta_corrections[, predictor_vars_continuous] <- calc
+    beta_corrections <- beta_corrections |>
+      dplyr::mutate(
+        dplyr::across(
+          predictor_vars_continuous,
+          function(x) {
+            y <- x / wide_input_frame[[dplyr::cur_column()]]
+            y <- dplyr::if_else(is.infinite(y), 0, y)
+            return(y)
+            }
+          )
+      )
 
     return(beta_corrections)
 

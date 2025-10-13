@@ -8,7 +8,7 @@ beta_corrections_derive(
   shap_wide,
   wide_input_frame,
   iblm_model,
-  migrate_reference_to_bias = FALSE
+  migrate_reference_to_bias = TRUE
 )
 }
 \arguments{

@@ -4,7 +4,7 @@
 \alias{explain_iblm}
 \title{Explain GLM Model Predictions Using SHAP Values}
 \usage{
-explain_iblm(iblm_model, data, migrate_reference_to_bias = FALSE)
+explain_iblm(iblm_model, data, migrate_reference_to_bias = TRUE)
 }
 \arguments{
 \item{iblm_model}{An object of class 'iblm'. This should be output by `train_iblm()`}

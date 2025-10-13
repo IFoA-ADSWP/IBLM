@@ -126,6 +126,7 @@ beta_corrected_scatter <- function(varname = "DrivAge",
         ,alpha=0.4) +
       geom_smooth(aes(x = get(varname), y=.data$beta_coeff))+
       {if(color_vartype=="numerical") scale_color_gradientn(name = color,colors = iblm_colors[c(2,1)])}+
+      {if(color_vartype=="categorical") scale_color_discrete(name = color)}+
       labs(
         title = paste("Beta Coefficients after SHAP corrections for", varname),
         subtitle = paste0(varname, " beta: ", round(beta, 4), ", SE: ", round(stderror, 4)),
