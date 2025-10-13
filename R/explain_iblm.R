@@ -2,7 +2,7 @@
 #'
 #' Creates a list that explains the beta values, and their corrections, of the ensemble IBLM model
 #'
-#' @param iblm_model An object of class 'iblm'. This should be output by `train_glm_xgb()`
+#' @param iblm_model An object of class 'iblm'. This should be output by `train_iblm()`
 #' @param data Data frame.
 #' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
 #' @param migrate_reference_to_bias TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?

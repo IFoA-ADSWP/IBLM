@@ -7,8 +7,6 @@
 \method{predict}{iblm}(model, data, trim = NA_real_, type = "response")
 }
 \arguments{
-\item{model}{An object of class "iblm", as produced by train_glm_xgb()}
-
 \item{data}{A data frame or matrix containing the predictor variables for
 which predictions are desired. Must have the same structure as the
 training data used to fit the ensemble model.}
@@ -16,6 +14,8 @@ training data used to fit the ensemble model.}
 \item{trim}{Numeric value for post-hoc truncating of XGBoost predictions. If \code{NA} (default) then no trimming is applied.}
 
 \item{type}{string, defines the type argument used in GLM/XGBoost. Currently only "response" is supported}
+
+\item{iblm_model}{An object of class 'iblm'. This should be output by `train_iblm()`}
 }
 \value{
 A numeric vector of ensemble predictions computed as the element-wise
@@ -39,7 +39,7 @@ The prediction process involves the following steps:
 \dontrun{
 data <- freMTPL2freq |> split_into_train_validate_test()
 
-IBLM <- train_glm_xgb(
+IBLM <- train_iblm(
   data,
   response_var = "ClaimRate",
   family = "poisson"

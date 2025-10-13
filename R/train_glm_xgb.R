@@ -61,14 +61,14 @@
 #'
 #' df_list <- split_into_train_validate_test(freMTPL2freq)
 #'
-#' ensemble_model <- train_glm_xgb(df_list, response_var = "ClaimRate")
+#' ensemble_model <- train_iblm(df_list, response_var = "ClaimRate")
 #' }
 #'
 #' @seealso
 #' \link[stats]{glm}, \link[xgboost]{xgb.train}
 #'
 #' @export
-train_glm_xgb <- function(df_list,
+train_iblm <- function(df_list,
                           response_var,
                           family= "poisson",
                           xgb_additional_params = list(
