@@ -2,15 +2,13 @@
 #' Train IBLM Model (with XGBoost for residuals)
 #'
 #' @description
-#' This function trains an ensemble model combining a Generalized Linear Model (GLM)
-#' with an XGBoost model.
+#' This function trains an interpretable boosted linear model.
 #'
-#' The XGBoost model is trained on:
+#' The function combines a Generalized Linear Model (GLM) with a booster model (currently only XGBoost is possible).
+#'
+#' The "booster" model is trained on:
 #' - actual responses / GLM predictions, when the link function is log
 #' - actual responses - GLM predictions, when the link function is identity
-#'
-#' This gets XGBoost to effectively learn the residual patterns that the GLM couldn't
-#' capture. Optionally, GLM predictions can be used as base margins for XGBoost training.
 #'
 #' @param df_list A named list containing training and validation datasets. Must have
 #'   elements named "train" and "validate", each containing df_list frames with the
@@ -23,8 +21,14 @@
 #' @param strip_glm TRUE/FALSE, whether to strip superfluous data from the `glm_model` object saved within `iblm` class that is output. Only serves to reduce memory constraints.
 #'
 #' @return An object of class "iblm" containing:
-#'   \item{glm_model}{The fitted GLM model object}
-#'   \item{booster_model}{The trained XGBoost model object}
+#'   \item{glm_model}{The GLM model object, fitted on the `df_list$train` data that was provided}
+#'   \item{booster_model}{The booster model object, trained on the residuals leftover from the glm_model}
+#'   \item{data}{A list containing the data that was used to train and validate this iblm model}
+#'   \item{relationship}{String that explains how to combine the `glm_model` and `booster_model`. Currently only either "Additive" or "Multiplicative"}
+#'   \item{response_var}{A string describing the response variable used for this iblm model}
+#'   \item{predictor_vars}{A list describing the predictor variables used for this iblm model}
+#'   \item{cat_levels}{A list describing the categorical levels for the predictor vars}
+#'   \item{coeff_names}{A list describing the coefficient names}
 #'
 #' @details
 #' The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family.
@@ -61,7 +65,7 @@
 #'
 #' df_list <- split_into_train_validate_test(freMTPL2freq)
 #'
-#' ensemble_model <- train_iblm(df_list, response_var = "ClaimRate")
+#' iblm_model <- train_iblm(df_list, response_var = "ClaimRate")
 #' }
 #'
 #' @seealso
@@ -236,8 +240,6 @@ train_iblm <- function(df_list,
   varclasses <- lapply(df_list$train, class) |> unlist()
 
   # create data objects that explain variables
-
-  response_var <- all.vars(iblm_model$glm_model$formula)[1]
 
   predictor_vars <- list()
   predictor_vars$all <- names(vartypes) |> setdiff(response_var)
