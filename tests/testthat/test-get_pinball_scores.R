@@ -23,7 +23,7 @@ testthat::test_that("test against Karol original script", {
   )
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
-  ps_nu <- get_pinball_scores_iblm(splits$test, IBLM)
+  ps_nu <- get_pinball_scores(splits$test, IBLM)
 
 
   # ============================ Karol (og) process =====================
