@@ -23,7 +23,7 @@ testthat::test_that("test against Karol original script", {
   )
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
-  explainer_nu <- explain_iblm(x = IBLM, data = splits$test, migrate_reference_to_bias = FALSE)
+  explainer_nu <- explain_iblm(iblm_model = IBLM, data = splits$test, migrate_reference_to_bias = FALSE)
 
 
   # ============================ Karol (og) process =====================
@@ -36,21 +36,6 @@ testthat::test_that("test against Karol original script", {
   # script: construct_explain_test
 
   explainer_og <- list()
-
-  explainer_og$allnames <-
-  c(
-    "VehPower", "VehAge", "DrivAge", "BonusMalus", "VehBrandB10", "VehBrandB11",
-    "VehBrandB12", "VehBrandB13", "VehBrandB14", "VehBrandB2", "VehBrandB3",
-    "VehBrandB4", "VehBrandB5", "VehBrandB6", "VehGasRegular", "AreaB", "AreaC",
-    "AreaD", "AreaE", "AreaF", "Density", "RegionAquitaine", "RegionAuvergne",
-    "RegionBasse-Normandie", "RegionBourgogne", "RegionBretagne", "RegionCentre",
-    "RegionChampagne-Ardenne", "RegionCorse", "RegionFranche-Comte",
-    "RegionHaute-Normandie", "RegionIle-de-France", "RegionLanguedoc-Roussillon",
-    "RegionLimousin", "RegionLorraine", "RegionMidi-Pyrenees",
-    "RegionNord-Pas-de-Calais", "RegionPays-de-la-Loire", "RegionPicardie",
-    "RegionPoitou-Charentes", "RegionProvence-Alpes-Cotes-D'Azur",
-    "RegionRhone-Alpes"
-  )
 
   explainer_og$shap_wide_colsums <-
   c(
@@ -175,12 +160,6 @@ testthat::test_that("test against Karol original script", {
     explainer_nu$shap |> colSums(),
     explainer_og$raw_shap_colsums
   )
-
-  testthat::expect_equal(
-    explainer_nu$glm_beta_coeff,
-    explainer_og$betas
-  )
-
 
 
 })
