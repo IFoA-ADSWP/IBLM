@@ -286,6 +286,10 @@ beta_corrections_derive <- function(shap_wide,
         ) * dplyr::select(shap_wide, dplyr::all_of(predictor_vars_continuous))
       )
 
+    if(length(predictor_vars_continuous) == 0) {
+      shap_for_zeros <- rep(0, nrow(beta_corrections))
+    }
+
     if(migrate_reference_to_bias) {
 
     shap_for_cat_ref <- rowSums(
