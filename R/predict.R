@@ -61,30 +61,30 @@ predict.iblm <- function(model, data, trim = NA_real_, type = "response") {
   data <- data |> dplyr::select(-dplyr::any_of(response_var))
   relationship <- model["relationship"]
   glm <- unname(stats::predict(model$glm_model, data, type = type))
-  xgb <- stats::predict(model$xgb_model, xgboost::xgb.DMatrix(data.matrix(data)), type = type)
+  booster <- stats::predict(model$booster_model, xgboost::xgb.DMatrix(data.matrix(data)), type = type)
 
   if (!is.na(trim)) {
 
     truncate <- function(x) {
       return(
         pmax(
-          pmin(xgb, 1 + trim),
+          pmin(booster, 1 + trim),
           max(1 - trim, 0)
         )
       )
     }
-    xgb <- truncate(xgb)
-    xgb <- xgb * 1 / mean(xgb)
+    booster <- truncate(booster)
+    booster <- booster * 1 / mean(booster)
 
   }
 
   if (relationship == "multiplicative") {
 
-    toreturn <- glm * xgb
+    toreturn <- glm * booster
 
   } else if (relationship == "additive") {
 
-    toreturn <- glm + xgb
+    toreturn <- glm + booster
 
   } else {
 

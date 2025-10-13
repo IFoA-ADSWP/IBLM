@@ -42,6 +42,8 @@ beta_corrected_scatter <- function(varname = "DrivAge",
                                    data,
                                    iblm_model)  {
 
+  check_iblm_model(iblm_model)
+
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
   predictor_vars_categorical <- iblm_model$predictor_vars$categorical
 

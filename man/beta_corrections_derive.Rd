@@ -7,8 +7,8 @@
 beta_corrections_derive(
   shap_wide,
   wide_input_frame,
-  migrate_reference_to_bias = FALSE,
-  iblm_model
+  iblm_model,
+  migrate_reference_to_bias = FALSE
 )
 }
 \arguments{
@@ -16,9 +16,9 @@ beta_corrections_derive(
 
 \item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
 
-\item{migrate_reference_to_bias}{Logical, do we want to migrate the shap values for reference coefficients to the bias?}
-
 \item{iblm_model}{Object of class 'iblm'}
+
+\item{migrate_reference_to_bias}{Logical, do we want to migrate the shap values for reference coefficients to the bias?}
 }
 \value{
 A data frame with beta corrections where:

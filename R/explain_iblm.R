@@ -30,7 +30,7 @@
 #' @examples
 #' \dontrun{
 #' # Assuming you have fitted both GLM and XGBoost models
-#' models <- list(glm_model = my_glm, xgb_model = my_xgb)
+#' models <- list(glm_model = my_glm, booster_model = my_xgb)
 #' explainer <- explain_iblm(models, test_data)
 #'
 #' # Generate scatter plot for a variable
@@ -47,7 +47,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 
   # Generate SHAP values
   shap <- stats::predict(
-    iblm_model$xgb_model,
+    iblm_model$booster_model,
     newdata = xgboost::xgb.DMatrix(
       data.matrix(
         dplyr::select(data, -dplyr::all_of(iblm_model$response_var))
@@ -57,41 +57,27 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
   ) |> data.frame()
 
   # Prepare wide input frame... this is `data` but with categoricals converted to one-hot format
-  wide_input_frame <- data_dim_helper(
-    frame = data,
-    iblm_model = iblm_model
-  )
+  wide_input_frame <- data_dim_helper(data, iblm_model)
 
   # Prepare wide shap corrections... this converts `shap` values to wide format for categoricals
-  shap_wide <- shap_dim_helper(
-    shap = shap,
-    wide_input_frame = wide_input_frame,
-    iblm_model = iblm_model
-  )
+  shap_wide <- shap_dim_helper(shap, wide_input_frame, iblm_model)
 
   # Prepare beta corrections... this converts `shap` values be compatible with feature values
-  beta_corrections <- beta_corrections_derive(
-      shap_wide = shap_wide,
-      wide_input_frame = wide_input_frame,
-      iblm_model = iblm_model,
-      migrate_reference_to_bias = migrate_reference_to_bias
-    )
+  beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model, migrate_reference_to_bias)
 
   # Prepare beta values after corrections
-  data_beta_coeff_glm <- data_beta_coeff_glm_helper(
-    data = data,
-    iblm_model = iblm_model)
-
-  data_beta_coeff_shap <- data_beta_coeff_shap_helper(
-      data,
-      beta_corrections = beta_corrections,
-      iblm_model= iblm_model
-     )
-
+  data_beta_coeff_glm <- data_beta_coeff_glm_helper(data, iblm_model)
+  data_beta_coeff_shap <- data_beta_coeff_shap_helper(data, beta_corrections, iblm_model)
   data_beta_coeff <- data_beta_coeff_glm + data_beta_coeff_shap
 
   # Return explainer object with plotting functions
   list(
+
+    shap = shap,
+
+    beta_corrections = beta_corrections,
+
+    data_beta_coeff = data_beta_coeff,
 
     beta_corrected_scatter = function(
     varname = "DrivAge",
@@ -140,15 +126,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
         shap = shap,
         iblm_model = iblm_model
         )
-      },
-
-    input_frame = data,
-
-    beta_corrections = beta_corrections,
-
-    shap = shap,
-
-    data_beta_coeff = data_beta_coeff
+      }
   )
 }
 
@@ -164,7 +142,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 #'
 #' Transforms categorical variables in a data frame into one-hot encoded format
 #'
-#' @param frame Input data frame to be transformed.
+#' @param data Input data frame to be transformed.
 #' @param iblm_model Object of class 'iblm'
 #' @param remove_target Logical, whether to remove the response_var variable from
 #'   the output (default TRUE).
@@ -174,7 +152,9 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = FALSE){
 #'
 #'
 #' @keywords internal
-data_dim_helper <- function(frame, iblm_model, remove_target = TRUE) {
+data_dim_helper <- function(data, iblm_model, remove_target = TRUE) {
+
+  check_iblm_model(iblm_model)
 
   coef_names_all <- iblm_model$coeff_names$all
   levels_all_cat <- iblm_model$cat_levels$all
@@ -182,13 +162,13 @@ data_dim_helper <- function(frame, iblm_model, remove_target = TRUE) {
   no_cat_toggle <- length(iblm_model$predictor_vars$categorical) == 0
 
   if (no_cat_toggle) {
-    return(frame)
+    return(data)
   }
 
-  main_frame <- data.frame(matrix(0, nrow = nrow(frame), ncol = length(coef_names_all))) |>
+  main_frame <- data.frame(matrix(0, nrow = nrow(data), ncol = length(coef_names_all))) |>
     stats::setNames(coef_names_all)
 
-  df_onehot <- frame |>
+  df_onehot <- data |>
     fastDummies::dummy_cols(
       select_columns = names(levels_all_cat),
       remove_first_dummy = FALSE,
@@ -224,6 +204,8 @@ data_dim_helper <- function(frame, iblm_model, remove_target = TRUE) {
 shap_dim_helper <- function(shap,
                             wide_input_frame,
                             iblm_model) {
+
+  check_iblm_model(iblm_model)
 
   levels_all_cat <- iblm_model$cat_levels$all
   response_var <- iblm_model$response_var
@@ -281,8 +263,10 @@ shap_dim_helper <- function(shap,
 #' @keywords internal
 beta_corrections_derive <- function(shap_wide,
                             wide_input_frame,
-                            migrate_reference_to_bias = FALSE,
-                            iblm_model){
+                            iblm_model,
+                            migrate_reference_to_bias = FALSE){
+
+  check_iblm_model(iblm_model)
 
   coef_names_reference_cat <- iblm_model$coeff_names$reference_cat
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
@@ -358,6 +342,8 @@ beta_corrected_density <- function(
     data,
     iblm_model
     ) {
+
+  check_iblm_model(iblm_model)
 
   glm_beta_coeff <- iblm_model$glm_model$coefficient
   levels_all_cat <- iblm_model$cat_levels$all
@@ -477,6 +463,8 @@ shap_intercept <- function(shap,
                            data,
                            iblm_model) {
 
+  check_iblm_model(iblm_model)
+
   levels_reference_cat <- iblm_model$cat_levels$reference
   x_glm_model <- iblm_model$glm_model
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
@@ -566,6 +554,8 @@ shap_intercept <- function(shap,
 #'
 #' @import ggplot2
 overall_correction <- function(transform_x_scale_by_link = TRUE, shap, iblm_model) {
+
+  check_iblm_model(iblm_model)
 
   family <- iblm_model$glm_model$family
   relationship <- iblm_model$relationship

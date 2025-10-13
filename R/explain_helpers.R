@@ -11,6 +11,8 @@ data_beta_coeff_glm_helper <- function(
     iblm_model
     ) {
 
+  check_iblm_model(iblm_model)
+
   response_var <- iblm_model$response_var
   glm_beta_coeff <- iblm_model$glm_model$coefficients
   levels_all_cat <- iblm_model$cat_levels$all
@@ -66,6 +68,8 @@ data_beta_coeff_shap_helper <- function(data,
                                         beta_corrections,
                                         iblm_model
                                  ) {
+
+  check_iblm_model(iblm_model)
 
   response_var <- iblm_model$response_var
   levels_all_cat <- iblm_model$cat_levels$all

@@ -4,10 +4,10 @@
 \alias{data_dim_helper}
 \title{Convert Data Frame to Wide One-Hot Encoded Format}
 \usage{
-data_dim_helper(frame, iblm_model, remove_target = TRUE)
+data_dim_helper(data, iblm_model, remove_target = TRUE)
 }
 \arguments{
-\item{frame}{Input data frame to be transformed.}
+\item{data}{Input data frame to be transformed.}
 
 \item{iblm_model}{Object of class 'iblm'}
 

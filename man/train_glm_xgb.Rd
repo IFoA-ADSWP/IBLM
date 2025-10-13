@@ -30,7 +30,7 @@ Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. 
 \value{
 An object of class "iblm" containing:
   \item{glm_model}{The fitted GLM model object}
-  \item{xgb_model}{The trained XGBoost model object}
+  \item{booster_model}{The trained XGBoost model object}
 }
 \description{
 This function trains an ensemble model combining a Generalized Linear Model (GLM)

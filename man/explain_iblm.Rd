@@ -42,7 +42,7 @@ visualization methods to understand how SHAP values modify GLM predictions.
 \examples{
 \dontrun{
 # Assuming you have fitted both GLM and XGBoost models
-models <- list(glm_model = my_glm, xgb_model = my_xgb)
+models <- list(glm_model = my_glm, booster_model = my_xgb)
 explainer <- explain_iblm(models, test_data)
 
 # Generate scatter plot for a variable

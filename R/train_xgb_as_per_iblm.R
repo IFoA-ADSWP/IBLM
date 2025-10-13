@@ -29,10 +29,10 @@ train_xgb_as_per_iblm <- function(
   check_iblm_model(iblm_model)
 
   # Check if residual model is xgb.Booster
-  if (!("xgb.Booster" %in% class(iblm_model$xgb_model))) {
+  if (!("xgb.Booster" %in% class(iblm_model$booster_model))) {
     cli::cli_abort(c(
       "Residual model must be of class {.cls xgb.Booster}.",
-      "x" = "You supplied a residual model of class {.cls {class(iblm_model$xgb_model)}}.",
+      "x" = "You supplied a residual model of class {.cls {class(iblm_model$booster_model)}}.",
       "i" = "The ensemble model must use XGBoost for this function to work."
     ))
   }
@@ -42,7 +42,7 @@ train_xgb_as_per_iblm <- function(
 
   response_var <- iblm_model$response_var
 
-  xgb_family_params <- iblm_model$xgb_model$params
+  xgb_family_params <- iblm_model$booster_model$params
 
   train <- list()
   validate <- list()
@@ -70,7 +70,7 @@ train_xgb_as_per_iblm <- function(
 
   xgb_all_params <- utils::modifyList(xgb_core_params, xgb_additional_params)
 
-  xgb_model <- do.call(xgboost::xgb.train, xgb_all_params)
+  booster_model <- do.call(xgboost::xgb.train, xgb_all_params)
 
-  return(xgb_model)
+  return(booster_model)
 }

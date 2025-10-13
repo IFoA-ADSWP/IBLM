@@ -24,7 +24,7 @@
 #'
 #' @return An object of class "iblm" containing:
 #'   \item{glm_model}{The fitted GLM model object}
-#'   \item{xgb_model}{The trained XGBoost model object}
+#'   \item{booster_model}{The trained XGBoost model object}
 #'
 #' @details
 #' The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family.
@@ -194,7 +194,7 @@ train_glm_xgb <- function(df_list,
   )
   xgb_all_params <- utils::modifyList(xgb_core_params, xgb_additional_params)
 
-  xgb_model <- do.call(xgboost::xgb.train, xgb_all_params)
+  booster_model <- do.call(xgboost::xgb.train, xgb_all_params)
 
   # ==================== Stripping glm object of data  ===================
 
@@ -221,7 +221,7 @@ train_glm_xgb <- function(df_list,
   iblm_model <- list()
 
   iblm_model$glm_model <- glm_model
-  iblm_model$xgb_model <- xgb_model
+  iblm_model$booster_model <- booster_model
   iblm_model$data$train <- df_list$train
   iblm_model$data$validate <- df_list$validate
   iblm_model$relationship <- relationship

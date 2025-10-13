@@ -33,7 +33,7 @@ check_iblm_model <- function(model) {
   }
 
   # Check required components exist
-  check_required_names(model, c("glm_model", "xgb_model"))
+  check_required_names(model, c("glm_model", "booster_model"))
 
   # Additional checks
   if (!inherits(model$glm_model, "glm")) {
@@ -42,9 +42,9 @@ check_iblm_model <- function(model) {
     ))
   }
 
-  if (!("xgb.Booster" %in% class(model$xgb_model))) {
+  if (!("xgb.Booster" %in% class(model$booster_model))) {
     cli::cli_abort(c(
-      "x" = "{.field xgb_model} must be of class {.cls xgb.Booster}"
+      "x" = "{.field booster_model} must be of class {.cls xgb.Booster}"
     ))
   }
 
