@@ -234,7 +234,7 @@ shap_dim_helper <- function(shap,
       shap |> dplyr::select(-dplyr::any_of(names(cat_frame))),
       cat_frame
     ) |>
-      dplyr::select(colnames(wide_input_frame)) |>
+      dplyr::select(dplyr::all_of(colnames(wide_input_frame))) |>
       dplyr::mutate(bias = shap$BIAS[1], .before = dplyr::everything())
   }
 
@@ -492,7 +492,8 @@ shap_intercept <- function(shap,
       )
   }
 
-  intercept_shap <- (dplyr::select(shap, -"BIAS") * shap_mask) |>
+  intercept_shap <-
+    (dplyr::select(shap, -dplyr::all_of("BIAS")) * shap_mask) |>
     dplyr::select(names(which(colSums(shap_mask) > 0))) |>
     (\(df) dplyr::filter(df, rowSums(df) != 0))() |>
     dplyr::select(-dplyr::any_of(predictor_vars_continuous))
@@ -517,9 +518,9 @@ shap_intercept <- function(shap,
     ggplot(aes(x=.data$value))+
     geom_density()+
     facet_wrap(~name,scales="free")+
-    geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], size = 0.5)+
-    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], size = 0.5)+
-    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], size = 0.5)+
+    geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5)+
+    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], linewidth = 0.5)+
+    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], linewidth = 0.5)+
     ggtitle("Individual intercept correction distributions")+
     xlab("")+
     ylab("")+
@@ -528,7 +529,7 @@ shap_intercept <- function(shap,
   boxplot <- intercept_shap_long |>
     ggplot(aes(x = .data$name,y=.data$value))+
     geom_boxplot()+
-    geom_hline(yintercept = baseline + beta_0, color = iblm_colors[2], size = 0.5)+
+    geom_hline(yintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5)+
     ggtitle(paste0("Jitter chart of beta corrections for intercept"),
             subtitle = paste0("Intercept: ", round(beta_0,2)," with shap baseline: ",round(baseline,2)))+
     xlab("")+

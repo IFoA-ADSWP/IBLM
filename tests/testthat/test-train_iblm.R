@@ -80,7 +80,7 @@ testthat::test_that("test against Karol original script", {
       `RegionRhone-Alpes` = 0.2464175176544479
     )
 
-  IBLM_og$xgb_model$evaluation_log <-
+  IBLM_og$booster_model$evaluation_log <-
     data.frame(
       iter = seq(1, 54, by = 1),
       validation_poisson_nloglik = c(
@@ -106,14 +106,14 @@ testthat::test_that("test against Karol original script", {
 
   # was GLM fitted the same coefficients?
   testthat::expect_equal(
-    IBLM_og$glm_model$coefficients,
-    IBLM_nu$glm_model$coefficients
+    IBLM_nu$glm_model$coefficients,
+    IBLM_og$glm_model$coefficients
   )
 
   # was XGBoost fitted with the same log?
   testthat::expect_equal(
-    IBLM_og$xgb_model$evaluation_log,
-    IBLM_nu$xgb_model$evaluation_log |> as.data.frame()
+    IBLM_nu$booster_model$evaluation_log |> as.data.frame(),
+    IBLM_og$booster_model$evaluation_log
   )
 
 
