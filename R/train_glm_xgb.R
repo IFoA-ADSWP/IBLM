@@ -20,6 +20,7 @@
 #' @param family Character string specifying the distributional family for the model.
 #'   Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
 #' @param xgb_additional_params Named list of additional parameters to pass to \link[xgboost]{xgb.train}
+#' @param strip_glm TRUE/FALSE, whether to strip superfluous data from the `glm_model` object saved within `iblm` class that is output. Only serves to reduce memory constraints.
 #'
 #' @return An object of class "iblm" containing:
 #'   \item{glm_model}{The fitted GLM model object}
