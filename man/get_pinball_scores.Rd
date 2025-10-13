@@ -2,42 +2,34 @@
 % Please edit documentation in R/get_pinball_scores.R
 \name{get_pinball_scores}
 \alias{get_pinball_scores}
-\title{Calculate Pinball Scores for Model Comparison}
+\title{Calculate Pinball Scores for IBLM and Additional Models}
 \usage{
 get_pinball_scores(
-  res,
-  models = c("homog", "GLM", "XGB", "IBLM"),
-  response_var,
-  return_both = FALSE
+  data,
+  iblm_model,
+  trim = NA_real_,
+  additional_models = list()
 )
 }
 \arguments{
-\item{res}{Data frame containing model predictions and response_var variable}
+\item{data}{Data frame.
+If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.}
 
-\item{models}{Character vector of model names (column names in res).
-Default is c("homog", "GLM", "XGB", "IBLM")}
+\item{iblm_model}{Fitted IBLM model object of class "iblm"}
 
-\item{response_var}{Character string specifying the response_var variable column name.
-Default is "ClaimNb"}
+\item{trim}{Numeric trimming parameter for IBLM predictions. Default is `NA_real_`.}
 
-\item{return_both}{Logical indicating whether to return both Poisson deviance
-and pinball scores. Default is FALSE (returns only pinball scores)}
+\item{additional_models}{(Named) list of fitted models for comparison. These models MUST be fitted on the same data as `iblm_model` for sensible results.
+If unnamed, models are labeled by their class.}
 }
 \value{
-Data frame with model performance metrics. If return_both is TRUE,
-  returns both Poisson deviance and pinball scores with a 'stat' column.
-  If FALSE, returns only pinball scores as percentages
+Data frame with columns for "poission_deviance" and "pinball_score" for each model.
 }
 \description{
-Computes Poisson deviance and relative pinball scores for multiple models
-compared to a homogeneous baseline model.
+Computes Poisson deviance and pinball scores for an IBLM model alongside
+homogeneous, GLM, and optional additional models.
 }
 \details{
-Pinball scores are calculated as 1 - (model_deviance / homog_deviance),
-representing the relative improvement over the homogeneous model.
-}
-\examples{
-# Assuming 'results' is a data frame with model predictions
-# get_pinball_scores(results, models = c("homog", "GLM"), response_var = "ClaimNb")
-
+Pinball scores are calculated relative to a homogeneous model (i.e. a simple mean prediction of training data).
+Higher scores indicate better predictive performance.
 }

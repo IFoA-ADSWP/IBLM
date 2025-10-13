@@ -1,48 +1,99 @@
-
-#' Calculate Pinball Scores for Model Comparison
+#' Calculate Pinball Scores for IBLM and Additional Models
 #'
-#' Computes Poisson deviance and relative pinball scores for multiple models
-#' compared to a homogeneous baseline model.
+#' Computes Poisson deviance and pinball scores for an IBLM model alongside
+#' homogeneous, GLM, and optional additional models.
 #'
-#' @param res Data frame containing model predictions and response_var variable
-#' @param models Character vector of model names (column names in res).
-#'   Default is c("homog", "GLM", "XGB", "IBLM")
-#' @param response_var Character string specifying the response_var variable column name.
-#'   Default is "ClaimNb"
-#' @param return_both Logical indicating whether to return both Poisson deviance
-#'   and pinball scores. Default is FALSE (returns only pinball scores)
+#' @param data Data frame.
+#' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
+#' @param iblm_model Fitted IBLM model object of class "iblm"
+#' @param trim Numeric trimming parameter for IBLM predictions. Default is `NA_real_`.
+#' @param additional_models (Named) list of fitted models for comparison. These models MUST be fitted on the same data as `iblm_model` for sensible results.
+#' If unnamed, models are labeled by their class.
 #'
-#' @return Data frame with model performance metrics. If return_both is TRUE,
-#'   returns both Poisson deviance and pinball scores with a 'stat' column.
-#'   If FALSE, returns only pinball scores as percentages
+#' @return Data frame with columns for "poission_deviance" and "pinball_score" for each model.
 #'
 #' @details
-#' Pinball scores are calculated as 1 - (model_deviance / homog_deviance),
-#' representing the relative improvement over the homogeneous model.
+#' Pinball scores are calculated relative to a homogeneous model (i.e. a simple mean prediction of training data).
+#' Higher scores indicate better predictive performance.
 #'
-#' @examples
-#' # Assuming 'results' is a data frame with model predictions
-#' # get_pinball_scores(results, models = c("homog", "GLM"), response_var = "ClaimNb")
 #'
 #' @export
-get_pinball_scores <- function(res,
-                               models = c("homog", "GLM", "XGB", "IBLM"),
-                               response_var,
-                               return_both = FALSE) {
-  x <- lapply(models, FUN = function(x) poisson_deviance(y_true = res[[response_var]], y_pred = res[[x]])) |>
-    stats::setNames(models) |>
-    as.data.frame()
-  if (return_both) {
-    dplyr::bind_rows(
-      x |> dplyr::mutate_all(.funs = round, 4),
-      data.frame(1 - x / x$homog) # |> dplyr::mutate_all(.funs = scales::percent, 0.01)
+get_pinball_scores <- function(data,
+                                    iblm_model,
+                                    trim = NA_real_,
+                                    additional_models = list()
+                                    ) {
+
+  check_iblm_model(iblm_model)
+
+  response_var <- iblm_model$response_var
+
+  data_predictors <- data |> dplyr::select(dplyr::all_of(iblm_model$predictor_vars$all))
+
+  actual <- data[[response_var]]
+
+  # get predictions for homogenous, glm and iblm
+
+  model_predictions <-
+    data.frame(
+      homog = iblm_model$data$train[[response_var]] |> mean(),
+      glm = stats::predict(iblm_model$glm_model, data_predictors, type = "response") |> as.vector(),
+      iblm = stats::predict(
+        iblm_model,
+        data_predictors,
+        trim
+      )
+    )
+
+  # get predictions for any additional models passed in and append to model_predictions df
+  if (length(additional_models) > 0) {
+    if (is.null(names(additional_models))) {
+      names(additional_models) <- purrr::map_chr(additional_models, function(x) class(x)[1])
+    }
+
+    # Create a safe predict function that tries multiple approaches
+    safe_predict <- function(model, data) {
+      # Try methods in order of preference
+      methods <- list(
+        function() stats::predict(model, data, type = "response"),
+        function() stats::predict(model, as.matrix(data)),
+        function() stats::predict(model, data),
+        function() stats::predict(model, xgboost::xgb.DMatrix(data.matrix(data)))
+      )
+
+      for (method in methods) {
+        result <- tryCatch(method(), error = function(e) NULL)
+        if (!is.null(result)) return(result)
+      }
+
+      stop("Could not generate predictions for model: ", class(model)[1])
+    }
+
+    additional_model_predictions <- purrr::map(
+      additional_models,
+      .f = ~safe_predict(.x, data_predictors)
     ) |>
-      dplyr::mutate(stat = c("Posson Deviance", "Pinball Score"),
-                    .before = dplyr::everything())
-  } else {
-    return(data.frame(1 - x / x$homog) |>
-             dplyr::mutate_all(.funs = scales::percent, 0.01))
+      stats::setNames(names(additional_models)) |>
+      dplyr::bind_cols()
+
+    model_predictions <- dplyr::bind_cols(model_predictions, additional_model_predictions)
   }
+
+  model_names <- names(model_predictions)
+
+  pds <- purrr::map_dbl(
+    model_names,
+    function(x) poisson_deviance(y_true = actual, y_pred = model_predictions[[x]])
+    ) |> stats::setNames(model_names)
+
+  data.frame(
+    model = model_names,
+    poisson_deviance = unname(pds)
+  ) |>
+    dplyr::mutate(
+    pinball_score = 1 - .data$poisson_deviance / pds["homog"]
+  )
+
 }
 
 
