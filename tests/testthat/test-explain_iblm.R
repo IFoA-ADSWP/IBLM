@@ -163,3 +163,83 @@ testthat::test_that("test against Karol original script", {
 
 
 })
+
+
+
+testthat::test_that("test explain completes when one categorical and one continuous", {
+
+  vars <- c("VehBrand", "VehPower", "ClaimRate")
+
+  withr::with_seed(1,
+                   {
+                     splits <- freMTPL2freq |>
+                       dplyr::select(dplyr::all_of(vars)) |>
+                       dplyr::slice_sample(n = 10000) |>
+                       dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+                       split_into_train_validate_test()
+                   }
+  )
+
+  IBLM <- train_iblm(
+    splits,
+    response_var = "ClaimRate",
+    family= "poisson"
+  )
+
+  explainer <- explain_iblm(iblm_model = IBLM, data = splits$test)
+
+
+})
+
+testthat::test_that("test explain completes when categorical only", {
+
+  vars <- c("VehBrand", "VehGas", "Area", "Region", "ClaimRate")
+
+  withr::with_seed(1,
+                   {
+                     splits <- freMTPL2freq |>
+                       dplyr::select(dplyr::all_of(vars)) |>
+                       dplyr::slice_sample(n = 10000) |>
+                       dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+                       split_into_train_validate_test()
+                   }
+  )
+
+  IBLM <- train_iblm(
+    splits,
+    response_var = "ClaimRate",
+    family= "poisson"
+  )
+
+  testthat::expect_no_error(
+    explain_iblm(iblm_model = IBLM, data = splits$test)
+  )
+
+})
+
+testthat::test_that("test explain completes when continuous only", {
+
+  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "Density", "ClaimRate")
+
+  withr::with_seed(1,
+                   {
+                     splits <- freMTPL2freq |>
+                       dplyr::select(dplyr::all_of(vars)) |>
+                       dplyr::slice_sample(n = 10000) |>
+                       dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+                       split_into_train_validate_test()
+                   }
+  )
+
+  IBLM <- train_iblm(
+    splits,
+    response_var = "ClaimRate",
+    family= "poisson"
+  )
+
+  testthat::expect_no_error(
+    explain_iblm(iblm_model = IBLM, data = splits$test)
+  )
+
+
+})
