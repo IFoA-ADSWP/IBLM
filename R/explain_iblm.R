@@ -516,7 +516,7 @@ shap_intercept <- function(shap,
   }
 
   intercept_shap <-
-    (dplyr::select(shap, -dplyr::all_of("BIAS")) * shap_mask) |>
+    (dplyr::select(shap, dplyr::all_of(names(shap_mask))) * shap_mask) |>
     dplyr::select(names(which(colSums(shap_mask) > 0))) |>
     (\(df) dplyr::filter(df, rowSums(df) != 0))() |>
     dplyr::select(-dplyr::any_of(predictor_vars_continuous))
@@ -540,7 +540,7 @@ shap_intercept <- function(shap,
   grouped_density = intercept_shap_long |>
     ggplot(aes(x=.data$value))+
     geom_density()+
-    facet_wrap(~name,scales="free")+
+    facet_wrap(~name, scales = "free_y")+
     geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5)+
     geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], linewidth = 0.5)+
     geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], linewidth = 0.5)+
