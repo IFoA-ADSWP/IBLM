@@ -1,12 +1,25 @@
-#' Show GLM Beta Coefficients for tabular data
+#' Obtain GLM Beta Coefficients for tabular data
 #'
-#' Creates dataframe of GLM beta coefficients for each row and predictor variable of data
+#' Creates dataframe of GLM beta coefficients for each row and predictor variable of `data`
 #'
 #' @param data Data frame with predictor variables
 #' @param iblm_model Object of class 'iblm'
 #'
-#' @return Data frame with predictor coefficients, plus a bias column
-data_beta_coeff_glm_helper <- function(
+#' @return A data frame with beta coefficients. The structure will be the same dimension as `data` except for a "bias" column at the start.
+#'
+#' @examples
+#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' data_beta_coeff_glm(df_list$train, iblm_model)
+#'
+#' @export
+data_beta_coeff_glm <- function(
     data,
     iblm_model
     ) {
@@ -37,14 +50,14 @@ data_beta_coeff_glm_helper <- function(
     dplyr::select(-dplyr::any_of(response_var)) |>
     dplyr::mutate(
       dplyr::across(
-        predictor_vars_categorical,
+        dplyr::all_of(predictor_vars_categorical),
         function(x) {
           glm_coeffs_all_cat[[dplyr::cur_column()]][
             match(x, levels_all_cat[[dplyr::cur_column()]])
           ]
         }),
       dplyr::across(
-        predictor_vars_continuous,
+        dplyr::all_of(predictor_vars_continuous),
         function(x) glm_beta_coeff[[dplyr::cur_column()]]
       )
     ) |>
@@ -55,16 +68,31 @@ data_beta_coeff_glm_helper <- function(
 
 
 
-#' Show Shap Beta Corrections for tabular data
+#' Obtain Booster Model Beta Corrections for tabular data
 #'
-#' Creates dataframe of Shap beta corrections for each row and predictor variable of data
+#' Creates dataframe of Shap beta corrections for each row and predictor variable of `data`
 #'
 #' @param data A data frame containing the dataset for analysis
 #' @param beta_corrections A data frame or matrix containing beta correction values for all variables and bias
 #' @param iblm_model Object of class 'iblm'
 #'
-#' @return A data frame with beta coefficient corrections for all predictor variables plus bias term
-data_beta_coeff_shap_helper <- function(data,
+#' @return A data frame with beta coefficient corrections. The structure will be the same dimension as `data` except for a "bias" column at the start.
+#'
+#' @examples
+#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' explainer_outputs <- explain_iblm(iblm_model, df_list$test)
+#'
+#' data_beta_coeff_booster(df_list$test, explainer_outputs$beta_corrections, iblm_model)
+#'
+#' @export
+data_beta_coeff_booster <- function(data,
                                         beta_corrections,
                                         iblm_model
                                  ) {
@@ -87,7 +115,7 @@ data_beta_coeff_shap_helper <- function(data,
     dplyr::select(-dplyr::any_of(response_var)) |>
     dplyr::mutate(
       dplyr::across(
-        predictor_vars_categorical,
+        dplyr::all_of(predictor_vars_categorical),
         function(x) {
           beta_corrections |>
             dplyr::select(
@@ -98,7 +126,7 @@ data_beta_coeff_shap_helper <- function(data,
             rowSums()
         }),
       dplyr::across(
-        predictor_vars_continuous,
+        dplyr::all_of(predictor_vars_continuous),
         function(x) beta_corrections[[dplyr::cur_column()]]
       )
     ) |>

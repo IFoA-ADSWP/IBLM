@@ -12,7 +12,7 @@ beta_corrections_derive(
 )
 }
 \arguments{
-\item{shap_wide}{Data frame containing SHAP values from XGBoost that have been converted to wide format by [shap_dim_helper()]}
+\item{shap_wide}{Data frame containing SHAP values from XGBoost that have been converted to wide format by [shap_to_onehot()]}
 
 \item{wide_input_frame}{Wide format input data frame (one-hot encoded).}
 
@@ -21,15 +21,41 @@ beta_corrections_derive(
 \item{migrate_reference_to_bias}{Logical, do we want to migrate the shap values for reference coefficients to the bias?}
 }
 \value{
-A data frame with beta corrections where:
-\itemize{
-  \item Categorical variables are properly aggregated by factor level
-  \item Continuous variables are normalized by their actual values
-  \item Reference level and zero-value corrections are added to the bias term
-}
+A data frame with the booster model beta corrections in one-hot (wide) format
 }
 \description{
-Processes raw SHAP values to create coefficient corrections. The bias is adjusted to account for
-zero values in continuous variables and reference levels in categorical variables.
+Processes SHAP values in one-hot (wide) format to create beta coefficient corrections.
+
+This includes:
+* scaling shap values of continuous variables by the predictor value for that row
+* migrating shap values to the bias for continuous variables where the predictor value was zero
+* migrating shap values to the bias for categorical variables where the predictor value was reference level
 }
-\keyword{internal}
+\examples{
+df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+
+iblm_model <- train_iblm(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+shap <- stats::predict(
+  iblm_model$booster_model,
+  newdata = xgboost::xgb.DMatrix(
+    data.matrix(
+      dplyr::select(df_list$test, -dplyr::all_of(iblm_model$response_var))
+    )
+  ),
+  predcontrib = TRUE
+) |> data.frame()
+
+wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
+
+shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
+
+beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model)
+
+beta_corrections
+
+}

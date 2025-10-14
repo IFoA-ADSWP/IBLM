@@ -10,11 +10,10 @@ explain_iblm(iblm_model, data, migrate_reference_to_bias = TRUE)
 \item{iblm_model}{An object of class 'iblm'. This should be output by `train_iblm()`}
 
 \item{data}{Data frame.
+
 If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.}
 
-\item{migrate_reference_to_bias}{TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
-
-**This should be the "test" portion of your dataset**}
+\item{migrate_reference_to_bias}{TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?}
 }
 \value{
 A list containing:
@@ -40,7 +39,7 @@ and categorical reference categories. The resulting explainer provides multiple
 visualization methods to understand how SHAP values modify GLM predictions.
 }
 \examples{
-df_list <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
 
 iblm_model <- train_iblm(
   df_list,

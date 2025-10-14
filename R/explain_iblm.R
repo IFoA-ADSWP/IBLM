@@ -4,10 +4,10 @@
 #'
 #' @param iblm_model An object of class 'iblm'. This should be output by `train_iblm()`
 #' @param data Data frame.
-#' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
-#' @param migrate_reference_to_bias TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
 #'
-#' **This should be the "test" portion of your dataset**
+#' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
+#'
+#' @param migrate_reference_to_bias TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
 #'
 #' @return A list containing:
 #' \describe{
@@ -28,7 +28,7 @@
 #' visualization methods to understand how SHAP values modify GLM predictions.
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -55,18 +55,18 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE){
   ) |> data.frame()
 
   # Prepare wide input frame... this is `data` but with categoricals converted to one-hot format
-  wide_input_frame <- data_dim_helper(data, iblm_model)
+  wide_input_frame <- data_to_onehot(data, iblm_model)
 
   # Prepare wide shap corrections... this converts `shap` values to wide format for categoricals
-  shap_wide <- shap_dim_helper(shap, wide_input_frame, iblm_model)
+  shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
 
   # Prepare beta corrections... this converts `shap` values be compatible with feature values
   beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model, migrate_reference_to_bias)
 
   # Prepare beta values after corrections
-  data_beta_coeff_glm <- data_beta_coeff_glm_helper(data, iblm_model)
-  data_beta_coeff_shap <- data_beta_coeff_shap_helper(data, beta_corrections, iblm_model)
-  data_beta_coeff <- data_beta_coeff_glm + data_beta_coeff_shap
+  data_glm <- data_beta_coeff_glm(data, iblm_model)
+  data_booster <- data_beta_coeff_booster(data, beta_corrections, iblm_model)
+  data_beta_coeff <- data_glm + data_booster
 
   # Return explainer object with plotting functions
   list(
@@ -140,17 +140,29 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE){
 #'
 #' Transforms categorical variables in a data frame into one-hot encoded format
 #'
-#' @param data Input data frame to be transformed.
+#' @param data Input data frame to be transformed. This will typically be the "train" data subset
 #' @param iblm_model Object of class 'iblm'
 #' @param remove_target Logical, whether to remove the response_var variable from
 #'   the output (default TRUE).
 #'
 #' @return A data frame in wide format with one-hot encoded categorical variables,
-#' an intercept column, and all variables ordered according to `coef_names_all`.
+#' an intercept column, and all variables ordered according to "coeff_names$all" from `iblm_model`
 #'
+#' @examples
+#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
 #'
-#' @keywords internal
-data_dim_helper <- function(data, iblm_model, remove_target = TRUE) {
+#' iblm_model <- train_iblm(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
+#'
+#' wide_input_frame
+#'
+#' @export
+data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
 
   check_iblm_model(iblm_model)
 
@@ -190,16 +202,41 @@ data_dim_helper <- function(data, iblm_model, remove_target = TRUE) {
 
 #' Convert Shap values to Wide One-Hot Encoded Format
 #'
-#' Transforms categorical variables in a data frame into one-hot encoded format
+#' Transforms categorical variables in a data frame into one-hot encoded format. Renames "BIAS" to lowercase.
 #'
 #' @param shap Data frame containing raw SHAP values from XGBoost.
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
 #' @param iblm_model Object of class 'iblm'
 #'
-#' @return A data frame where SHAP values are in wide format for categorical variables.
+#' @return A data frame where SHAP values are in wide format for categorical variables. Column "bias" is moved to start.
 #'
-#' @keywords internal
-shap_dim_helper <- function(shap,
+#' @examples
+#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' shap <- stats::predict(
+#'   iblm_model$booster_model,
+#'   newdata = xgboost::xgb.DMatrix(
+#'     data.matrix(
+#'       dplyr::select(df_list$test, -dplyr::all_of(iblm_model$response_var))
+#'     )
+#'   ),
+#'   predcontrib = TRUE
+#' ) |> data.frame()
+#'
+#' wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
+#'
+#' shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
+#'
+#' shap_wide
+#'
+#' @export
+shap_to_onehot <- function(shap,
                             wide_input_frame,
                             iblm_model) {
 
@@ -243,22 +280,49 @@ shap_dim_helper <- function(shap,
 
 #' Compute Beta Corrections based on SHAP values
 #'
-#' Processes raw SHAP values to create coefficient corrections. The bias is adjusted to account for
-#' zero values in continuous variables and reference levels in categorical variables.
+#' @description
+#' Processes SHAP values in one-hot (wide) format to create beta coefficient corrections.
 #'
-#' @param shap_wide Data frame containing SHAP values from XGBoost that have been converted to wide format by [shap_dim_helper()]
+#' This includes:
+#' * scaling shap values of continuous variables by the predictor value for that row
+#' * migrating shap values to the bias for continuous variables where the predictor value was zero
+#' * migrating shap values to the bias for categorical variables where the predictor value was reference level
+#'
+#' @param shap_wide Data frame containing SHAP values from XGBoost that have been converted to wide format by [shap_to_onehot()]
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
 #' @param migrate_reference_to_bias Logical, do we want to migrate the shap values for reference coefficients to the bias?
 #' @param iblm_model Object of class 'iblm'
 #'
-#' @return A data frame with beta corrections where:
-#' \itemize{
-#'   \item Categorical variables are properly aggregated by factor level
-#'   \item Continuous variables are normalized by their actual values
-#'   \item Reference level and zero-value corrections are added to the bias term
-#' }
+#' @return A data frame with the booster model beta corrections in one-hot (wide) format
 #'
-#' @keywords internal
+#' @examples
+#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' shap <- stats::predict(
+#'   iblm_model$booster_model,
+#'   newdata = xgboost::xgb.DMatrix(
+#'     data.matrix(
+#'       dplyr::select(df_list$test, -dplyr::all_of(iblm_model$response_var))
+#'     )
+#'   ),
+#'   predcontrib = TRUE
+#' ) |> data.frame()
+#'
+#' wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
+#'
+#' shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
+#'
+#' beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model)
+#'
+#' beta_corrections
+#'
+#' @export
 beta_corrections_derive <- function(shap_wide,
                             wide_input_frame,
                             iblm_model,
@@ -294,7 +358,13 @@ beta_corrections_derive <- function(shap_wide,
       dplyr::select(shap_wide, dplyr::all_of(coef_names_reference_cat))
       )
 
-    beta_corrections <- beta_corrections |> dplyr::mutate(dplyr::across(coef_names_reference_cat, ~0))
+    beta_corrections <- beta_corrections |>
+      dplyr::mutate(
+        dplyr::across(
+          dplyr::all_of(coef_names_reference_cat),
+          ~0
+          )
+        )
 
     } else {
 
@@ -307,7 +377,7 @@ beta_corrections_derive <- function(shap_wide,
     beta_corrections <- beta_corrections |>
       dplyr::mutate(
         dplyr::across(
-          predictor_vars_continuous,
+          dplyr::all_of(predictor_vars_continuous),
           function(x) {
             y <- x / wide_input_frame[[dplyr::cur_column()]]
             y <- dplyr::if_else(is.infinite(y), 0, y)
