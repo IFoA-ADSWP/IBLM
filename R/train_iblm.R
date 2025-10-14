@@ -240,15 +240,17 @@ train_iblm <- function(df_list,
     function(x) sort(unique(x))
   )
 
-  cat_levels$reference <- sapply(
-    names(cat_levels$all),
-    function(var) {
-      all_levels <- cat_levels$all[[var]]
-      present_levels <- coef_names_glm[startsWith(coef_names_glm, var)]
-      present_levels_clean <- gsub(paste0("^", var), "", present_levels)
-      setdiff(all_levels, present_levels_clean)
-    },
-    USE.NAMES = TRUE
+  cat_levels$reference <- stats::setNames(
+    lapply(
+      names(cat_levels$all),
+      function(var) {
+        all_levels <- cat_levels$all[[var]]
+        present_levels <- coef_names_glm[startsWith(coef_names_glm, var)]
+        present_levels_clean <- gsub(paste0("^", var), "", present_levels)
+        setdiff(all_levels, present_levels_clean)
+      }
+    ),
+    names(cat_levels$all)
   )
 
   coeff_names$all_cat <- lapply(

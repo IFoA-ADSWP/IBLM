@@ -386,7 +386,7 @@ shap_intercept <- function(shap,
     geom_boxplot() +
     geom_hline(yintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5) +
     ggtitle(paste0("Jitter chart of beta corrections for intercept"),
-      subtitle = paste0("Intercept: ", round(beta_0, 2), " with shap baseline: ", round(baseline, 2))
+            subtitle = paste0("Intercept: ", round(beta_0, 2), " with shap baseline: ", round(baseline, 2))
     ) +
     xlab("") +
     ylab("") +
