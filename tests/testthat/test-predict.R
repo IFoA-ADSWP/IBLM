@@ -37,7 +37,7 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
     dplyr::select(-"ClaimRate") |>
     dplyr::mutate(
       dplyr::across(
-        IBLM$predictor_vars$categorical,
+        dplyr::all_of(IBLM$predictor_vars$categorical),
         ~1
       )
     ) |>
