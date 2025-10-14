@@ -1,4 +1,3 @@
-
 #' French Motor Insurance Claims Dataset
 #'
 #' A dataset containing information about French motor insurance policies and claims,

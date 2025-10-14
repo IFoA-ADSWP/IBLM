@@ -38,7 +38,9 @@ The prediction process involves the following steps:
 At this point, only an iblm model with a "booster_model" object of class `xgb.Booster` is supported
 }
 \examples{
-data <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+data <- freMTPL2freq |>
+  head(10000) |>
+  split_into_train_validate_test()
 
 iblm_model <- train_iblm(
   data,

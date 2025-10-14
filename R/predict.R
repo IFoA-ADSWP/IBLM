@@ -28,7 +28,9 @@
 #' At this point, only an iblm model with a "booster_model" object of class `xgb.Booster` is supported
 #'
 #' @examples
-#' data <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+#' data <- freMTPL2freq |>
+#'   head(10000) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   data,
@@ -49,12 +51,10 @@ predict.iblm <- function(model, data, trim = NA_real_, type = "response") {
   check_iblm_model(model)
 
   if (type != "response") {
-
     cli::cli_abort(c(
       "x" = "Only supported type currently is {.val response}",
       "i" = "You supplied {.val {type}}"
     ))
-
   }
 
   response_var <- all.vars(model$glm_model$formula)[1]
@@ -64,7 +64,6 @@ predict.iblm <- function(model, data, trim = NA_real_, type = "response") {
   booster <- stats::predict(model$booster_model, xgboost::xgb.DMatrix(data.matrix(data)), type = type)
 
   if (!is.na(trim)) {
-
     truncate <- function(x) {
       return(
         pmax(
@@ -75,19 +74,13 @@ predict.iblm <- function(model, data, trim = NA_real_, type = "response") {
     }
     booster <- truncate(booster)
     booster <- booster * 1 / mean(booster)
-
   }
 
   if (relationship == "multiplicative") {
-
     toreturn <- glm * booster
-
   } else if (relationship == "additive") {
-
     toreturn <- glm + booster
-
   } else {
-
     cli::cli_abort(c(
       "x" = "Invalid relationship attribute: {.val {relationship}}",
       "i" = "Relationship must be either {.val multiplicative} or {.val additive}"

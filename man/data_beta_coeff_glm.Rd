@@ -18,7 +18,10 @@ A data frame with beta coefficients. The structure will be the same dimension as
 Creates dataframe of GLM beta coefficients for each row and predictor variable of `data`
 }
 \examples{
-df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
 
 iblm_model <- train_iblm(
   df_list,

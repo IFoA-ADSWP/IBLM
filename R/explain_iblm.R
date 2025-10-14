@@ -28,7 +28,10 @@
 #' visualization methods to understand how SHAP values modify GLM predictions.
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -39,7 +42,7 @@
 #' explain_iblm(iblm_model, df_list$test)
 #'
 #' @export
-explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE){
+explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
 
   check_iblm_model(iblm_model)
 
@@ -70,19 +73,14 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE){
 
   # Return explainer object with plotting functions
   list(
-
     shap = shap,
-
     beta_corrections = beta_corrections,
-
     data_beta_coeff = data_beta_coeff,
-
     beta_corrected_scatter = function(
-    varname = "DrivAge",
-    q = 0,
-    color=NULL,
-    marginal=FALSE
-    ) {
+        varname = "DrivAge",
+        q = 0,
+        color = NULL,
+        marginal = FALSE) {
       beta_corrected_scatter(
         varname = varname,
         q = q,
@@ -91,40 +89,33 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE){
         data_beta_coeff = data_beta_coeff,
         data = data,
         iblm_model = iblm_model
-        )
+      )
     },
-
-    beta_corrected_density = function(
-      varname = "DrivAge",
-      q = 0.05,
-      type="kde"
-      ) {
-        beta_corrected_density(
-          varname = varname,
-          q=q,
-          type=type,
-          wide_input_frame = wide_input_frame,
-          beta_corrections = beta_corrections,
-          data = data,
-          iblm_model = iblm_model
-        )
-      },
-
+    beta_corrected_density = function(varname = "DrivAge",
+                                      q = 0.05,
+                                      type = "kde") {
+      beta_corrected_density(
+        varname = varname,
+        q = q,
+        type = type,
+        wide_input_frame = wide_input_frame,
+        beta_corrections = beta_corrections,
+        data = data,
+        iblm_model = iblm_model
+      )
+    },
     shap_intercept = shap_intercept(
       shap = shap,
       data = data,
       iblm_model = iblm_model
     ),
-
-    overall_correction = function(
-      transform_x_scale_by_link= TRUE
-      ) {
+    overall_correction = function(transform_x_scale_by_link = TRUE) {
       overall_correction(
         transform_x_scale_by_link = transform_x_scale_by_link,
         shap = shap,
         iblm_model = iblm_model
-        )
-      }
+      )
+    }
   )
 }
 
@@ -149,7 +140,10 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE){
 #' an intercept column, and all variables ordered according to "coeff_names$all" from `iblm_model`
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -211,7 +205,10 @@ data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
 #' @return A data frame where SHAP values are in wide format for categorical variables. Column "bias" is moved to start.
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -237,8 +234,8 @@ data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
 #'
 #' @export
 shap_to_onehot <- function(shap,
-                            wide_input_frame,
-                            iblm_model) {
+                           wide_input_frame,
+                           iblm_model) {
 
   check_iblm_model(iblm_model)
 
@@ -248,12 +245,9 @@ shap_to_onehot <- function(shap,
 
 
   if (no_cat_toggle) {
-
     shap_wide <- shap |>
       dplyr::mutate(bias = shap$BIAS[1], .before = dplyr::everything())
-
   } else {
-
     wide_input_frame <- wide_input_frame |> dplyr::select(-dplyr::any_of(c("(Intercept)", response_var)))
 
     cat_frame <- lapply(names(levels_all_cat), function(x) {
@@ -274,7 +268,6 @@ shap_to_onehot <- function(shap,
   }
 
   return(shap_wide)
-
 }
 
 
@@ -296,7 +289,10 @@ shap_to_onehot <- function(shap,
 #' @return A data frame with the booster model beta corrections in one-hot (wide) format
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -324,9 +320,9 @@ shap_to_onehot <- function(shap,
 #'
 #' @export
 beta_corrections_derive <- function(shap_wide,
-                            wide_input_frame,
-                            iblm_model,
-                            migrate_reference_to_bias = TRUE){
+                                    wide_input_frame,
+                                    iblm_model,
+                                    migrate_reference_to_bias = TRUE) {
 
   check_iblm_model(iblm_model)
 
@@ -335,59 +331,52 @@ beta_corrections_derive <- function(shap_wide,
 
   beta_corrections <- shap_wide
 
-    shap_for_zeros <- rowSums(
-      (
-        wide_input_frame |>
-          dplyr::select(dplyr::all_of(predictor_vars_continuous)) |>
-          dplyr::mutate(
-            dplyr::across(
-              dplyr::everything(),
-              \(x) dplyr::if_else(x == 0, 1, 0)
-              )
-            )
-        ) * dplyr::select(shap_wide, dplyr::all_of(predictor_vars_continuous))
-      )
+  shap_for_zeros <- rowSums(
+    (
+      wide_input_frame |>
+        dplyr::select(dplyr::all_of(predictor_vars_continuous)) |>
+        dplyr::mutate(
+          dplyr::across(
+            dplyr::everything(),
+            \(x) dplyr::if_else(x == 0, 1, 0)
+          )
+        )
+    ) * dplyr::select(shap_wide, dplyr::all_of(predictor_vars_continuous))
+  )
 
-    if(length(predictor_vars_continuous) == 0) {
-      shap_for_zeros <- rep(0, nrow(beta_corrections))
-    }
+  if (length(predictor_vars_continuous) == 0) {
+    shap_for_zeros <- rep(0, nrow(beta_corrections))
+  }
 
-    if(migrate_reference_to_bias) {
-
+  if (migrate_reference_to_bias) {
     shap_for_cat_ref <- rowSums(
       dplyr::select(shap_wide, dplyr::all_of(coef_names_reference_cat))
-      )
+    )
 
     beta_corrections <- beta_corrections |>
       dplyr::mutate(
         dplyr::across(
           dplyr::all_of(coef_names_reference_cat),
           ~0
-          )
         )
-
-    } else {
-
-      shap_for_cat_ref <- 0
-
-    }
-
-    beta_corrections$bias <- beta_corrections$bias + shap_for_zeros + shap_for_cat_ref
-
-    beta_corrections <- beta_corrections |>
-      dplyr::mutate(
-        dplyr::across(
-          dplyr::all_of(predictor_vars_continuous),
-          function(x) {
-            y <- x / wide_input_frame[[dplyr::cur_column()]]
-            y <- dplyr::if_else(is.infinite(y), 0, y)
-            return(y)
-            }
-          )
       )
+  } else {
+    shap_for_cat_ref <- 0
+  }
 
-    return(beta_corrections)
+  beta_corrections$bias <- beta_corrections$bias + shap_for_zeros + shap_for_cat_ref
 
+  beta_corrections <- beta_corrections |>
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::all_of(predictor_vars_continuous),
+        function(x) {
+          y <- x / wide_input_frame[[dplyr::cur_column()]]
+          y <- dplyr::if_else(is.infinite(y), 0, y)
+          return(y)
+        }
+      )
+    )
 
+  return(beta_corrections)
 }
-

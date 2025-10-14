@@ -39,7 +39,10 @@ and categorical reference categories. The resulting explainer provides multiple
 visualization methods to understand how SHAP values modify GLM predictions.
 }
 \examples{
-df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
 
 iblm_model <- train_iblm(
   df_list,

@@ -1,4 +1,3 @@
-
 #' Train IBLM Model
 #'
 #' @description
@@ -61,7 +60,10 @@
 #' }
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -74,24 +76,23 @@
 #'
 #' @export
 train_iblm <- function(df_list,
-                          response_var,
-                          family= "poisson",
-                          xgb_additional_params = list(
-                            nrounds = 1000,
-                            verbose = 0,
-                            early_stopping_rounds = 25
-                          ),
-                          strip_glm = TRUE
-){
+                       response_var,
+                       family = "poisson",
+                       xgb_additional_params = list(
+                         nrounds = 1000,
+                         verbose = 0,
+                         early_stopping_rounds = 25
+                       ),
+                       strip_glm = TRUE) {
 
   # ==================== checks ====================
 
   check_required_names(df_list, c("train", "validate"))
-  check_required_names(df_list[['train']], response_var)
-  check_required_names(df_list[['validate']], response_var)
+  check_required_names(df_list[["train"]], response_var)
+  check_required_names(df_list[["validate"]], response_var)
   stopifnot(
     length(response_var) == 1,
-    names(df_list[['train']]) == names(df_list[['validate']])
+    names(df_list[["train"]]) == names(df_list[["validate"]])
   )
 
   # ==================== input generation ====================
@@ -99,36 +100,31 @@ train_iblm <- function(df_list,
   train <- list()
   validate <- list()
 
-  predictor_vars <- setdiff(names(df_list[['train']]), response_var)
+  predictor_vars <- setdiff(names(df_list[["train"]]), response_var)
 
-  train$responses <- df_list[['train']] |>  dplyr::pull(response_var)
-  validate$responses <- df_list[['validate']] |>  dplyr::pull(response_var)
+  train$responses <- df_list[["train"]] |> dplyr::pull(response_var)
+  validate$responses <- df_list[["validate"]] |> dplyr::pull(response_var)
 
-  train$features <- df_list[['train']] |>  dplyr::select(-dplyr::all_of(response_var))
-  validate$features <- df_list[['validate']] |>  dplyr::select(-dplyr::all_of(response_var))
+  train$features <- df_list[["train"]] |> dplyr::select(-dplyr::all_of(response_var))
+  validate$features <- df_list[["validate"]] |> dplyr::select(-dplyr::all_of(response_var))
 
   # ==================== glm/xgb distribution and link choices ====================
 
-  if(family == "poisson") {
-
-  xgb_family_params <- list(
-    base_score = 1,
-    objective = "count:poisson"
+  if (family == "poisson") {
+    xgb_family_params <- list(
+      base_score = 1,
+      objective = "count:poisson"
     )
 
-  glm_family <- stats::poisson()
-
-  } else if(family == "gamma") {
-
+    glm_family <- stats::poisson()
+  } else if (family == "gamma") {
     xgb_family_params <- list(
       base_score = 1,
       objective = "reg:gamma"
     )
 
     glm_family <- stats::Gamma(link = "log")
-
-  } else if(family == "tweedie") {
-
+  } else if (family == "tweedie") {
     xgb_family_params <- list(
       base_score = 1,
       objective = "reg:tweedie",
@@ -137,53 +133,42 @@ train_iblm <- function(df_list,
 
     glm_family <- statmod::tweedie(var.power = 1.5, link.power = 0)
     glm_family$link <- "log"
-
-  } else if(family == "gaussian") {
-
+  } else if (family == "gaussian") {
     xgb_family_params <- list(
       base_score = 0,
       objective = "reg:squarederror"
     )
 
     glm_family <- stats::gaussian()
-
   } else {
-
     stop(paste0("family was ", family, " but should be one of: poisson, gamma, tweedie, gaussian"))
-
-         }
+  }
 
   # ==================== GLM fitting ====================
 
-  predictor_vars <- setdiff(names(df_list[['train']]), response_var)
+  predictor_vars <- setdiff(names(df_list[["train"]]), response_var)
 
   formula <- stats::as.formula(paste(response_var, "~", paste(predictor_vars, collapse = " + ")))
 
-  glm_model <- stats::glm(formula, data = df_list[['train']], family = glm_family)
+  glm_model <- stats::glm(formula, data = df_list[["train"]], family = glm_family)
 
   # ==================== Preparing for XGB  ====================
 
   link <- glm_family$link
 
-  train$glm_preds <- unname(stats::predict(glm_model, train$features, type="response"))
-  validate$glm_preds <- unname(stats::predict(glm_model, validate$features, type="response"))
+  train$glm_preds <- unname(stats::predict(glm_model, train$features, type = "response"))
+  validate$glm_preds <- unname(stats::predict(glm_model, validate$features, type = "response"))
 
-  if(link=="log") {
-
+  if (link == "log") {
     train$targets <- train$responses / train$glm_preds
     validate$targets <- validate$responses / validate$glm_preds
     relationship <- "multiplicative"
-
-  } else if(link == "identity") {
-
+  } else if (link == "identity") {
     train$targets <- train$responses - train$glm_preds
     validate$targets <- validate$responses - validate$glm_preds
     relationship <- "additive"
-
   } else {
-
-    stop(paste0("link function was ",link," but should be one of: log, identity"))
-
+    stop(paste0("link function was ", link, " but should be one of: log, identity"))
   }
 
   train$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(train$features), label = train$targets)
@@ -204,20 +189,18 @@ train_iblm <- function(df_list,
   # ==================== Stripping glm object of data  ===================
 
 
-  if(strip_glm) {
+  if (strip_glm) {
+    stripGlmLR <- function(cm) {
+      cm$y <- c()
 
-  stripGlmLR <- function(cm) {
-    cm$y <- c()
+      cm$residuals <- c()
+      cm$fitted.values <- c()
+      cm$data <- c()
 
-    cm$residuals <- c()
-    cm$fitted.values <- c()
-    cm$data <- c()
+      cm
+    }
 
-    cm
-  }
-
-  glm_model <- stripGlmLR(glm_model)
-
+    glm_model <- stripGlmLR(glm_model)
   }
 
 
@@ -288,5 +271,3 @@ train_iblm <- function(df_list,
 
   return(iblm_model)
 }
-
-

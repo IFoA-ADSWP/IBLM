@@ -8,6 +8,7 @@
 #'
 #' @export
 theme_iblm <- function() {
+
   theme_minimal() +
     theme(
       plot.title = element_text(color = iblm_colors[5], face = "bold", size = 14),
@@ -18,4 +19,4 @@ theme_iblm <- function() {
 }
 
 
-iblm_colors <- c("#113458", "#D9AB16", "#4096C0", "#DCDCD9", "#113458","#2166AC", "#FFFFFF", "#B2182B")
+iblm_colors <- c("#113458", "#D9AB16", "#4096C0", "#DCDCD9", "#113458", "#2166AC", "#FFFFFF", "#B2182B")

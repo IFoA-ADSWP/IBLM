@@ -20,7 +20,10 @@
 #' Higher scores indicate better predictive performance.
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -32,10 +35,9 @@
 #'
 #' @export
 get_pinball_scores <- function(data,
-                                    iblm_model,
-                                    trim = NA_real_,
-                                    additional_models = list()
-                                    ) {
+                               iblm_model,
+                               trim = NA_real_,
+                               additional_models = list()) {
 
   check_iblm_model(iblm_model)
 
@@ -76,7 +78,9 @@ get_pinball_scores <- function(data,
 
       for (method in methods) {
         result <- tryCatch(method(), error = function(e) NULL)
-        if (!is.null(result)) return(result)
+        if (!is.null(result)) {
+          return(result)
+        }
       }
 
       stop("Could not generate predictions for model: ", class(model)[1])
@@ -84,7 +88,7 @@ get_pinball_scores <- function(data,
 
     additional_model_predictions <- purrr::map(
       additional_models,
-      .f = ~safe_predict(.x, data_predictors)
+      .f = ~ safe_predict(.x, data_predictors)
     ) |>
       stats::setNames(names(additional_models)) |>
       dplyr::bind_cols()
@@ -97,16 +101,15 @@ get_pinball_scores <- function(data,
   pds <- purrr::map_dbl(
     model_names,
     function(x) poisson_deviance(y_true = actual, y_pred = model_predictions[[x]])
-    ) |> stats::setNames(model_names)
+  ) |> stats::setNames(model_names)
 
   data.frame(
     model = model_names,
     poisson_deviance = unname(pds)
   ) |>
     dplyr::mutate(
-    pinball_score = 1 - .data$poisson_deviance / pds["homog"]
-  )
-
+      pinball_score = 1 - .data$poisson_deviance / pds["homog"]
+    )
 }
 
 

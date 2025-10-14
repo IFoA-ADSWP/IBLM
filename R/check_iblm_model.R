@@ -7,7 +7,10 @@
 #' @return Invisible TRUE if all checks pass
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -19,6 +22,7 @@
 #'
 #' @export
 check_iblm_model <- function(model) {
+
   # Check model class
   if (!"iblm" %in% class(model)) {
     cli::cli_abort(c(

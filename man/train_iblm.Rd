@@ -78,7 +78,10 @@ For "gaussian" family the link function is 'identity' and XGBoost is configured 
 }
 }
 \examples{
-df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
 
 iblm_model <- train_iblm(
   df_list,

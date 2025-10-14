@@ -1,11 +1,9 @@
 testthat::test_that("test against Karol original script", {
-
-
   # ============================ Input data =====================
 
-  withr::with_seed(1,
-                   {data <- freMTPL2freq |> split_into_train_validate_test()}
-  )
+  withr::with_seed(1, {
+    data <- freMTPL2freq |> split_into_train_validate_test()
+  })
 
   # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
@@ -20,7 +18,7 @@ testthat::test_that("test against Karol original script", {
   IBLM_nu <- train_iblm(
     splits,
     response_var = "ClaimNb",
-    family= "poisson"
+    family = "poisson"
   )
 
   # ============================ Karol (og) process =====================
@@ -115,6 +113,4 @@ testthat::test_that("test against Karol original script", {
     IBLM_nu$booster_model$evaluation_log |> as.data.frame(),
     IBLM_og$booster_model$evaluation_log
   )
-
-
 })

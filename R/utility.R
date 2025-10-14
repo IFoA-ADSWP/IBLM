@@ -10,6 +10,7 @@
 #'
 #' @noRd
 check_required_names <- function(x, required_names) {
+
   # Check input type
   if (!is.list(x)) {
     cli::cli_abort("Input must be a list or data.frame.")
@@ -47,18 +48,16 @@ check_required_names <- function(x, required_names) {
 assign_variable_type <- function(
     var,
     vars_continuous,
-    vars_categorical
-) {
+    vars_categorical) {
 
-
-  varname <- substitute(var)   # captures the expression passed in
+  varname <- substitute(var) # captures the expression passed in
   varname <- as.character(varname)
 
-  if(var %in% vars_continuous){
+  if (var %in% vars_continuous) {
     vartype <- "numerical"
-  }else if(var %in% vars_categorical){
+  } else if (var %in% vars_categorical) {
     vartype <- "categorical"
-  }else{
+  } else {
     stop(paste0(
       "'",
       varname,
@@ -69,6 +68,4 @@ assign_variable_type <- function(
   }
 
   return(vartype)
-
-
 }

@@ -20,7 +20,7 @@
 #' package to detect anomalies.
 #'
 #' @examples
-#' x <- c(1, 2, 3, 4, 5, 100)  # 100 is an outlier
+#' x <- c(1, 2, 3, 4, 5, 100) # 100 is an outlier
 #' detect_outliers(x, method = "quantile", q = 0.1)
 #'
 #' @noRd
@@ -28,7 +28,7 @@ detect_outliers <- function(x, method = c("quantile", "isoforest"), q = 0.01) {
   method <- match.arg(method)
   if (!is.numeric(x)) stop("Input vector 'x' must be numeric.")
   if (!is.numeric(q) || q <= 0 || q >= 0.5) stop("Parameter 'q' must be between 0 and 0.5.")
-  keep <- rep(TRUE, length(x))  # default: keep all
+  keep <- rep(TRUE, length(x)) # default: keep all
   if (method == "quantile") {
     lower <- stats::quantile(x, probs = q, na.rm = TRUE)
     upper <- stats::quantile(x, probs = 1 - q, na.rm = TRUE)
@@ -44,4 +44,3 @@ detect_outliers <- function(x, method = c("quantile", "isoforest"), q = 0.01) {
   }
   return(keep)
 }
-

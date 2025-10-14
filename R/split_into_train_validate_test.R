@@ -1,7 +1,3 @@
-
-
-
-
 #' Split a data frame into training, validation, and test sets
 #'
 #' This function randomly splits a data frame into three subsets for machine
@@ -44,8 +40,7 @@ split_into_train_validate_test <- function(
     df,
     train_prop = 0.7,
     validate_prop = 0.15,
-    test_prop = 0.15
-) {
+    test_prop = 0.15) {
 
   stopifnot(
     is.data.frame(df),
@@ -61,10 +56,11 @@ split_into_train_validate_test <- function(
 
   dfs <- lapply(
     c("train", "validate", "test"),
-    FUN = function(train_features){df[split==train_features,]}
+    FUN = function(train_features) {
+      df[split == train_features, ]
+    }
   ) |>
     stats::setNames(c("train", "validate", "test"))
 
   return(dfs)
-
 }

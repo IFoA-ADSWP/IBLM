@@ -1,5 +1,4 @@
 testthat::test_that("test corrected beta coeffecient predictions are same as predict iblm()", {
-
   # A note on this test...
 
   # This test compares the two alternative ways of deriving predictions of the 'iblm' model.
@@ -13,9 +12,9 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
 
   # ============================ Input data =====================
 
-  withr::with_seed(1,
-                   {data <- freMTPL2freq |> split_into_train_validate_test()}
-  )
+  withr::with_seed(1, {
+    data <- freMTPL2freq |> split_into_train_validate_test()
+  })
 
   # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
@@ -28,7 +27,7 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
   IBLM <- train_iblm(
     splits,
     response_var = "ClaimRate",
-    family= "poisson"
+    family = "poisson"
   )
 
   explainer_nu <- explain_iblm(iblm_model = IBLM, data = splits$test, migrate_reference_to_bias = TRUE)
@@ -43,7 +42,9 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
     ) |>
     dplyr::mutate(bias = 1, .before = 1)
 
-  predict_w_beta_coeff <- rowSums(explainer_nu$data_beta_coeff * coeff_multiplier) |> exp() |> unname()
+  predict_w_beta_coeff <- rowSums(explainer_nu$data_beta_coeff * coeff_multiplier) |>
+    exp() |>
+    unname()
 
   predict_w_predict <- predict(IBLM, data = splits$test)
 
@@ -56,6 +57,4 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
     # the tolerance is a bit higher for this test because...
     # ...shap values are estimates and so there is expected noise between two methods
   )
-
-
 })

@@ -8,7 +8,10 @@
 #' @return A data frame with beta coefficients. The structure will be the same dimension as `data` except for a "bias" column at the start.
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -21,8 +24,7 @@
 #' @export
 data_beta_coeff_glm <- function(
     data,
-    iblm_model
-    ) {
+    iblm_model) {
 
   check_iblm_model(iblm_model)
 
@@ -55,15 +57,14 @@ data_beta_coeff_glm <- function(
           glm_coeffs_all_cat[[dplyr::cur_column()]][
             match(x, levels_all_cat[[dplyr::cur_column()]])
           ]
-        }),
+        }
+      ),
       dplyr::across(
         dplyr::all_of(predictor_vars_continuous),
         function(x) glm_beta_coeff[[dplyr::cur_column()]]
       )
     ) |>
     dplyr::mutate(bias = glm_beta_coeff[["(Intercept)"]], .before = 1)
-
-
 }
 
 
@@ -79,7 +80,10 @@ data_beta_coeff_glm <- function(
 #' @return A data frame with beta coefficient corrections. The structure will be the same dimension as `data` except for a "bias" column at the start.
 #'
 #' @examples
-#' df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
 #'
 #' iblm_model <- train_iblm(
 #'   df_list,
@@ -93,9 +97,8 @@ data_beta_coeff_glm <- function(
 #'
 #' @export
 data_beta_coeff_booster <- function(data,
-                                        beta_corrections,
-                                        iblm_model
-                                 ) {
+                                    beta_corrections,
+                                    iblm_model) {
 
   check_iblm_model(iblm_model)
 
@@ -107,7 +110,9 @@ data_beta_coeff_booster <- function(data,
 
   levels_non_ref_cat <- purrr::map(
     names(levels_all_cat),
-    function(var) {levels_all_cat[[var]] |> setdiff(levels_reference_cat[var])}
+    function(var) {
+      levels_all_cat[[var]] |> setdiff(levels_reference_cat[var])
+    }
   ) |>
     stats::setNames(names(levels_all_cat))
 
@@ -124,13 +129,12 @@ data_beta_coeff_booster <- function(data,
               )
             ) |>
             rowSums()
-        }),
+        }
+      ),
       dplyr::across(
         dplyr::all_of(predictor_vars_continuous),
         function(x) beta_corrections[[dplyr::cur_column()]]
       )
     ) |>
     dplyr::mutate(bias = beta_corrections[["bias"]], .before = 1)
-
 }
-

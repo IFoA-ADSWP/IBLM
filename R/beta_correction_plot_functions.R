@@ -1,4 +1,3 @@
-
 #' Create Scatter Plot of Beta Corrections for a Variable
 #'
 #' Generates a scatter plot or boxplot showing SHAP corrections for a specified variable from a fitted model.
@@ -36,11 +35,11 @@
 #' @import ggplot2
 beta_corrected_scatter <- function(varname = "DrivAge",
                                    q = 0,
-                                   color=NULL,
-                                   marginal=FALSE,
+                                   color = NULL,
+                                   marginal = FALSE,
                                    data_beta_coeff,
                                    data,
-                                   iblm_model)  {
+                                   iblm_model) {
 
   check_iblm_model(iblm_model)
 
@@ -69,9 +68,10 @@ beta_corrected_scatter <- function(varname = "DrivAge",
 
   plot_data <- data |> dplyr::mutate(beta_coeff = data_beta_coeff[[varname]])
 
-  if(vartype=="categorical"){
-
-    cat_levels <- data[[varname]] |> unique() |> sort()
+  if (vartype == "categorical") {
+    cat_levels <- data[[varname]] |>
+      unique() |>
+      sort()
     data_beta_coeff_names <- paste0(varname, cat_levels)
     glm_beta_coeff_names <- names(glm_beta_coeff)
     plot_beta_coeff_names <- intersect(data_beta_coeff_names, glm_beta_coeff_names)
@@ -88,7 +88,7 @@ beta_corrected_scatter <- function(varname = "DrivAge",
       message("'color' argument not supported when vartype=='categorical' and will be ignored")
     }
 
-    if (q>0) {
+    if (q > 0) {
       message("'q' values other than 0 are not supported when vartype=='categorical' and will be ignored")
     }
 
@@ -103,49 +103,52 @@ beta_corrected_scatter <- function(varname = "DrivAge",
         title = paste("Beta Coefficients after SHAP corrections for", varname),
         x = varname,
         y = "Beta Coefficients"
-      )+
+      ) +
       theme_iblm()
-
   } else {
-
-    if(q>0) {
+    if (q > 0) {
       plot_data <- plot_data |>
-        dplyr::filter(detect_outliers(.data$beta_coeff, method = "quantile",q=q))
+        dplyr::filter(detect_outliers(.data$beta_coeff, method = "quantile", q = q))
     }
 
     stderror <- summary(iblm_model$glm_model)$coefficients[varname, "Std. Error"]
     beta <- glm_beta_coeff[varname]
 
-    p  <- plot_data |>
-      ggplot()+
+    p <- plot_data |>
+      ggplot() +
       geom_point(
-        aes(x = get(varname),
-            y=.data$beta_coeff,
-            group = if(is.null(color)) NULL else get(color),
-            color=if(is.null(color)) NULL else get(color))
-        ,alpha=0.4) +
-      geom_smooth(aes(x = get(varname), y=.data$beta_coeff))+
-      {if(color_vartype=="numerical") scale_color_gradientn(name = color,colors = iblm_colors[c(2,1)])}+
-      {if(color_vartype=="categorical") scale_color_discrete(name = color)}+
+        aes(
+          x = get(varname),
+          y = .data$beta_coeff,
+          group = if (is.null(color)) NULL else get(color),
+          color = if (is.null(color)) NULL else get(color)
+        ),
+        alpha = 0.4
+      ) +
+      geom_smooth(aes(x = get(varname), y = .data$beta_coeff)) +
+      {
+        if (color_vartype == "numerical") scale_color_gradientn(name = color, colors = iblm_colors[c(2, 1)])
+      } +
+      {
+        if (color_vartype == "categorical") scale_color_discrete(name = color)
+      } +
       labs(
         title = paste("Beta Coefficients after SHAP corrections for", varname),
         subtitle = paste0(varname, " beta: ", round(beta, 4), ", SE: ", round(stderror, 4)),
         x = varname,
         y = "Beta Coefficients"
-      )+
+      ) +
       geom_hline(yintercept = beta, color = "black", size = 0.5) +
       geom_hline(yintercept = beta - stderror, linetype = "dashed", color = "black", linewidth = 0.5) +
       geom_hline(yintercept = beta + stderror, linetype = "dashed", color = "black", linewidth = 0.5) +
       theme_iblm()
 
-    if(marginal){
-      p <- ggExtra::ggMarginal(p,type = "density",groupColour = FALSE, groupFill = FALSE)
+    if (marginal) {
+      p <- ggExtra::ggMarginal(p, type = "density", groupColour = FALSE, groupFill = FALSE)
     }
-
   }
 
   return(p)
-
 }
 
 
@@ -189,12 +192,11 @@ beta_corrected_scatter <- function(varname = "DrivAge",
 beta_corrected_density <- function(
     varname,
     q = 0.05,
-    type="kde",
+    type = "kde",
     wide_input_frame,
     beta_corrections,
     data,
-    iblm_model
-) {
+    iblm_model) {
 
   check_iblm_model(iblm_model)
 
@@ -205,7 +207,7 @@ beta_corrected_density <- function(
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
   predictor_vars_categorical <- iblm_model$predictor_vars$categorical
 
-  stopifnot(is.numeric(q), q >= 0 , q < 0.5)
+  stopifnot(is.numeric(q), q >= 0, q < 0.5)
 
   if (varname %in% predictor_vars_continuous) {
     vartype <- "numerical"
@@ -213,20 +215,19 @@ beta_corrected_density <- function(
     vartype <- "categorical"
   } else if (varname %in% coef_names_reference_cat) {
     stop("varname is reference level. Plot cannot be produced as no beta coefficient exists for this level")
-  } else if (varname %in% names(glm_beta_coeff)){
+  } else if (varname %in% names(glm_beta_coeff)) {
     vartype <- "categorical_level"
   } else {
     stop("varname not found in model!")
   }
 
   # if the variable is categorical, we will use recursion to plot each unique level and output a list instead...
-  if(vartype %in% "categorical"){
-
-    levels_to_plot <- paste0(varname, levels_all_cat[[varname]])  |> intersect(names(glm_beta_coeff))
+  if (vartype %in% "categorical") {
+    levels_to_plot <- paste0(varname, levels_all_cat[[varname]]) |> intersect(names(glm_beta_coeff))
 
     output <- purrr::map(
       levels_to_plot,
-      ~beta_corrected_density(
+      ~ beta_corrected_density(
         varname = .x,
         q = q,
         type = type,
@@ -243,25 +244,25 @@ beta_corrected_density <- function(
   # otherwise, we perform the code for a single plot...
 
   # if the variable is numerical, or if we are dealing with only one categorical_level, there is only 1 Beta value
-  if(vartype %in% c("numerical","categorical_level")){
+  if (vartype %in% c("numerical", "categorical_level")) {
     stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
-    beta <-  glm_beta_coeff[varname]
+    beta <- glm_beta_coeff[varname]
     shap_deviations <- beta_corrections[, varname]
   }
 
   # remove policies that do not have the level that was specified via varname (only when varname is a variable-level combo)
-  if(vartype=="categorical_level"){
-    is_wanted_level <- wide_input_frame[,varname]==1
+  if (vartype == "categorical_level") {
+    is_wanted_level <- wide_input_frame[, varname] == 1
     shap_deviations <- shap_deviations[is_wanted_level]
   }
 
-  shap_quantiles <- beta + stats::quantile(shap_deviations, probs = c(q, 1-q))
+  shap_quantiles <- beta + stats::quantile(shap_deviations, probs = c(q, 1 - q))
   lower_bound <- min(shap_quantiles[1], beta - stderror)
   upper_bound <- max(shap_quantiles[2], beta + stderror)
 
-  if(type == "kde") {
+  if (type == "kde") {
     geom_corrections_density <- list(geom_density(color = iblm_colors[1], fill = iblm_colors[4], alpha = 0.3))
-  } else if(type == "hist") {
+  } else if (type == "hist") {
     geom_corrections_density <- list(geom_histogram(color = iblm_colors[1], fill = iblm_colors[4], alpha = 0.3, bins = 100))
   } else {
     stop("type was not 'kde' or 'hist'")
@@ -280,7 +281,6 @@ beta_corrected_density <- function(
     xlab("Beta Coefficients") +
     xlim(lower_bound, upper_bound) +
     theme_iblm()
-
 }
 
 
@@ -363,35 +363,40 @@ shap_intercept <- function(shap,
 
   intercept_shap_long <- intercept_shap |>
     tidyr::pivot_longer(cols = dplyr::everything(), names_to = "name", values_to = "value") |>
-    dplyr::filter(.data$value!=0) |>
-    dplyr::mutate(name = factor(.data$name, levels = names(sort(-colSums(intercept_shap!=0)))),
-                  value = .data$value + baseline + beta_0)
+    dplyr::filter(.data$value != 0) |>
+    dplyr::mutate(
+      name = factor(.data$name, levels = names(sort(-colSums(intercept_shap != 0)))),
+      value = .data$value + baseline + beta_0
+    )
 
   grouped_density <- intercept_shap_long |>
-    ggplot(aes(x=.data$value))+
-    geom_density()+
-    facet_wrap(~name, scales = "free_y")+
-    geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5)+
-    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], linewidth = 0.5)+
-    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], linewidth = 0.5)+
-    ggtitle("Individual intercept correction distributions")+
-    xlab("")+
-    ylab("")+
+    ggplot(aes(x = .data$value)) +
+    geom_density() +
+    facet_wrap(~name, scales = "free_y") +
+    geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5) +
+    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], linewidth = 0.5) +
+    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], linewidth = 0.5) +
+    ggtitle("Individual intercept correction distributions") +
+    xlab("") +
+    ylab("") +
     theme_iblm()
 
   boxplot <- intercept_shap_long |>
-    ggplot(aes(x = .data$name,y=.data$value))+
-    geom_boxplot()+
-    geom_hline(yintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5)+
+    ggplot(aes(x = .data$name, y = .data$value)) +
+    geom_boxplot() +
+    geom_hline(yintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5) +
     ggtitle(paste0("Jitter chart of beta corrections for intercept"),
-            subtitle = paste0("Intercept: ", round(beta_0,2)," with shap baseline: ",round(baseline,2)))+
-    xlab("")+
-    ylab("")+
+      subtitle = paste0("Intercept: ", round(beta_0, 2), " with shap baseline: ", round(baseline, 2))
+    ) +
+    xlab("") +
+    ylab("") +
     theme_iblm()
 
-  return(list(overall_density = overall_density,
-              grouped_density = grouped_density,
-              boxplot = boxplot))
+  return(list(
+    overall_density = overall_density,
+    grouped_density = grouped_density,
+    boxplot = boxplot
+  ))
 }
 
 #' Generate Overall Corrections from Booster as Distribution Plot
@@ -424,18 +429,13 @@ overall_correction <- function(transform_x_scale_by_link = TRUE, shap, iblm_mode
 
 
   if (!transform_x_scale_by_link | family$link == "identity") {
-
     scale_x_link <- list()
-
   } else if (family$link %in% out_the_box_transformations) {
-
     scale_x_link <- list(
       labs(caption = paste0("**Please note scale is tranformed by ", family$link, " function")),
       scale_x_continuous(transform = family$link)
     )
-
   } else {
-
     scale_x_link <- list(
       labs(caption = paste0("**Please note scale is tranformed by ", family$link, " function")),
       scale_x_continuous(transform = scales::new_transform(
@@ -444,7 +444,6 @@ overall_correction <- function(transform_x_scale_by_link = TRUE, shap, iblm_mode
         inverse = family$linkinv
       ))
     )
-
   }
 
   dt |>

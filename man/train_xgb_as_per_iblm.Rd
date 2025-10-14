@@ -24,7 +24,10 @@ Trains an XGBoost model using parameters extracted from the booster residual com
 This is a convenient way to fit an XGBoost model for direct comparison with a fitted iblm model
 }
 \examples{
-df_list <- freMTPL2freq |> head(10000) |> dplyr::mutate(ClaimRate = round(ClaimRate)) |> split_into_train_validate_test()
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
 
 iblm_model <- train_iblm(
   df_list,
