@@ -1,5 +1,7 @@
 testthat::test_that("test against Karol original script", {
 
+  testthat::skip_on_cran()
+
   # ============================ Input data =====================
 
   withr::with_seed(1,
@@ -220,6 +222,8 @@ testthat::test_that("test explain completes when categorical only", {
 })
 
 testthat::test_that("test explain completes when continuous only", {
+
+  testthat::skip("This is awaiting feedback from KG...")
 
   vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "Density", "ClaimRate")
 

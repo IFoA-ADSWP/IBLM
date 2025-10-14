@@ -1,4 +1,4 @@
-testthat::test_that("test corrected beta coeffecient predictions are same as predict.iblm()", {
+testthat::test_that("test corrected beta coeffecient predictions are same as predict iblm()", {
 
   # A note on this test...
 
@@ -34,7 +34,7 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
   explainer_nu <- explain_iblm(iblm_model = IBLM, data = splits$test, migrate_reference_to_bias = TRUE)
 
   coeff_multiplier <- splits$test |>
-    dplyr::select(-"ClaimRate") |>
+    dplyr::select(-dplyr::all_of("ClaimRate")) |>
     dplyr::mutate(
       dplyr::across(
         dplyr::all_of(IBLM$predictor_vars$categorical),
