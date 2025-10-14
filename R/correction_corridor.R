@@ -16,6 +16,17 @@
 #' @return A ggplot object showing GLM vs IBLM predictions faceted by trim value.
 #'   The diagonal line (y = x) represents perfect agreement between models
 #'
+#' @examples
+#' df_list <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' correction_corridor(iblm_model = iblm_model, data = df_list$test)
+#'
 #' @export
 correction_corridor <- function(iblm_model,
                                 data,

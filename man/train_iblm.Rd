@@ -78,10 +78,10 @@ For "gaussian" family the link function is 'identity' and XGBoost is configured 
 }
 }
 \examples{
-data <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+df_list <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
 
 iblm_model <- train_iblm(
-  data,
+  df_list,
   response_var = "ClaimRate",
   family = "poisson"
 )

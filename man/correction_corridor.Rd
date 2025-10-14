@@ -37,3 +37,15 @@ A ggplot object showing GLM vs IBLM predictions faceted by trim value.
 Creates a faceted scatter plot comparing GLM predictions to ensemble predictions
 across different trim values, showing how the ensemble corrects the base GLM model.
 }
+\examples{
+df_list <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+
+iblm_model <- train_iblm(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+correction_corridor(iblm_model = iblm_model, data = df_list$test)
+
+}

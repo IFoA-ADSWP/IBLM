@@ -20,8 +20,20 @@ XGBoost model components. Also contains data that was used to train it.}
 Trained XGBoost model object (class "xgb.Booster").
 }
 \description{
-Trains an XGBoost model using parameters extracted from the booster residual component of the ensemble model.
-This is a convenient way to fit an XGBoost model for comparison with the ensemble.
+Trains an XGBoost model using parameters extracted from the booster residual component of the iblm model.
+This is a convenient way to fit an XGBoost model for direct comparison with a fitted iblm model
+}
+\examples{
+df_list <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+
+iblm_model <- train_iblm(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+xgb <- train_xgb_as_per_iblm(iblm_model)
+
 }
 \seealso{
 \link[xgboost]{xgb.train}

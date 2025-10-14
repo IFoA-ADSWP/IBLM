@@ -10,12 +10,25 @@
 #' @param additional_models (Named) list of fitted models for comparison. These models MUST be fitted on the same data as `iblm_model` for sensible results.
 #' If unnamed, models are labeled by their class.
 #'
-#' @return Data frame with columns for "poission_deviance" and "pinball_score" for each model.
+#' @return Data frame with 3 columns:
+#' * "model" - will be homog, glm, iblm and any other models specified in `additional_models`
+#' * "poisson_deviance" - the value from the loss function based on poisson
+#' * "pinball_score" - The more positive the score, the better the model than a basic homog model (i.e. all predictions are mean value). A negative score indicates worse than homog model.
 #'
 #' @details
 #' Pinball scores are calculated relative to a homogeneous model (i.e. a simple mean prediction of training data).
 #' Higher scores indicate better predictive performance.
 #'
+#' @examples
+#' df_list <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' get_pinball_scores(data = df_list$test, iblm_model = iblm_model)
 #'
 #' @export
 get_pinball_scores <- function(data,
@@ -108,12 +121,7 @@ get_pinball_scores <- function(data,
 #'
 #' @return Numeric value representing twice the mean Poisson deviance
 #'
-#' @examples
-#' \dontrun{
-#' y_true <- c(1, 2, 3, 4, 5)
-#' y_pred <- c(1.1, 1.9, 3.2, 3.8, 5.1)
-#' poisson_deviance(y_true, y_pred)
-#' }
+#' @noRd
 poisson_deviance <- function(y_true, y_pred, correction = +10^-7) {
   pd <- mean((y_pred - y_true - y_true * log((y_pred + correction) / (y_true + correction))))
   return(2 * pd)

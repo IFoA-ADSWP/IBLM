@@ -3,7 +3,6 @@
 S3method(predict,iblm)
 export(check_iblm_model)
 export(correction_corridor)
-export(detect_outliers)
 export(explain_iblm)
 export(get_pinball_scores)
 export(split_into_train_validate_test)

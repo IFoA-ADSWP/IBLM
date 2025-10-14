@@ -28,17 +28,15 @@
 #' visualization methods to understand how SHAP values modify GLM predictions.
 #'
 #' @examples
-#' \dontrun{
-#' # Assuming you have fitted both GLM and XGBoost models
-#' models <- list(glm_model = my_glm, booster_model = my_xgb)
-#' explainer <- explain_iblm(models, test_data)
+#' df_list <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
 #'
-#' # Generate scatter plot for a variable
-#' explainer$beta_corrected_scatter("age")
+#' iblm_model <- train_iblm(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
 #'
-#' # Show density of corrections
-#' explainer$beta_corrected_density("income")
-#' }
+#' explain_iblm(iblm_model, df_list$test)
 #'
 #' @export
 explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE){

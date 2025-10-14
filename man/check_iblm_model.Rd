@@ -13,5 +13,17 @@ check_iblm_model(model)
 Invisible TRUE if all checks pass
 }
 \description{
-Validates an ensemble model object has required structure and attributes.
+Validates an iblm model object has required structure and features
+}
+\examples{
+df_list <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+
+iblm_model <- train_iblm(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+check_iblm_model(iblm_model)
+
 }

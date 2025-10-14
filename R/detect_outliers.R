@@ -23,7 +23,7 @@
 #' x <- c(1, 2, 3, 4, 5, 100)  # 100 is an outlier
 #' detect_outliers(x, method = "quantile", q = 0.1)
 #'
-#' @export
+#' @noRd
 detect_outliers <- function(x, method = c("quantile", "isoforest"), q = 0.01) {
   method <- match.arg(method)
   if (!is.numeric(x)) stop("Input vector 'x' must be numeric.")

@@ -28,13 +28,16 @@
 #'   proportions must sum to 1 (with some tolerance for floating point precision).
 #'
 #' @examples
-#' # Custom proportions
-#' dfs <- split_into_train_validate_test(
+#' # Using 'mtcars'
+#' split_into_train_validate_test(
 #'   mtcars,
 #'   train_prop = 0.8,
 #'   validate_prop = 0.1,
 #'   test_prop = 0.1
 #' )
+#'
+#' # Using 'freMTPL2freq'
+#' freMTPL2freq |> split_into_train_validate_test()
 #'
 #' @export
 split_into_train_validate_test <- function(
