@@ -186,7 +186,9 @@ testthat::test_that("test explain completes when one categorical and one continu
     family= "poisson"
   )
 
-  explainer <- explain_iblm(iblm_model = IBLM, data = splits$test)
+  testthat::expect_no_error(
+    explain_iblm(iblm_model = IBLM, data = splits$test)
+  )
 
 
 })
