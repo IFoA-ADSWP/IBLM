@@ -58,3 +58,67 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
     # ...shap values are estimates and so there is expected noise between two methods
   )
 })
+
+
+
+testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
+
+  testthat::skip()
+
+  # A note on this test...
+
+  # This test compares the predictions with 'migrate_reference_to_bias' as TRUE or FALSE
+
+  # ============================ Input data =====================
+
+  withr::with_seed(1, {
+    data <- freMTPL2freq |> split_into_train_validate_test()
+  })
+
+  # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
+  # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
+  # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
+  splits <- data |>
+    purrr::modify(.f = function(x) dplyr::mutate(x, ClaimRate = round(ClaimRate)))
+
+  # ============================ IBLM package process =====================
+
+  IBLM <- train_iblm(
+    splits,
+    response_var = "ClaimRate",
+    family = "poisson"
+  )
+
+  explainer_w_migrate <- explain_iblm(iblm_model = IBLM, data = splits$test, migrate_reference_to_bias = TRUE)
+
+  explainer_wout_migrate <- explain_iblm(iblm_model = IBLM, data = splits$test, migrate_reference_to_bias = FALSE)
+
+  coeff_multiplier <- splits$test |>
+    dplyr::select(-dplyr::all_of("ClaimRate")) |>
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::all_of(IBLM$predictor_vars$categorical),
+        ~1
+      )
+    ) |>
+    dplyr::mutate(bias = 1, .before = 1)
+
+  predict_w_migrate <- rowSums(explainer_w_migrate$data_beta_coeff * coeff_multiplier) |>
+    exp() |>
+    unname()
+
+  predict_wout_migrate <- rowSums(explainer_wout_migrate$data_beta_coeff * coeff_multiplier) |>
+    exp() |>
+    unname()
+
+  prediction_max_difference <- max(abs(predict_w_migrate / predict_wout_migrate - 1))
+
+  testthat::expect_equal(
+    prediction_max_difference,
+    0,
+    tolerance = 1E-6
+    # the tolerance is a bit higher for this test because...
+    # ...shap values are estimates and so there is expected noise between two methods
+  )
+
+})
