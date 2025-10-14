@@ -2,7 +2,7 @@
 % Please edit documentation in R/train_iblm.R
 \name{train_iblm}
 \alias{train_iblm}
-\title{Train IBLM Model (with XGBoost for residuals)}
+\title{Train IBLM Model}
 \usage{
 train_iblm(
   df_list,
@@ -78,13 +78,13 @@ For "gaussian" family the link function is 'identity' and XGBoost is configured 
 }
 }
 \examples{
-\dontrun{
-library(IBLM)
+data <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
 
-df_list <- split_into_train_validate_test(freMTPL2freq)
-
-iblm_model <- train_iblm(df_list, response_var = "ClaimRate")
-}
+iblm_model <- train_iblm(
+  data,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
 
 }
 \seealso{

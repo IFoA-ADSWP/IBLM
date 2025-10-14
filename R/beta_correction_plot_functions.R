@@ -139,7 +139,7 @@ beta_corrected_scatter <- function(varname = "DrivAge",
       theme_iblm()
 
     if(marginal){
-      p = ggExtra::ggMarginal(p,type = "density",groupColour = F, groupFill = F)
+      p <- ggExtra::ggMarginal(p,type = "density",groupColour = FALSE, groupFill = FALSE)
     }
 
   }
@@ -367,7 +367,7 @@ shap_intercept <- function(shap,
     dplyr::mutate(name = factor(.data$name, levels = names(sort(-colSums(intercept_shap!=0)))),
                   value = .data$value + baseline + beta_0)
 
-  grouped_density = intercept_shap_long |>
+  grouped_density <- intercept_shap_long |>
     ggplot(aes(x=.data$value))+
     geom_density()+
     facet_wrap(~name, scales = "free_y")+

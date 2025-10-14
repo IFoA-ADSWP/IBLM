@@ -1,5 +1,5 @@
 
-#' Train IBLM Model (with XGBoost for residuals)
+#' Train IBLM Model
 #'
 #' @description
 #' This function trains an interpretable boosted linear model.
@@ -59,14 +59,15 @@
 #'   \item objective: "reg:squarederror"
 #'   \item base_score: 0
 #' }
+#'
 #' @examples
-#' \dontrun{
-#' library(IBLM)
+#' data <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
 #'
-#' df_list <- split_into_train_validate_test(freMTPL2freq)
-#'
-#' iblm_model <- train_iblm(df_list, response_var = "ClaimRate")
-#' }
+#' iblm_model <- train_iblm(
+#'   data,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
 #'
 #' @seealso
 #' \link[stats]{glm}, \link[xgboost]{xgb.train}
@@ -206,11 +207,11 @@ train_iblm <- function(df_list,
   if(strip_glm) {
 
   stripGlmLR <- function(cm) {
-    cm$y = c()
+    cm$y <- c()
 
-    cm$residuals = c()
-    cm$fitted.values = c()
-    cm$data = c()
+    cm$residuals <- c()
+    cm$fitted.values <- c()
+    cm$data <- c()
 
     cm
   }

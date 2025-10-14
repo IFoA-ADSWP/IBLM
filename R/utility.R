@@ -8,14 +8,7 @@
 #'
 #' @return Returns \code{TRUE} if all required names are present. Throws an error otherwise.
 #'
-#' @examples
-#' \dontrun{
-#' # pass error check...
-#' IBLMpackage:::check_required_names(datasets::mtcars, c("mpg", "cyl"))
-#'
-#' # fail error check due to column missing...
-#' IBLMpackage:::check_required_names(datasets::mtcars, c("mpg", "cyl", "idonotexist"))
-#' }
+#' @noRd
 check_required_names <- function(x, required_names) {
   # Check input type
   if (!is.list(x)) {
@@ -50,12 +43,7 @@ check_required_names <- function(x, required_names) {
 #'
 #' @return A character string: either `"numerical"` or `"categorical"`.
 #'
-#' @examples
-#' vars_cont <- c("age", "height", "weight")
-#' vars_cat <- c("gender", "group")
-#'
-#' IBLMpackage:::assign_variable_type("age", vars_cont, vars_cat)
-#' # Returns "numerical"
+#' @noRd
 assign_variable_type <- function(
     var,
     vars_continuous,

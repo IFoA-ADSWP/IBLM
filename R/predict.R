@@ -9,7 +9,7 @@
 #'   which predictions are desired. Must have the same structure as the
 #'   training data used to fit the ensemble model.
 #' @param trim Numeric value for post-hoc truncating of XGBoost predictions. If \code{NA} (default) then no trimming is applied.
-#' @param type string, defines the type argument used in GLM/XGBoost. Currently only "response" is supported
+#' @param type string, defines the type argument used in GLM/Booster Currently only "response" is supported
 #'
 #'
 #' @return A numeric vector of ensemble predictions computed as the element-wise
@@ -19,26 +19,26 @@
 #' @details
 #' The prediction process involves the following steps:
 #' \enumerate{
-#'   \item Generate GLM predictions using \code{type="response"}
-#'   \item Generate XGBoost predictions on a DMatrix conversion of the input data
-#'   \item If trimming is specified, apply to XGBoost predictions
-#'   \item Multiply **or** Add the GLM and XGBoost predictions (depending on link function) to get the ensemble predictions
+#'   \item Generate GLM predictions
+#'   \item Generate Booster predictions
+#'   \item If trimming is specified, apply to booster predictions
+#'   \item Combine GLM and Booster predictions as per "relationship" described within iblm model object
 #' }
 #'
-#' @examples
-#' \dontrun{
-#' data <- freMTPL2freq |> split_into_train_validate_test()
+#' At this point, only an iblm model with a "booster_model" object of class `xgb.Booster` is supported
 #'
-#' IBLM <- train_iblm(
+#' @examples
+#' data <- freMTPL2freq |> head(10000) |> split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm(
 #'   data,
 #'   response_var = "ClaimRate",
 #'   family = "poisson"
 #' )
 #'
-#' predictions <- predict(IBLM, data$test)
+#' predictions <- predict(iblm_model, data$test)
 #'
 #' predictions
-#' }
 #'
 #' @seealso \link[stats]{predict.glm}, \link[xgboost]{predict.xgb.Booster}
 #'
