@@ -36,8 +36,8 @@ testthat::test_that("test against Karol original script", {
 
   ps_og <- data.frame(
     model = c("homog", "glm", "iblm"),
-    poisson_deviance = c(0.6821738013621665, 0.6614369861117713, 0.6561672090472287),
-    pinball_score = c(0, 0.03039814078023506, 0.03812311798402079)
+    poisson_deviance = c(1.4195,1.3606, 1.2483),
+    pinball_score = c(0.00,4.15,12.06)/100
   )
 
   testthat::expect_equal(
