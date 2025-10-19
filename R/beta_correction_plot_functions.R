@@ -33,7 +33,7 @@
 #' @keywords internal
 #'
 #' @import ggplot2
-beta_corrected_scatter <- function(varname = "DrivAge",
+beta_corrected_scatter <- function(varname,
                                    q = 0,
                                    color = NULL,
                                    marginal = FALSE,
@@ -134,7 +134,7 @@ beta_corrected_scatter <- function(varname = "DrivAge",
       } +
       labs(
         title = paste("Beta Coefficients after SHAP corrections for", varname),
-        subtitle = paste0(varname, " beta: ", round(beta, 4), ", SE: ", round(stderror, 4)),
+        subtitle = paste0(varname, " beta: ", round(beta, 3), ", SE: +/-", round(stderror, 4)),
         x = varname,
         y = "Beta Coefficients"
       ) +

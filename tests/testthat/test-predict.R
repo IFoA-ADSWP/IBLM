@@ -67,7 +67,8 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
 
   # A note on this test...
 
-  # This test compares the predictions with 'migrate_reference_to_bias' as TRUE or FALSE
+  # This test compares the predictions with 'migrate_reference_to_bias' as TRUE or FALSE.
+  # They should lead to the same predictions
 
   # ============================ Input data =====================
 

@@ -5,7 +5,7 @@
 \title{Create Scatter Plot of Beta Corrections for a Variable}
 \usage{
 beta_corrected_scatter(
-  varname = "DrivAge",
+  varname,
   q = 0,
   color = NULL,
   marginal = FALSE,
