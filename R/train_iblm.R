@@ -220,8 +220,8 @@ train_iblm <- function(df_list,
   glm_beta_coeff <- iblm_model$glm_model$coefficients
   coef_names_glm <- names(glm_beta_coeff)
 
-  vartypes <- lapply(df_list$train, typeof) |> unlist()
-  varclasses <- lapply(df_list$train, class) |> unlist()
+  vartypes <- lapply(df_list$train |> dplyr::select(-dplyr::all_of(response_var)), typeof) |> unlist()
+  varclasses <- lapply(df_list$train |> dplyr::select(-dplyr::all_of(response_var)), class) |> unlist()
 
   # create data objects that explain variables
 
@@ -234,6 +234,7 @@ train_iblm <- function(df_list,
 
   cat_levels <- list()
   coeff_names <- list()
+
 
   cat_levels$all <- lapply(
     df_list$train |> dplyr::select(dplyr::all_of(predictor_vars$categorical)),
