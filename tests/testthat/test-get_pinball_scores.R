@@ -131,6 +131,44 @@ testthat::test_that("test against Karol paper", {
 
 
 
+testthat::test_that("test results are same for character or factor fields", {
 
+  # ============================ Input data =====================
+
+  withr::with_seed(1, {
+    data <- freMTPL2freq |> head(50000) |> split_into_train_validate_test() # partial data to speed up test
+  })
+
+  # get data where categoricals are factors
+  splits_fct <- data |>
+    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.character), function(field) as.factor(field)))) |>
+    purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate")) |>
+    purrr::modify(.f = function(x) dplyr::mutate(x, ClaimNb = round(ClaimNb)))
+
+  # get identical data where categoricals are strings
+  splits_chr <- splits_fct |>
+    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field))))
+
+  # ============================ IBLM package process =====================
+
+  IBLM_fct <- train_iblm(
+    splits_fct,
+    response_var = "ClaimNb",
+    family = "poisson"
+  )
+
+  IBLM_chr <- train_iblm(
+    splits_chr,
+    response_var = "ClaimNb",
+    family = "poisson"
+  )
+
+  ps_fct <- get_pinball_scores(splits_fct$test, IBLM_fct)
+
+  ps_chr <- get_pinball_scores(splits_chr$test, IBLM_chr)
+
+  testthat::expect_equal(ps_fct, ps_chr)
+
+})
 
 
