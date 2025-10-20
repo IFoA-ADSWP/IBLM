@@ -72,7 +72,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
     beta_corrections = beta_corrections,
     data_beta_coeff = data_beta_coeff,
     beta_corrected_scatter = function(
-        varname = "DrivAge",
+        varname,
         q = 0,
         color = NULL,
         marginal = FALSE) {
@@ -86,7 +86,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
         iblm_model = iblm_model
       )
     },
-    beta_corrected_density = function(varname = "DrivAge",
+    beta_corrected_density = function(varname,
                                       q = 0.05,
                                       type = "kde") {
       beta_corrected_density(
@@ -100,7 +100,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
       )
     },
     bias_density = function(q = 0,
-                            type = "kde") {
+                            type = "hist") {
       bias_density(
         q = q,
         type = type,
