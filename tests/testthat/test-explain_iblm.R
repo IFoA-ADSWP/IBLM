@@ -210,8 +210,6 @@ testthat::test_that("test explain completes when categorical only", {
 
 testthat::test_that("test explain completes when continuous only", {
 
-  testthat::skip("This is awaiting feedback from KG...")
-
   vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "Density", "ClaimRate")
 
   withr::with_seed(1, {
