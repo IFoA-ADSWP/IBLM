@@ -7,7 +7,7 @@
 #' fitted booster model
 #'
 #' @param booster_model A model object. In the IBLM context it will be the "booster_model" item
-#' from an object of class "iblm",
+#' from an object of class "iblm"
 #' @param data A data frame containing the data that SHAP values are desired for.
 #' @param ... Additional arguments passed to methods.
 #'
@@ -44,7 +44,7 @@ extract_booster_shap <- function(booster_model, data, ...) {
 #' @seealso [xgboost::predict.xgb.Booster()]
 #'
 #' @export
-extract_booster_shap.xgb.Booster <- function(booster_model, data) {
+extract_booster_shap.xgb.Booster <- function(booster_model, data, ...) {
   stats::predict(
     booster_model,
     newdata = xgboost::xgb.DMatrix(

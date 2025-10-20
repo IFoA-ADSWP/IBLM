@@ -7,11 +7,11 @@
 \usage{
 extract_booster_shap(booster_model, data, ...)
 
-\method{extract_booster_shap}{xgb.Booster}(booster_model, data)
+\method{extract_booster_shap}{xgb.Booster}(booster_model, data, ...)
 }
 \arguments{
 \item{booster_model}{A model object. In the IBLM context it will be the "booster_model" item
-from an object of class "iblm",}
+from an object of class "iblm"}
 
 \item{data}{A data frame containing the predictor variables ONLY}
 
