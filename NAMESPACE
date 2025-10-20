@@ -3,6 +3,7 @@
 S3method(extract_booster_shap,xgb.Booster)
 S3method(predict,iblm)
 export(beta_corrections_derive)
+export(bias_density)
 export(check_iblm_model)
 export(correction_corridor)
 export(data_beta_coeff_booster)

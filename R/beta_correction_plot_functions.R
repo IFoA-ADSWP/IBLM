@@ -285,119 +285,204 @@ beta_corrected_density <- function(
 
 
 
-#' Generate Intercept Correction Analysis and Visualizations
+
+#' Plot density of bias corrections from SHAP values
 #'
-#' Analyzes how SHAP values correct the GLM intercept term, focusing on
-#' observations where continuous variables are zero or categorical variables
-#' are at their reference levels.
+#' Visualizes the distribution of SHAP corrections that are migrated to bias terms,
+#' showing both per-variable and total bias corrections.
 #'
+#' @param q Numeric value between 0 and 0.5 for quantile bounds. Default is 0.
+#' @param type Character string specifying plot type: "kde" for kernel density or "hist" for histogram. Default is "kde".
 #' @param shap Data frame containing raw SHAP values.
 #' @param data Dataframe. The testing data.
 #' @param iblm_model Object of class 'iblm'
 #'
-#' @return A list containing:
-#' \describe{
-#'   \item{overall_density}{ggplot object showing density of total intercept corrections}
-#' }
+#' @return List with two ggplot objects:
+#' \item{bias_correction_var}{Faceted plot showing bias correction density for each variable}
+#' \item{bias_correction_total}{Plot showing total corrected total bias density}
 #'
-#' @details This function:
-#' \itemize{
-#'   \item Identifies observations at reference conditions (zeros/reference levels)
-#'   \item Calculates intercept-specific SHAP corrections for these observations
-#'   \item Creates visualizations showing the distribution of corrected intercept values
-#'   \item Compares corrected values against the original GLM intercept and its standard error
-#' }
-#'
-#'
-#' @keywords internal
+#' @export
 #'
 #' @import ggplot2
-shap_intercept <- function(shap,
+bias_density <- function(q = 0,
+                           type = "hist",
+                           shap,
                            data,
                            iblm_model) {
 
-  check_iblm_model(iblm_model)
 
-  levels_reference_cat <- iblm_model$cat_levels$reference
-  x_glm_model <- iblm_model$glm_model
+
+  # --------------- checks ------------
+
+  stopifnot(is.numeric(q), q >= 0, q < 0.5)
+
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
-  response_var <- iblm_model$response_var
-  no_cat_toggle <- length(iblm_model$predictor_vars$categorical) == 0
+  predictor_vars_categorical <- iblm_model$predictor_vars$categorical
+  reference_levels <- iblm_model$cat_levels$reference
+  reference_cat <- iblm_model$coeff_names$reference_cat
 
 
-  beta_0 <- x_glm_model$coefficients["(Intercept)"] |> as.numeric()
-  beta_0_SE <- summary(x_glm_model)$coefficients["(Intercept)", "Std. Error"]
-  baseline <- shap$BIAS[1]
+  # --------------- bias_correction_df ------------
 
-  if (no_cat_toggle) {
-    shap_mask <- data |>
-      dplyr::select(-dplyr::all_of(response_var)) |>
-      dplyr::mutate(dplyr::across(dplyr::all_of(predictor_vars_continuous), ~ as.integer(. == 0)))
-  } else {
-    shap_mask <- data |>
-      dplyr::select(-dplyr::all_of(response_var)) |>
-      dplyr::mutate(
-        dplyr::across(dplyr::all_of(predictor_vars_continuous), ~ as.integer(. == 0)),
-        dplyr::across(
-          dplyr::all_of(names(levels_reference_cat)),
-          ~ as.integer(. == levels_reference_cat[dplyr::cur_column()])
+  bias_correction_continuous <- predictor_vars_continuous |>
+    purrr::map(
+      .f = function(var) {
+        is_zero <- data[[var]] == 0
+        bias_correction <- shap[is_zero, ][[var]]
+        row_id <- (1:nrow(data))[is_zero]
+        if(length(bias_correction) == 0) { return(NULL)}
+        data.frame(
+          row_id = row_id,
+          var = var,
+          bias_correction = bias_correction
         )
-      )
+      }
+    ) |>
+    dplyr::bind_rows()
+
+
+  bias_correction_categorical <- predictor_vars_categorical |>
+    purrr::map(
+      .f = function(var) {
+        ref <- reference_levels[[var]]
+        is_ref <- data[[var]] == ref
+        bias_correction <- shap[is_ref, ][[var]]
+        row_id <- (1:nrow(data))[is_ref]
+        if(length(bias_correction) == 0) { return(NULL)}
+        data.frame(
+          row_id = row_id,
+          var = var,
+          bias_correction = bias_correction
+        )
+      }
+    ) |>
+    dplyr::bind_rows()
+
+  if (type == "kde") {
+    geom_corrections_density <- list(geom_density(color = "grey70", fill = "grey70", alpha = 0.3))
+  } else if (type == "hist") {
+    geom_corrections_density <- list(geom_histogram(color = "grey70", fill = "grey70", alpha = 0.3, bins = 100))
+  } else {
+    stop("type was not 'kde' or 'hist'")
   }
 
-  intercept_shap <-
-    (dplyr::select(shap, dplyr::all_of(names(shap_mask))) * shap_mask) |>
-    dplyr::select(names(which(colSums(shap_mask) > 0))) |>
-    (\(df) dplyr::filter(df, rowSums(df) != 0))() |>
-    dplyr::select(-dplyr::any_of(predictor_vars_continuous))
 
-  overall_density <- intercept_shap |>
-    dplyr::mutate(total_correction = rowSums(dplyr::across(dplyr::everything())) + baseline + beta_0) |>
-    ggplot(aes(x = .data$total_correction)) +
-    geom_density() +
-    geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5) +
-    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], linewidth = 0.5) +
-    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], linewidth = 0.5) +
-    ggtitle("Overall intercept correction distribution") +
-    theme_iblm()
+  bias_correction_var_df <- rbind(bias_correction_continuous, bias_correction_categorical)
 
-  intercept_shap_long <- intercept_shap |>
-    tidyr::pivot_longer(cols = dplyr::everything(), names_to = "name", values_to = "value") |>
-    dplyr::filter(.data$value != 0) |>
-    dplyr::mutate(
-      name = factor(.data$name, levels = names(sort(-colSums(intercept_shap != 0)))),
-      value = .data$value + baseline + beta_0
-    )
+  remaining_vars <- bias_correction_var_df$var |> unique()
 
-  grouped_density <- intercept_shap_long |>
-    ggplot(aes(x = .data$value)) +
-    geom_density() +
-    facet_wrap(~name, scales = "free_y") +
-    geom_vline(xintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5) +
-    geom_vline(xintercept = baseline + beta_0 - beta_0_SE, color = iblm_colors[1], linewidth = 0.5) +
-    geom_vline(xintercept = baseline + beta_0 + beta_0_SE, color = iblm_colors[1], linewidth = 0.5) +
-    ggtitle("Individual intercept correction distributions") +
-    xlab("") +
-    ylab("") +
-    theme_iblm()
 
-  boxplot <- intercept_shap_long |>
-    ggplot(aes(x = .data$name, y = .data$value)) +
-    geom_boxplot() +
-    geom_hline(yintercept = baseline + beta_0, color = iblm_colors[2], linewidth = 0.5) +
-    ggtitle(paste0("Jitter chart of beta corrections for intercept"),
-            subtitle = paste0("Intercept: ", round(beta_0, 2), " with shap baseline: ", round(baseline, 2))
+
+  # --------- plot bias correction by var ------------
+
+  stderror <- summary(iblm_model$glm_model)$coefficients[predictor_vars_continuous, "Std. Error"]
+
+  stderror_df <- data.frame(
+    var = predictor_vars_continuous,
+    stderror_plus = stderror,
+    stderror_minus = -stderror
+  ) |>
+    dplyr::filter(var %in% remaining_vars)
+
+  shap_quantiles <-  stats::quantile(bias_correction_var_df$bias_correction, probs = c(q, 1 - q))
+  lower_bound <- min(shap_quantiles[1], min(stderror_df$stderror_minus))
+  upper_bound <- max(shap_quantiles[2], max(stderror_df$stderror_plus))
+
+  bias_correction_var <-
+    bias_correction_var_df |>
+    ggplot(aes(x=.data$bias_correction)) +
+    geom_corrections_density +
+    geom_vline(
+      data = stderror_df,
+      mapping = aes(xintercept = stderror_plus),
+      linetype = "dashed",
+      color = iblm_colors[2],
+      linewidth = 0.5) +
+    geom_vline(
+      data = stderror_df,
+      mapping = aes(xintercept = stderror_minus),
+      linetype = "dashed",
+      color = iblm_colors[2],
+      linewidth = 0.5) +
+    geom_text(
+      data = stderror_df,
+      mapping = aes(label=paste0("SE: +/-", round(stderror_plus, 4)),
+                    x=Inf,
+                    y=Inf),
+      hjust = 1,
+      vjust = 1.5,
+      color = iblm_colors[2],
+      size = 3) +
+    labs(
+      title = paste("Density for SHAP corrections that are migrated to bias")
     ) +
-    xlab("") +
-    ylab("") +
+    xlab("Bias Value Corrections") +
+    ylab("Count") +
+    xlim(lower_bound, upper_bound) +
+    facet_wrap(vars(var), scales = "free_y") +
     theme_iblm()
 
-  return(list(
-    overall_density = overall_density,
-    grouped_density = grouped_density,
-    boxplot = boxplot
-  ))
+
+  # --------- plot bias correction by id ------------
+
+  stderror_bias <- summary(iblm_model$glm_model)$coefficients["(Intercept)", "Std. Error"]
+  estimate_bias <- summary(iblm_model$glm_model)$coefficients["(Intercept)", "Estimate"]
+
+  bias_correction_total_df <-
+    bias_correction_var_df |>
+    dplyr::summarise(bias_correction = sum(bias_correction), .by = row_id) |>
+    dplyr::mutate(bias_correction = bias_correction + estimate_bias)
+
+  bias_quantiles <-  stats::quantile(bias_correction_total_df$bias_correction, probs = c(q, 1 - q))
+  lower_bound_bias <- min(bias_quantiles[1], estimate_bias - stderror_bias)
+  upper_bound_bias <- max(bias_quantiles[2], estimate_bias + stderror_bias)
+
+  bias_correction_total <-
+    bias_correction_total_df |>
+    ggplot(aes(x=.data$bias_correction)) +
+    geom_corrections_density +
+    geom_vline(
+      xintercept = estimate_bias + stderror_bias,
+      linetype = "dashed",
+      color = iblm_colors[2],
+      linewidth = 0.5
+    ) +
+    geom_vline(
+      xintercept = estimate_bias - stderror_bias,
+      linetype = "dashed",
+      color = iblm_colors[2],
+      linewidth = 0.5
+    ) +
+    geom_vline(
+      xintercept = estimate_bias,
+      linetype = "solid",
+      color = iblm_colors[3],
+      linewidth = 0.5
+    ) +
+    labs(
+      title = paste("Density for corrected bias values"),
+      subtitle = paste0("bias: ", round(estimate_bias, 3), ", SE: +/-", round(stderror_bias, 4)),
+    ) +
+    xlab("Bias Values") +
+    ylab("Count") +
+    xlim(lower_bound_bias, upper_bound_bias) +
+    theme_iblm()
+
+
+output <- list(
+  bias_correction_var = bias_correction_var,
+  bias_correction_total = bias_correction_total
+)
+
+return(output)
+
 }
+
+
+
+
+
+
 
 #' Generate Overall Corrections from Booster as Distribution Plot
 #'

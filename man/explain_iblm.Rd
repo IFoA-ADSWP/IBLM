@@ -20,7 +20,7 @@ A list containing:
 \describe{
   \item{beta_corrected_scatter}{Function to create scatter plots showing SHAP corrections vs variable values (see \code{\link[IBLMpackage]{beta_corrected_scatter}})}
   \item{beta_corrected_density}{Function to create density plots of SHAP corrections for variables (see \code{\link[IBLMpackage]{beta_corrected_density}})}
-  \item{shap_intercept}{List containing intercept correction visualizations}
+  \item{bias_density}{List containing intercept correction visualizations}
   \item{overall_correction}{Function to show global correction distributions (see \code{\link[IBLMpackage]{overall_correction}})}
   \item{input_frame}{Original input data frame}
   \item{beta_corrections}{Wide format SHAP corrections data frame}
