@@ -1,5 +1,4 @@
 testthat::test_that("test against Karol original script", {
-  testthat::skip_on_cran()
 
   # ============================ Input data =====================
 
