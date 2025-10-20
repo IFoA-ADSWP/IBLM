@@ -63,7 +63,7 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
 
 testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
 
-  testthat::skip()
+  testthat::skip("Must resolve this")
 
   # A note on this test...
 

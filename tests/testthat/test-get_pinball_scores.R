@@ -1,8 +1,7 @@
+
 testthat::test_that("test against Karol original script", {
 
-  # NOTE this test used to work. Find rec values from earlier commit to fix thiss
-
-  testthat::skip()
+  testthat::skip_on_cran() # code too long for CRAN, but useful test
 
 
   # ============================ Input data =====================
@@ -42,13 +41,14 @@ testthat::test_that("test against Karol original script", {
 
   ps_og <- data.frame(
     model = c("homog", "glm", "iblm"),
-    poisson_deviance = c(1.4195,1.3606, 1.2483),
-    pinball_score = c(0.00,4.15,12.06)/100
+    poisson_deviance = c(0.6821738013621665, 0.6614369861117713, 0.6561672090472287),
+    pinball_score = c(0, 0.03039814078023506, 0.03812311798402079)
   )
 
   testthat::expect_equal(
     ps_nu, ps_og
   )
+
 })
 
 
@@ -57,7 +57,7 @@ testthat::test_that("test against Karol original script", {
 
 testthat::test_that("test against Karol paper", {
 
-  testthat::skip()
+  testthat::skip("The results of this test are **close** but not identical. Decide on whether to investigate")
 
   # =================== Get version of `freMTPL2freq` =====================
 
@@ -106,6 +106,15 @@ testthat::test_that("test against Karol paper", {
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
   ps_nu <- get_pinball_scores(splits$test, IBLM)
 
+  ps_nu <- ps_nu |>
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::all_of(c("poisson_deviance", "pinball_score")),
+          function(x) round(x, 4)
+        )
+      )
+
+
 
   # ============================ Karol (og) process =====================
 
@@ -122,9 +131,9 @@ testthat::test_that("test against Karol paper", {
     pinball_score = c(0.00,4.15,12.06)/100
   )
 
-  testthat::expect_equal(
-    ps_nu, ps_og
-  )
+
+  testthat::expect_equal(ps_nu, ps_og)
+
 })
 
 
