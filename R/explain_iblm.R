@@ -13,7 +13,7 @@
 #' \describe{
 #'   \item{beta_corrected_scatter}{Function to create scatter plots showing SHAP corrections vs variable values (see \code{\link[IBLMpackage]{beta_corrected_scatter}})}
 #'   \item{beta_corrected_density}{Function to create density plots of SHAP corrections for variables (see \code{\link[IBLMpackage]{beta_corrected_density}})}
-#'   \item{bias_density}{List containing intercept correction visualizations}
+#'   \item{bias_density}{Function to create density plots of SHAP corrections migrated to bias (see \code{\link[IBLMpackage]{bias_density}})}
 #'   \item{overall_correction}{Function to show global correction distributions (see \code{\link[IBLMpackage]{overall_correction}})}
 #'   \item{input_frame}{Original input data frame}
 #'   \item{beta_corrections}{Wide format SHAP corrections data frame}
@@ -22,10 +22,14 @@
 #'   \item{allnames}{Names of all model coefficients except intercept}
 #' }
 #'
-#' @details The function processes both continuous and categorical variables, handles
-#' reference levels for factors, and applies corrections to account for zero values
-#' and categorical reference categories. The resulting explainer provides multiple
-#' visualization methods to understand how SHAP values modify GLM predictions.
+#' @details The following outputs are functions that can be called to create plots:
+#' * beta_corrected_scatter
+#' * beta_corrected_density
+#' * bias_density
+#' * overall_correction
+#'
+#' For each of these, the key data arguments (e.g. data, shap, iblm_model) are already populated by `explain_iblm()`.
+#' When calling these functions output from `explain_iblm()` only key settings like variable names, colours...etc need populating.
 #'
 #' @examples
 #' df_list <- freMTPL2freq |>
