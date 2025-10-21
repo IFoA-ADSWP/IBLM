@@ -406,6 +406,23 @@ bias_density <- function(q = 0,
 
 
 
+  # --------- if no plot bias correction occurs, exit early ------------
+
+
+  if(nrow(bias_correction_var_df) == 0) {
+
+    cli::cli_alert_info("No bias migration within dataset when calling bias_density()")
+
+    return(
+      list(
+        bias_correction_var = NULL,
+        bias_correction_total = NULL
+      )
+    )
+
+  }
+
+
   # --------- plot bias correction by var ------------
 
   stderror <- summary(iblm_model$glm_model)$coefficients[predictor_vars_continuous, "Std. Error"]
