@@ -216,7 +216,7 @@ beta_corrected_density <- function(
   if (!is.numeric(q) || q < 0 || q >= 0.5) {
     cli::cli_abort(c(
       "!" = "Invalid value for {.var q}.",
-      "x" = "{.var q} must be numeric and satisfy 0 ≤ q < 0.5.",
+      "x" = "{.var q} must be numeric and satisfy 0 <= q < 0.5",
       "i" = paste("You provided:", "q =", q)
     ))
   }

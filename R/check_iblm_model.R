@@ -61,7 +61,7 @@ check_iblm_model <- function(model, booster_models_supported = c("xgb.Booster"))
   if (!any(booster_models_supported %in% class(model$booster_model))) {
     cli::cli_warn(c(
       "x" = "{.field booster_model} is recommended to be of one of the supported classes:",
-      stats::setNames(as.list(booster_models_supported), rep("•", length(booster_models_supported)))
+      stats::setNames(as.list(booster_models_supported), rep("*", length(booster_models_supported)))
     ))
   }
 
