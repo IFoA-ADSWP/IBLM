@@ -291,14 +291,16 @@ beta_corrected_density <- function(
 #' Visualizes the distribution of SHAP corrections that are migrated to bias terms,
 #' showing both per-variable and total bias corrections.
 #'
-#' @param q Numeric value between 0 and 0.5 for quantile bounds. Default is 0.
-#' @param type Character string specifying plot type: "kde" for kernel density or "hist" for histogram. Default is "kde".
+#' @param q Numeric value between 0 and 0.5 for quantile bounds. A higher number will trim more from the edges
+#'  (useful if outliers are distorting your plot window) Default is 0 (i.e. no trimming)
+#' @param type Character string specifying plot type: "kde" for kernel density or "hist" for histogram. Default is "hist".
 #' @param shap Data frame containing raw SHAP values.
 #' @param data Dataframe. The testing data.
 #' @param iblm_model Object of class 'iblm'
 #'
 #' @return List with two ggplot objects:
-#' \item{bias_correction_var}{Faceted plot showing bias correction density for each variable}
+#' \item{bias_correction_var}{Faceted plot showing bias correction density from each variable.
+#' Note that variables with no records contributing to bias correction are dropped from the plot}
 #' \item{bias_correction_total}{Plot showing total corrected total bias density}
 #'
 #' @export
@@ -382,7 +384,7 @@ bias_density <- function(q = 0,
     stderror_plus = stderror,
     stderror_minus = -stderror
   ) |>
-    dplyr::filter(var %in% remaining_vars)
+    dplyr::filter(.data$var %in% remaining_vars)
 
   shap_quantiles <-  stats::quantile(bias_correction_var_df$bias_correction, probs = c(q, 1 - q))
   lower_bound <- min(shap_quantiles[1], min(stderror_df$stderror_minus))
@@ -394,19 +396,19 @@ bias_density <- function(q = 0,
     geom_corrections_density +
     geom_vline(
       data = stderror_df,
-      mapping = aes(xintercept = stderror_plus),
+      mapping = aes(xintercept = .data$stderror_plus),
       linetype = "dashed",
       color = iblm_colors[2],
       linewidth = 0.5) +
     geom_vline(
       data = stderror_df,
-      mapping = aes(xintercept = stderror_minus),
+      mapping = aes(xintercept = .data$stderror_minus),
       linetype = "dashed",
       color = iblm_colors[2],
       linewidth = 0.5) +
     geom_text(
       data = stderror_df,
-      mapping = aes(label=paste0("SE: +/-", round(stderror_plus, 4)),
+      mapping = aes(label=paste0("SE: +/-", round(.data$stderror_plus, 4)),
                     x=Inf,
                     y=Inf),
       hjust = 1,
@@ -419,7 +421,7 @@ bias_density <- function(q = 0,
     xlab("Bias Value Corrections") +
     ylab("Count") +
     xlim(lower_bound, upper_bound) +
-    facet_wrap(vars(var), scales = "free_y") +
+    facet_wrap(vars(.data$var), scales = "free_y") +
     theme_iblm()
 
 
@@ -430,8 +432,8 @@ bias_density <- function(q = 0,
 
   bias_correction_total_df <-
     bias_correction_var_df |>
-    dplyr::summarise(bias_correction = sum(bias_correction), .by = row_id) |>
-    dplyr::mutate(bias_correction = bias_correction + estimate_bias)
+    dplyr::summarise(bias_correction = sum(.data$bias_correction), .by = .data$row_id) |>
+    dplyr::mutate(bias_correction = .data$bias_correction + estimate_bias)
 
   bias_quantiles <-  stats::quantile(bias_correction_total_df$bias_correction, probs = c(q, 1 - q))
   lower_bound_bias <- min(bias_quantiles[1], estimate_bias - stderror_bias)

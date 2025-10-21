@@ -7,9 +7,10 @@
 bias_density(q = 0, type = "hist", shap, data, iblm_model)
 }
 \arguments{
-\item{q}{Numeric value between 0 and 0.5 for quantile bounds. Default is 0.}
+\item{q}{Numeric value between 0 and 0.5 for quantile bounds. A higher number will trim more from the edges
+(useful if outliers are distorting your plot window) Default is 0 (i.e. no trimming)}
 
-\item{type}{Character string specifying plot type: "kde" for kernel density or "hist" for histogram. Default is "kde".}
+\item{type}{Character string specifying plot type: "kde" for kernel density or "hist" for histogram. Default is "hist".}
 
 \item{shap}{Data frame containing raw SHAP values.}
 
@@ -19,7 +20,8 @@ bias_density(q = 0, type = "hist", shap, data, iblm_model)
 }
 \value{
 List with two ggplot objects:
-\item{bias_correction_var}{Faceted plot showing bias correction density for each variable}
+\item{bias_correction_var}{Faceted plot showing bias correction density from each variable.
+Note that variables with no records contributing to bias correction are dropped from the plot}
 \item{bias_correction_total}{Plot showing total corrected total bias density}
 }
 \description{

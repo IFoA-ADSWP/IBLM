@@ -4,7 +4,7 @@ Title: Interpretable Boosted Linear Model
 Version: 0.1.0
 Authors@R: c(
     person("Karol", "Gawlowski", , "Karol.Gawlowski@citystgeorges.ac.uk", role = c("aut", "cre")),
-    person("Paul", "Beard", , "paul.beard.actuarial@gmail.com", role = "aut"),
+    person("Paul", "Beard", , "paul.beard.actuarial@gmail.com", role = "aut", "cre"),
     person("William", "Flaherty", , "wflaherty99@gmail.com", role = "ctb")
   )
 Description: Created an interpretable boosted linear model. This model hybridises a conventional GLM with a machine learning model.
@@ -26,7 +26,6 @@ Imports:
     scales,
     statmod,
     stats,
-    tidyr,
     utils,
     xgboost
 Suggests: 
