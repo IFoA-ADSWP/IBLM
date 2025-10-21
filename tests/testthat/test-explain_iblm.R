@@ -182,7 +182,13 @@ testthat::test_that("test explain completes when one categorical and one continu
   )
 
   testthat::expect_no_error(
-    explain_iblm(iblm_model = IBLM, data = splits$test)
+    {
+      ex <- explain_iblm(iblm_model = IBLM, data = splits$test)
+      ex$beta_corrected_scatter(vars[1])
+      ex$beta_corrected_density(vars[1])
+      ex$overall_correction()
+      ex$bias_density()
+    }
   )
 })
 
@@ -204,7 +210,13 @@ testthat::test_that("test explain completes when categorical only", {
   )
 
   testthat::expect_no_error(
-    explain_iblm(iblm_model = IBLM, data = splits$test)
+    {
+      ex <- explain_iblm(iblm_model = IBLM, data = splits$test)
+      ex$beta_corrected_scatter(vars[1])
+      ex$beta_corrected_density(vars[1])
+      ex$overall_correction()
+      ex$bias_density()
+    }
   )
 })
 
@@ -227,9 +239,82 @@ testthat::test_that("test explain completes when continuous only", {
   )
 
   testthat::expect_no_error(
-    explain_iblm(iblm_model = IBLM, data = splits$test)
+    {
+      ex <- explain_iblm(iblm_model = IBLM, data = splits$test)
+      ex$beta_corrected_scatter(vars[1])
+      ex$beta_corrected_density(vars[1])
+      ex$overall_correction()
+      ex$bias_density()
+    }
   )
 })
+
+
+testthat::test_that("test explain completes when logical field", {
+
+  vars <- names(freMTPL2freq)
+
+  withr::with_seed(1, {
+    splits <- freMTPL2freq |>
+      dplyr::mutate(dummy = sample(c(TRUE, FALSE), size = nrow(freMTPL2freq), replace = TRUE)) |>
+      dplyr::slice_sample(n = 10000) |>
+      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+      split_into_train_validate_test()
+  })
+
+  IBLM <- train_iblm(
+    splits,
+    response_var = "ClaimRate",
+    family = "poisson"
+  )
+
+  testthat::expect_no_error(
+    {
+      ex <- explain_iblm(iblm_model = IBLM, data = splits$test)
+      ex$beta_corrected_scatter(vars[1])
+      ex$beta_corrected_density(vars[1])
+      ex$overall_correction()
+      ex$bias_density()
+    }
+  )
+})
+
+
+
+testthat::test_that("test explain completes when no reference/zero levels", {
+
+  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "Density", "ClaimRate")
+
+  withr::with_seed(1, {
+    splits <- freMTPL2freq |>
+      dplyr::select(dplyr::all_of(vars)) |>
+      dplyr::slice_sample(n = 10000) |>
+      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+      dplyr::mutate(dplyr::across(-dplyr::all_of("ClaimRate"), \(x) pmax(x, 1))) |>
+      split_into_train_validate_test()
+  })
+
+  IBLM <- train_iblm(
+    splits,
+    response_var = "ClaimRate",
+    family = "poisson"
+  )
+
+  testthat::expect_no_error(
+    {
+      ex <- explain_iblm(iblm_model = IBLM, data = splits$test)
+      ex$beta_corrected_scatter(vars[1])
+      ex$beta_corrected_density(vars[1])
+      ex$overall_correction()
+      suppressMessages({ex$bias_density()}) # expect message here to let user no there are no plots produced
+      }
+  )
+})
+
+
+
+
+
 
 
 

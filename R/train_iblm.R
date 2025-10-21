@@ -95,6 +95,15 @@ train_iblm <- function(df_list,
     names(df_list[["train"]]) == names(df_list[["validate"]])
   )
 
+  if(sum(is.na(df_list$train), is.na(df_list$validate), is.na(df_list$test)) >0 ) {
+    cli::cli_abort(
+      "'df_list' cannot contain NA values"
+    )
+  }
+
+  check_data_variability(df_list[["train"]], response_var)
+
+
   # ==================== input generation ====================
 
   train <- list()
