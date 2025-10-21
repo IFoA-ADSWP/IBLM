@@ -145,7 +145,7 @@ testthat::test_that("test results are same for character or factor fields", {
   # ============================ Input data =====================
 
   withr::with_seed(1, {
-    data <- freMTPL2freq |> head(50000) |> split_into_train_validate_test() # partial data to speed up test
+    data <- freMTPL2freq |> dplyr::slice_sample(n=50000) |> split_into_train_validate_test() # partial data to speed up test
   })
 
   # get data where categoricals are factors
