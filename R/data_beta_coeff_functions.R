@@ -108,13 +108,13 @@ data_beta_coeff_booster <- function(data,
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
   predictor_vars_categorical <- iblm_model$predictor_vars$categorical
 
-  levels_non_ref_cat <- purrr::map(
-    names(levels_all_cat),
-    function(var) {
-      levels_all_cat[[var]] |> setdiff(levels_reference_cat[var])
-    }
-  ) |>
-    stats::setNames(names(levels_all_cat))
+  # levels_non_ref_cat <- purrr::map(
+  #   names(levels_all_cat),
+  #   function(var) {
+  #     levels_all_cat[[var]] |> setdiff(levels_reference_cat[var])
+  #   }
+  # ) |>
+  #   stats::setNames(names(levels_all_cat))
 
   data |>
     dplyr::select(-dplyr::any_of(response_var)) |>
@@ -125,7 +125,7 @@ data_beta_coeff_booster <- function(data,
           beta_corrections |>
             dplyr::select(
               dplyr::any_of(
-                paste0(dplyr::cur_column(), levels_non_ref_cat[[dplyr::cur_column()]])
+                paste0(dplyr::cur_column(), levels_all_cat[[dplyr::cur_column()]])
               )
             ) |>
             rowSums()

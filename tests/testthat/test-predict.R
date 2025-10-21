@@ -63,8 +63,6 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
 
 testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
 
-  testthat::skip("Must resolve this")
-
   # A note on this test...
 
   # This test compares the predictions with 'migrate_reference_to_bias' as TRUE or FALSE.
@@ -73,12 +71,10 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
   # ============================ Input data =====================
 
   withr::with_seed(1, {
-    data <- freMTPL2freq |> split_into_train_validate_test()
+    data <- freMTPL2freq |> dplyr::slice_sample(n=50000) |>  split_into_train_validate_test()
   })
 
-  # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
-  # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
-  # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
+ # changing "ClaimRate" to round to integer values. This is to avoid warnings in the test environment.
   splits <- data |>
     purrr::modify(.f = function(x) dplyr::mutate(x, ClaimRate = round(ClaimRate)))
 
@@ -114,12 +110,6 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
 
   prediction_max_difference <- max(abs(predict_w_migrate / predict_wout_migrate - 1))
 
-  testthat::expect_equal(
-    prediction_max_difference,
-    0,
-    tolerance = 1E-6
-    # the tolerance is a bit higher for this test because...
-    # ...shap values are estimates and so there is expected noise between two methods
-  )
+  testthat::expect_equal(prediction_max_difference, 0)
 
 })
