@@ -15,7 +15,7 @@ testthat::test_that("test against Karol original script", {
 
   # ============================ IBLM package process =====================
 
-  IBLM_nu <- train_iblm(
+  IBLM_nu <- train_iblm_xgb(
     splits,
     response_var = "ClaimNb",
     family = "poisson"

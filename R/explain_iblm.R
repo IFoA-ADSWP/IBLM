@@ -2,7 +2,7 @@
 #'
 #' Creates a list that explains the beta values, and their corrections, of the ensemble IBLM model
 #'
-#' @param iblm_model An object of class 'iblm'. This should be output by `train_iblm()`
+#' @param iblm_model An object of class 'iblm'. This should be output by `train_iblm_xgb()`
 #' @param data Data frame.
 #'
 #' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
@@ -38,7 +38,7 @@
 #'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
 #'   split_into_train_validate_test()
 #'
-#' iblm_model <- train_iblm(
+#' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
 #'   family = "poisson"
@@ -148,7 +148,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
 #'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
 #'   split_into_train_validate_test()
 #'
-#' iblm_model <- train_iblm(
+#' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
 #'   family = "poisson"
@@ -213,7 +213,7 @@ data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
 #'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
 #'   split_into_train_validate_test()
 #'
-#' iblm_model <- train_iblm(
+#' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
 #'   family = "poisson"
@@ -298,7 +298,7 @@ shap_to_onehot <- function(shap,
 #'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
 #'   split_into_train_validate_test()
 #'
-#' iblm_model <- train_iblm(
+#' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
 #'   family = "poisson"

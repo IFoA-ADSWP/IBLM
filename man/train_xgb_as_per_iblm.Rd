@@ -29,7 +29,7 @@ df_list <- freMTPL2freq |>
   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
   split_into_train_validate_test()
 
-iblm_model <- train_iblm(
+iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
   family = "poisson"

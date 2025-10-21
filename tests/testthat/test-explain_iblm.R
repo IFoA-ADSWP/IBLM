@@ -16,7 +16,7 @@ testthat::test_that("test against Karol original script", {
 
   # ============================ IBLM package process =====================
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimNb",
     family = "poisson"
@@ -175,7 +175,7 @@ testthat::test_that("test explain completes when one categorical and one continu
       split_into_train_validate_test()
   })
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
     family = "poisson"
@@ -203,7 +203,7 @@ testthat::test_that("test explain completes when categorical only", {
       split_into_train_validate_test()
   })
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
     family = "poisson"
@@ -232,7 +232,7 @@ testthat::test_that("test explain completes when continuous only", {
       split_into_train_validate_test()
   })
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
     family = "poisson"
@@ -262,7 +262,7 @@ testthat::test_that("test explain completes when logical field", {
       split_into_train_validate_test()
   })
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
     family = "poisson"
@@ -294,7 +294,7 @@ testthat::test_that("test explain completes when no reference/zero levels", {
       split_into_train_validate_test()
   })
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
     family = "poisson"
@@ -340,7 +340,7 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
 
   # ============================ IBLM package process =====================
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
     family = "poisson"

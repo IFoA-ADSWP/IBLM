@@ -1,9 +1,9 @@
-#' Train IBLM Model
+#' Train IBLM Model on XGBoost
 #'
 #' @description
 #' This function trains an interpretable boosted linear model.
 #'
-#' The function combines a Generalized Linear Model (GLM) with a booster model (currently only XGBoost is possible).
+#' The function combines a Generalized Linear Model (GLM) with a booster model of XGBoost
 #'
 #' The "booster" model is trained on:
 #' - actual responses / GLM predictions, when the link function is log
@@ -65,7 +65,7 @@
 #'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
 #'   split_into_train_validate_test()
 #'
-#' iblm_model <- train_iblm(
+#' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
 #'   family = "poisson"
@@ -75,7 +75,7 @@
 #' \link[stats]{glm}, \link[xgboost]{xgb.train}
 #'
 #' @export
-train_iblm <- function(df_list,
+train_iblm_xgb <- function(df_list,
                        response_var,
                        family = "poisson",
                        xgb_additional_params = list(

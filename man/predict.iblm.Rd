@@ -7,7 +7,7 @@
 \method{predict}{iblm}(model, data, trim = NA_real_, type = "response")
 }
 \arguments{
-\item{model}{An object of class 'iblm'. This should be output by `train_iblm()`}
+\item{model}{An object of class 'iblm'. This should be output by `train_iblm_xgb()`}
 
 \item{data}{A data frame or matrix containing the predictor variables for
 which predictions are desired. Must have the same structure as the
@@ -42,7 +42,7 @@ data <- freMTPL2freq |>
   head(10000) |>
   split_into_train_validate_test()
 
-iblm_model <- train_iblm(
+iblm_model <- train_iblm_xgb(
   data,
   response_var = "ClaimRate",
   family = "poisson"

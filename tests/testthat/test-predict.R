@@ -24,7 +24,7 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
 
   # ============================ IBLM package process =====================
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
     family = "poisson"

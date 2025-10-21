@@ -20,7 +20,7 @@ testthat::test_that("test against Karol original script", {
 
   # ============================ IBLM package process =====================
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimNb",
     family = "poisson"
@@ -97,7 +97,7 @@ testthat::test_that("test against Karol paper", {
 
   # ============================ IBLM package process =====================
 
-  IBLM <- train_iblm(
+  IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimNb",
     family = "poisson"
@@ -160,13 +160,13 @@ testthat::test_that("test results are same for character or factor fields", {
 
   # ============================ IBLM package process =====================
 
-  IBLM_fct <- train_iblm(
+  IBLM_fct <- train_iblm_xgb(
     splits_fct,
     response_var = "ClaimNb",
     family = "poisson"
   )
 
-  IBLM_chr <- train_iblm(
+  IBLM_chr <- train_iblm_xgb(
     splits_chr,
     response_var = "ClaimNb",
     family = "poisson"
