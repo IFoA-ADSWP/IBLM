@@ -315,6 +315,8 @@ beta_corrected_density <- function(
 #' @param q Numeric value between 0 and 0.5 for quantile bounds. A higher number will trim more from the edges
 #'  (useful if outliers are distorting your plot window) Default is 0 (i.e. no trimming)
 #' @param type Character string specifying plot type: "kde" for kernel density or "hist" for histogram. Default is "hist".
+#' @param migrate_reference_to_bias Logical, migrate the beta corrections to the bias for reference levels?
+#' This applied to categorical vars only. It is recommended to leave this setting on TRUE
 #' @param shap Data frame containing raw SHAP values.
 #' @param data Dataframe. The testing data.
 #' @param iblm_model Object of class 'iblm'
@@ -329,6 +331,7 @@ beta_corrected_density <- function(
 #' @import ggplot2
 bias_density <- function(q = 0,
                            type = "hist",
+                          migrate_reference_to_bias = TRUE,
                            shap,
                            data,
                            iblm_model) {
@@ -389,8 +392,15 @@ bias_density <- function(q = 0,
     stop("type was not 'kde' or 'hist'")
   }
 
+  if(migrate_reference_to_bias) {
 
-  bias_correction_var_df <- rbind(bias_correction_continuous, bias_correction_categorical)
+    bias_correction_var_df <- rbind(bias_correction_continuous, bias_correction_categorical)
+
+  } else {
+
+    bias_correction_var_df <- bias_correction_continuous
+
+  }
 
   remaining_vars <- bias_correction_var_df$var |> unique()
 

@@ -7,7 +7,8 @@
 #'
 #' If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.
 #'
-#' @param migrate_reference_to_bias TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?
+#' @param migrate_reference_to_bias Logical, migrate the beta corrections to the bias for reference levels?
+#' This applied to categorical vars only. It is recommended to leave this setting on TRUE
 #'
 #' @return A list containing:
 #' \describe{
@@ -105,6 +106,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
       bias_density(
         q = q,
         type = type,
+        migrate_reference_to_bias = migrate_reference_to_bias,
         shap = shap,
         data = data,
         iblm_model = iblm_model
@@ -284,7 +286,8 @@ shap_to_onehot <- function(shap,
 #'
 #' @param shap_wide Data frame containing SHAP values from XGBoost that have been converted to wide format by [shap_to_onehot()]
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
-#' @param migrate_reference_to_bias Logical, do we want to migrate the shap values for reference coefficients to the bias?
+#' @param migrate_reference_to_bias Logical, migrate the beta corrections to the bias for reference levels?
+#' This applied to categorical vars only. It is recommended to leave this setting on TRUE
 #' @param iblm_model Object of class 'iblm'
 #'
 #' @return A data frame with the booster model beta corrections in one-hot (wide) format

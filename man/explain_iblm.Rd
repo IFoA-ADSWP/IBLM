@@ -13,7 +13,8 @@ explain_iblm(iblm_model, data, migrate_reference_to_bias = TRUE)
 
 If you have used `split_into_train_validate_test()` this will be the "test" portion of your data.}
 
-\item{migrate_reference_to_bias}{TRUE/FALSE, should shap corrections for reference levels be moved to the bias values instead?}
+\item{migrate_reference_to_bias}{Logical, migrate the beta corrections to the bias for reference levels?
+This applied to categorical vars only. It is recommended to leave this setting on TRUE}
 }
 \value{
 A list containing:

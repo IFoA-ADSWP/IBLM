@@ -4,13 +4,23 @@
 \alias{bias_density}
 \title{Plot density of bias corrections from SHAP values}
 \usage{
-bias_density(q = 0, type = "hist", shap, data, iblm_model)
+bias_density(
+  q = 0,
+  type = "hist",
+  migrate_reference_to_bias = TRUE,
+  shap,
+  data,
+  iblm_model
+)
 }
 \arguments{
 \item{q}{Numeric value between 0 and 0.5 for quantile bounds. A higher number will trim more from the edges
 (useful if outliers are distorting your plot window) Default is 0 (i.e. no trimming)}
 
 \item{type}{Character string specifying plot type: "kde" for kernel density or "hist" for histogram. Default is "hist".}
+
+\item{migrate_reference_to_bias}{Logical, migrate the beta corrections to the bias for reference levels?
+This applied to categorical vars only. It is recommended to leave this setting on TRUE}
 
 \item{shap}{Data frame containing raw SHAP values.}
 

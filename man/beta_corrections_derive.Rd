@@ -18,7 +18,8 @@ beta_corrections_derive(
 
 \item{iblm_model}{Object of class 'iblm'}
 
-\item{migrate_reference_to_bias}{Logical, do we want to migrate the shap values for reference coefficients to the bias?}
+\item{migrate_reference_to_bias}{Logical, migrate the beta corrections to the bias for reference levels?
+This applied to categorical vars only. It is recommended to leave this setting on TRUE}
 }
 \value{
 A data frame with the booster model beta corrections in one-hot (wide) format
