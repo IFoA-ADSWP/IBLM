@@ -39,12 +39,15 @@ extract_booster_shap <- function(booster_model, data, ...) {
 
 #' @describeIn extract_booster_shap Extract SHAP values from an `xgb.Booster` model
 #'
-#' @param data A data frame containing the predictor variables ONLY
+#' @param data A data frame containing the predictor variables. Note anything extra will be quietly dropped.
 #'
 #' @seealso [xgboost::predict.xgb.Booster()]
 #'
 #' @export
 extract_booster_shap.xgb.Booster <- function(booster_model, data, ...) {
+
+  data <- data |> dplyr::select(dplyr::all_of(booster_model$feature_names))
+
   stats::predict(
     booster_model,
     newdata = xgboost::xgb.DMatrix(

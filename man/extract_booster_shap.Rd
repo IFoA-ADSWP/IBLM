@@ -13,7 +13,7 @@ extract_booster_shap(booster_model, data, ...)
 \item{booster_model}{A model object. In the IBLM context it will be the "booster_model" item
 from an object of class "iblm"}
 
-\item{data}{A data frame containing the predictor variables ONLY}
+\item{data}{A data frame containing the predictor variables. Note anything extra will be quietly dropped.}
 
 \item{...}{Additional arguments passed to methods.}
 }

@@ -51,10 +51,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
   check_iblm_model(iblm_model)
 
   # Generate SHAP values
-  shap <- extract_booster_shap(
-    iblm_model$booster_model,
-    data |>  dplyr::select(-dplyr::all_of(iblm_model$response_var))
-  )
+  shap <- extract_booster_shap(iblm_model$booster_model, data)
 
   # Prepare wide input frame... this is `data` but with categoricals converted to one-hot format
   wide_input_frame <- data_to_onehot(data, iblm_model)
