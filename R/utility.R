@@ -58,14 +58,14 @@ assign_variable_type <- function(
   } else if (var %in% vars_categorical) {
     vartype <- "categorical"
   } else {
-    stop(paste0(
-      "'",
-      varname,
-      "'",
-      " should be one of: ",
-      paste0(union(vars_continuous, vars_categorical), collapse = ", ")
+    valid_vars <- base::union(vars_continuous, vars_categorical)
+    cli::cli_abort(c(
+      "!" = paste0("'", varname, "' is not a recognized variable."),
+      "x" = "{.var varname} should be one of the following:",
+      " " = paste(valid_vars, collapse = ", ")
     ))
   }
+
 
   return(vartype)
 }

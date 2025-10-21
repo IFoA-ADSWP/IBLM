@@ -85,11 +85,16 @@ beta_corrected_scatter <- function(varname,
     plot_data <- plot_data |> dplyr::filter(get(varname) != reference_level)
 
     if (!is.null(color)) {
-      message("'color' argument not supported when vartype=='categorical' and will be ignored")
+      cli::cli_inform(c(
+        "!" = "{.var color} argument not supported when {.var vartype} == 'categorical' and will be ignored."
+      ))
     }
 
+    # Warn if q > 0
     if (q > 0) {
-      message("'q' values other than 0 are not supported when vartype=='categorical' and will be ignored")
+      cli::cli_inform(c(
+        "!" = "{.var q} values other than 0 are not supported when {.var vartype} == 'categorical' and will be ignored."
+      ))
     }
 
     # Add the lines to the plot
@@ -207,19 +212,35 @@ beta_corrected_density <- function(
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
   predictor_vars_categorical <- iblm_model$predictor_vars$categorical
 
-  stopifnot(is.numeric(q), q >= 0, q < 0.5)
+  # Validate q
+  if (!is.numeric(q) || q < 0 || q >= 0.5) {
+    cli::cli_abort(c(
+      "!" = "Invalid value for {.var q}.",
+      "x" = "{.var q} must be numeric and satisfy 0 ≤ q < 0.5.",
+      "i" = paste("You provided:", "q =", q)
+    ))
+  }
 
+  # Determine variable type
   if (varname %in% predictor_vars_continuous) {
     vartype <- "numerical"
   } else if (varname %in% predictor_vars_categorical) {
     vartype <- "categorical"
   } else if (varname %in% coef_names_reference_cat) {
-    stop("varname is reference level. Plot cannot be produced as no beta coefficient exists for this level")
+    cli::cli_abort(c(
+      "!" = "{.var varname} is a reference level.",
+      "x" = "Plot cannot be produced because no beta coefficient exists for this level."
+    ))
   } else if (varname %in% names(glm_beta_coeff)) {
     vartype <- "categorical_level"
   } else {
-    stop("varname not found in model!")
+    cli::cli_abort(c(
+      "!" = "{.var varname} not found in model!",
+      "i" = "Check that {.var varname} matches one of the model predictors or coefficients."
+    ))
   }
+
+
 
   # if the variable is categorical, we will use recursion to plot each unique level and output a list instead...
   if (vartype %in% "categorical") {

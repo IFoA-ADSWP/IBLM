@@ -4,10 +4,12 @@
 \alias{check_iblm_model}
 \title{Check IBLM Ensemble Model}
 \usage{
-check_iblm_model(model)
+check_iblm_model(model, booster_models_supported = c("xgb.Booster"))
 }
 \arguments{
 \item{model}{Model object to validate, expected class "iblm"}
+
+\item{booster_models_supported}{Booster model classes currently supported in the iblm package}
 }
 \value{
 Invisible TRUE if all checks pass

@@ -3,6 +3,7 @@
 #' Validates an iblm model object has required structure and features
 #'
 #' @param model Model object to validate, expected class "iblm"
+#' @param booster_models_supported Booster model classes currently supported in the iblm package
 #'
 #' @return Invisible TRUE if all checks pass
 #'
@@ -21,7 +22,7 @@
 #' check_iblm_model(iblm_model)
 #'
 #' @export
-check_iblm_model <- function(model) {
+check_iblm_model <- function(model, booster_models_supported = c("xgb.Booster")) {
 
   # Check model class
   if (!"iblm" %in% class(model)) {
@@ -57,9 +58,10 @@ check_iblm_model <- function(model) {
     ))
   }
 
-  if (!("xgb.Booster" %in% class(model$booster_model))) {
-    cli::cli_abort(c(
-      "x" = "{.field booster_model} must be of class {.cls xgb.Booster}"
+  if (!any(booster_models_supported %in% class(model$booster_model))) {
+    cli::cli_warn(c(
+      "x" = "{.field booster_model} is recommended to be of one of the supported classes:",
+      stats::setNames(as.list(booster_models_supported), rep("•", length(booster_models_supported)))
     ))
   }
 
