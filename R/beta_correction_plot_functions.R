@@ -143,7 +143,7 @@ beta_corrected_scatter <- function(varname,
         x = varname,
         y = "Beta Coefficients"
       ) +
-      geom_hline(yintercept = beta, color = "black", size = 0.5) +
+      geom_hline(yintercept = beta, color = "black", linewidth = 0.5) +
       geom_hline(yintercept = beta - stderror, linetype = "dashed", color = "black", linewidth = 0.5) +
       geom_hline(yintercept = beta + stderror, linetype = "dashed", color = "black", linewidth = 0.5) +
       theme_iblm()
@@ -435,8 +435,8 @@ bias_density <- function(q = 0,
     dplyr::filter(.data$var %in% remaining_vars)
 
   shap_quantiles <-  stats::quantile(bias_correction_var_df$bias_correction, probs = c(q, 1 - q))
-  lower_bound <- min(shap_quantiles[1], min(stderror_df$stderror_minus))
-  upper_bound <- max(shap_quantiles[2], max(stderror_df$stderror_plus))
+  lower_bound <- min(shap_quantiles[1], stderror_df$stderror_minus)
+  upper_bound <- max(shap_quantiles[2], stderror_df$stderror_plus)
 
   bias_correction_var <-
     bias_correction_var_df |>
@@ -454,15 +454,6 @@ bias_density <- function(q = 0,
       linetype = "dashed",
       color = iblm_colors[2],
       linewidth = 0.5) +
-    geom_text(
-      data = stderror_df,
-      mapping = aes(label=paste0("SE: +/-", round(.data$stderror_plus, 4)),
-                    x=Inf,
-                    y=Inf),
-      hjust = 1,
-      vjust = 1.5,
-      color = iblm_colors[2],
-      size = 3) +
     labs(
       title = paste("Density for SHAP corrections that are migrated to bias")
     ) +
@@ -480,7 +471,9 @@ bias_density <- function(q = 0,
 
   bias_correction_total_df <-
     bias_correction_var_df |>
-    dplyr::summarise(bias_correction = sum(.data$bias_correction), .by = .data$row_id) |>
+    dplyr::group_by(.data$row_id) |>
+    dplyr::summarise(bias_correction = sum(.data$bias_correction)) |>
+    dplyr::ungroup() |>
     dplyr::mutate(bias_correction = .data$bias_correction + estimate_bias)
 
   bias_quantiles <-  stats::quantile(bias_correction_total_df$bias_correction, probs = c(q, 1 - q))
