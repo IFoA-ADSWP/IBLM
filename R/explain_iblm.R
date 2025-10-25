@@ -12,10 +12,10 @@
 #'
 #' @return A list containing:
 #' \describe{
-#'   \item{beta_corrected_scatter}{Function to create scatter plots showing SHAP corrections vs variable values (see \code{\link[IBLMpackage]{beta_corrected_scatter}})}
-#'   \item{beta_corrected_density}{Function to create density plots of SHAP corrections for variables (see \code{\link[IBLMpackage]{beta_corrected_density}})}
-#'   \item{bias_density}{Function to create density plots of SHAP corrections migrated to bias (see \code{\link[IBLMpackage]{bias_density}})}
-#'   \item{overall_correction}{Function to show global correction distributions (see \code{\link[IBLMpackage]{overall_correction}})}
+#'   \item{beta_corrected_scatter}{Function to create scatter plots showing SHAP corrections vs variable values (see \code{\link[IBLM]{beta_corrected_scatter}})}
+#'   \item{beta_corrected_density}{Function to create density plots of SHAP corrections for variables (see \code{\link[IBLM]{beta_corrected_density}})}
+#'   \item{bias_density}{Function to create density plots of SHAP corrections migrated to bias (see \code{\link[IBLM]{bias_density}})}
+#'   \item{overall_correction}{Function to show global correction distributions (see \code{\link[IBLM]{overall_correction}})}
 #'   \item{input_frame}{Original input data frame}
 #'   \item{beta_corrections}{Wide format SHAP corrections data frame}
 #'   \item{shap}{Raw SHAP values from XGBoost}

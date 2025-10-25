@@ -1,4 +1,4 @@
-Package: IBLMpackage
+Package: IBLM
 Type: Package
 Title: Interpretable Boosted Linear Model
 Version: 0.1.0
