@@ -1,4 +1,33 @@
 testthat::test_that("test against Karol original script", {
+
+
+
+  # test takes too long for CRAN
+  testthat::skip_on_cran()
+
+
+  # ============================ Download data =====================
+
+  # download the correct version of freMTPL2freq dataset to complete the rec
+
+  commit <- "2a718359896bee4edf852721364ac5eaae442fc1"  # <- use this commit
+
+  url <- paste0("https://github.com/dutangc/CASdatasets/raw/", commit, "/data/freMTPL2freq.rda")
+
+  temp <- tempfile()
+
+  download.file(url, temp)
+
+  load(temp)
+
+  freMTPL2freq <- freMTPL2freq |>
+    dplyr::mutate(
+      ClaimRate = ClaimNb / Exposure,
+      ClaimRate = pmin(ClaimRate, quantile(ClaimRate, 0.999))
+    ) |>
+    dplyr::select(-dplyr::all_of(c("IDpol", "Exposure", "ClaimNb")))
+
+
   # ============================ Input data =====================
 
   withr::with_seed(1, {
@@ -25,7 +54,7 @@ testthat::test_that("test against Karol original script", {
 
   # the following data objects are taken from Karol original script, using the same seed, input and settings
 
-  # For audit, the inputs were constructed in the `https://github.com/IFoA-ADSWP/IBLM` repo
+  # For audit, the inputs were constructed in the `https://github.com/IFoA-ADSWP/IBLM_testing` repo
   # The inputs are created in:
   # branch: testing_object_construction
   # script: construct_iblm_model_test

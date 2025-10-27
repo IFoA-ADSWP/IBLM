@@ -1,7 +1,30 @@
 
 testthat::test_that("test against Karol original script", {
 
-  testthat::skip_on_cran() # code too long for CRAN, but useful test
+  # test takes too long for CRAN
+  testthat::skip_on_cran()
+
+
+  # ============================ Download data =====================
+
+  # download the correct version of freMTPL2freq dataset to complete the rec
+
+  commit <- "2a718359896bee4edf852721364ac5eaae442fc1"  # <- use this commit
+
+  url <- paste0("https://github.com/dutangc/CASdatasets/raw/", commit, "/data/freMTPL2freq.rda")
+
+  temp <- tempfile()
+
+  download.file(url, temp)
+
+  load(temp)
+
+  freMTPL2freq <- freMTPL2freq |>
+    dplyr::mutate(
+      ClaimRate = ClaimNb / Exposure,
+      ClaimRate = pmin(ClaimRate, quantile(ClaimRate, 0.999))
+    ) |>
+    dplyr::select(-dplyr::all_of(c("IDpol", "Exposure", "ClaimNb")))
 
 
   # ============================ Input data =====================
@@ -34,7 +57,7 @@ testthat::test_that("test against Karol original script", {
 
   # the following data objects are taken from Karol original script, using the same seed, input and settings
 
-  # For audit, the inputs were constructed in the `https://github.com/IFoA-ADSWP/IBLM` repo
+  # For audit, the inputs were constructed in the `https://github.com/IFoA-ADSWP/IBLM_testing` repo
   # The inputs are created in:
   # branch: testing_object_construction
   # script: construct_pinball_score_test
@@ -57,28 +80,6 @@ testthat::test_that("test against Karol original script", {
 
 testthat::test_that("test against Karol paper", {
 
-  testthat::skip("The results of this test are **close** but not identical. Decide on whether to investigate")
-
-  # =================== Get version of `freMTPL2freq` =====================
-
-  # confusingly there are two versions of `freMTPL2freq` circulating online
-  # the code below pulls the earlier one (which is same as kaggle version used by Karol)
-
-  commit <- "c49cbbb37235fc49616cac8ccac32e1491cdc619"
-  url <- paste0("https://github.com/dutangc/CASdatasets/raw/", commit, "/data/freMTPL2freq.rda")
-
-  temp <- tempfile()
-
-  download.file(url, temp)
-
-  load(temp)
-
-  freMTPL2freq <- freMTPL2freq |>
-    dplyr::mutate(ClaimNb = as.numeric(ClaimNb)) |>
-    dplyr::mutate(ClaimNb = ClaimNb/Exposure,
-                  VehAge = pmin(VehAge,50),
-                  ClaimNb = pmin(ClaimNb,quantile(ClaimNb,0.999))) |>
-    dplyr::select(-IDpol)
 
   # ============================ Input data =====================
 
@@ -91,16 +92,30 @@ testthat::test_that("test against Karol paper", {
   # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
   splits <- data |>
     purrr::modify(.f = function(x) x |> dplyr::select(-dplyr::any_of(c("IDpol", "Exposure")))) |>
-    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field))))
-    #purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate")) |>
+    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field)))) |>
+    purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate"))
     #purrr::modify(.f = function(x) dplyr::mutate(x, ClaimNb = round(ClaimNb)))
 
   # ============================ IBLM package process =====================
 
+  # warning are given because of non-integer response vars and a poisson predictor...
+  # ...just have to suppress for this test as we cannot change data...
+  suppressWarnings(
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimNb",
-    family = "poisson"
+    family = "poisson",
+    # additional param settings required for rec...
+    xgb_additional_params = list(
+      params = list(
+        base_score = 0.5,
+        objective = "count:poisson"
+        ),
+      nrounds = 1000,
+      verbose = 0,
+      early_stopping_rounds = 25
+      )
+  )
   )
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
@@ -120,7 +135,7 @@ testthat::test_that("test against Karol paper", {
 
   # the following data objects are taken from Karol original script, using the same seed, input and settings
 
-  # For audit, the inputs were constructed in the `https://github.com/IFoA-ADSWP/IBLM` repo
+  # For audit, the inputs were constructed in the `https://github.com/IFoA-ADSWP/IBLM_testing` repo
   # The inputs are created in:
   # branch: testing_object_construction
   # script: construct_pinball_score_test
@@ -179,5 +194,9 @@ testthat::test_that("test results are same for character or factor fields", {
   testthat::expect_equal(ps_fct, ps_chr)
 
 })
+
+
+
+
 
 

@@ -120,20 +120,25 @@ train_iblm_xgb <- function(df_list,
   # ==================== glm/xgb distribution and link choices ====================
 
   if (family == "poisson") {
+
     xgb_family_params <- list(
       base_score = 1,
       objective = "count:poisson"
     )
 
     glm_family <- stats::poisson()
+
   } else if (family == "gamma") {
+
     xgb_family_params <- list(
       base_score = 1,
       objective = "reg:gamma"
     )
 
     glm_family <- stats::Gamma(link = "log")
+
   } else if (family == "tweedie") {
+
     xgb_family_params <- list(
       base_score = 1,
       objective = "reg:tweedie",
@@ -142,15 +147,20 @@ train_iblm_xgb <- function(df_list,
 
     glm_family <- statmod::tweedie(var.power = 1.5, link.power = 0)
     glm_family$link <- "log"
+
   } else if (family == "gaussian") {
+
     xgb_family_params <- list(
       base_score = 0,
       objective = "reg:squarederror"
     )
 
     glm_family <- stats::gaussian()
+
   } else {
+
     stop(paste0("family was ", family, " but should be one of: poisson, gamma, tweedie, gaussian"))
+
   }
 
   # ==================== GLM fitting ====================
