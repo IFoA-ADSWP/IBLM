@@ -1,7 +1,12 @@
 #' French Motor Insurance Claims Dataset
 #'
+#' @description
 #' A dataset containing information about French motor insurance policies and claims,
 #' commonly used for actuarial modeling and risk assessment studies.
+#'
+#' **IMPORTANT**: This dataset is based on commit "c49cbbb37235fc49616cac8ccac32e1491cdc619" of CASdatasets
+#' There are multiple versions of this dataset circulating online, so be weary when comparing to other versions of `freMTPL2freq`
+#'
 #'
 #' @format A data frame with 677,991 rows and 10 variables:
 #' \describe{

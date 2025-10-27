@@ -32,6 +32,9 @@ freMTPL2freq
 \description{
 A dataset containing information about French motor insurance policies and claims,
 commonly used for actuarial modeling and risk assessment studies.
+
+**IMPORTANT**: This dataset is based on commit "c49cbbb37235fc49616cac8ccac32e1491cdc619" of CASdatasets
+There are multiple versions of this dataset circulating online, so be weary when comparing to other versions of `freMTPL2freq`
 }
 \details{
 This dataset is frequently used in actuarial science and insurance analytics
