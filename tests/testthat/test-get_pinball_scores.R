@@ -69,7 +69,7 @@ testthat::test_that("test against Karol original script", {
   )
 
   testthat::expect_equal(
-    ps_nu, ps_og
+    ps_nu, ps_og, tolerance = 1E-6 # tolerance lowered because calcs were changed in package function that give slightly diff answer
   )
 
 })

@@ -12,7 +12,7 @@
 #'
 #' @return Data frame with 3 columns:
 #' * "model" - will be homog, glm, iblm and any other models specified in `additional_models`
-#' * "poisson_deviance" - the value from the loss function based on poisson
+#' * "`family`_deviance" - the value from the loss function based on the family of the glm function
 #' * "pinball_score" - The more positive the score, the better the model than a basic homog model (i.e. all predictions are mean value). A negative score indicates worse than homog model.
 #'
 #' @details
@@ -98,18 +98,28 @@ get_pinball_scores <- function(data,
 
   model_names <- names(model_predictions)
 
+  family <- iblm_model$glm_model$family$family
+
   pds <- purrr::map_dbl(
     model_names,
-    function(x) poisson_deviance(y_true = actual, y_pred = model_predictions[[x]])
+    function(x) calculate_deviance(y_true = actual, y_pred = model_predictions[[x]], family = family)
   ) |> stats::setNames(model_names)
 
-  data.frame(
+  result <- data.frame(
     model = model_names,
-    poisson_deviance = unname(pds)
-  ) |>
+    deviance = unname(pds)
+  )
+
+  devcol <- paste0(family, "_deviance") |> tolower()
+
+  names(result)[names(result) == "deviance"] <- devcol
+
+  result <- result |>
     dplyr::mutate(
-      pinball_score = 1 - .data$poisson_deviance / pds["homog"]
+      pinball_score = 1 - result[[devcol]] / pds["homog"]
     )
+
+  return(result)
 }
 
 
@@ -129,3 +139,57 @@ poisson_deviance <- function(y_true, y_pred, correction = +10^-7) {
   pd <- mean((y_pred - y_true - y_true * log((y_pred + correction) / (y_true + correction))))
   return(2 * pd)
 }
+
+
+#' Calculate Mean Deviance
+#'
+#' Calculates the mean deviance between observed and predicted values for
+#' various GLM families.
+#'
+#' @param y_true Numeric vector of observed values.
+#' @param y_pred Numeric vector of predicted values.
+#' @param family Character string specifying the distribution family. One of
+#'   "gaussian", "poisson", "gamma", or "tweedie" (with p=1.5).
+#' @param correction Numeric value added to both y_true and y_pred to avoid
+#'   log(0) and division by zero errors. Default is 1e-7.
+#'
+#' @return Numeric value of the mean deviance.
+#'
+#' @examples
+#' y_true <- c(1, 2, 3, 4, 5)
+#' y_pred <- c(1.1, 2.2, 2.8, 4.1, 4.9)
+#' calculate_deviance(y_true, y_pred, "gaussian")
+#' calculate_deviance(y_true, y_pred, "poisson")
+#'
+#' @noRd
+calculate_deviance <- function(y_true, y_pred, family = "gaussian", correction = 1e-10) {
+
+  family <- tolower(family)
+
+  # Apply correction to avoid log(0) and division by zero
+  y_true <- y_true + correction
+  y_pred <- y_pred + correction
+
+  mean_deviance <- switch(family,
+                          "gaussian" = {
+                            mean((y_true - y_pred)^2)
+                          },
+                          "poisson" = {
+                            2 * mean(y_pred - y_true - y_true * log(y_pred / y_true))
+                          },
+                          "gamma" = {
+                            2 * mean(-log(y_true / y_pred) + (y_true - y_pred) / y_pred)
+                          },
+                          "tweedie" = {
+                            # Tweedie with p=1.5 (common default)
+                            p <- 1.5
+                            2 * mean((y_true^(2-p)) / ((1-p)*(2-p)) -
+                                       (y_true * y_pred^(1-p)) / (1-p) +
+                                       (y_pred^(2-p)) / (2-p))
+                          },
+                          cli::cli_abort("family must be one of: gaussian, poisson, gamma, tweedie")
+  )
+
+  return(mean_deviance)
+}
+

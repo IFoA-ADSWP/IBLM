@@ -399,3 +399,111 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
 
 })
 
+
+
+
+
+
+
+
+
+
+testthat::test_that("test gaussian can run", {
+
+  # note this is just a crude test that it will run. should probably expand with numerical reconciliations
+
+  vars <- names(freMTPL2freq)
+
+  withr::with_seed(1, {
+    splits <- freMTPL2freq |>
+      dplyr::slice_sample(n = 50000) |>
+      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+      split_into_train_validate_test()
+  })
+
+  IBLM <- train_iblm_xgb(
+    splits,
+    response_var = "ClaimRate",
+    family = "gaussian"
+  )
+
+  testthat::expect_no_error(
+    {
+      ex <- explain_iblm(iblm_model = IBLM, data = splits$test)
+      ex$beta_corrected_scatter(vars[1])
+      ex$beta_corrected_density(vars[2])
+      ex$overall_correction()
+      ex$bias_density()
+    }
+  )
+
+  get_pinball_scores(splits$test, IBLM)
+
+})
+
+
+testthat::test_that("test gamma can run", {
+
+  # note this is just a crude test that it will run. should probably expand with numerical reconciliations
+
+  vars <- names(freMTPL2freq)
+
+  withr::with_seed(1, {
+    splits <- freMTPL2freq |>
+      dplyr::slice_sample(n = 50000) |>
+      dplyr::mutate(ClaimRate = round(ClaimRate) |> pmax(0.1)) |> # set min. ClaimRate to 0.1 as pre-requisite for gamma dist is x>0
+      split_into_train_validate_test()
+  })
+
+  IBLM <- train_iblm_xgb(
+    splits,
+    response_var = "ClaimRate",
+    family = "gamma"
+  )
+
+  testthat::expect_no_error(
+    {
+      ex <- explain_iblm(iblm_model = IBLM, data = splits$test)
+      ex$beta_corrected_scatter(vars[1])
+      ex$beta_corrected_density(vars[2])
+      ex$overall_correction()
+      ex$bias_density()
+      get_pinball_scores(splits$test, IBLM)
+    }
+  )
+
+})
+
+
+
+testthat::test_that("test tweedie can run", {
+
+  # note this is just a crude test that it will run. should probably expand with numerical reconciliations
+
+  vars <- names(freMTPL2freq)
+
+  withr::with_seed(1, {
+    splits <- freMTPL2freq |>
+      dplyr::slice_sample(n = 50000) |>
+      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+      split_into_train_validate_test()
+  })
+
+  IBLM <- train_iblm_xgb(
+    splits,
+    response_var = "ClaimRate",
+    family = "tweedie"
+  )
+
+  testthat::expect_no_error(
+    {
+      ex <- explain_iblm(iblm_model = IBLM, data = splits$test)
+      ex$beta_corrected_scatter(vars[1])
+      ex$beta_corrected_density(vars[2])
+      ex$overall_correction()
+      ex$bias_density()
+      get_pinball_scores(splits$test, IBLM)
+    }
+  )
+
+})
