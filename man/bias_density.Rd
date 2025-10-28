@@ -26,6 +26,24 @@ showing both per-variable and total bias corrections.
 
 \strong{NOTE} This function signature documents the interface of functions created by \code{\link{create_bias_density}}.
 }
+\examples{
+# This function is created inside explain_iblm() and is output as an item
+
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
+
+iblm_model <- train_iblm_xgb(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+explain_objects <- explain_iblm(iblm_model, df_list$test)
+
+explain_objects$bias_density()
+}
 \seealso{
 \code{\link{create_bias_density}}, \code{\link{explain_iblm}}
 }

@@ -38,6 +38,31 @@ The plot shows:
   \item Automatic x-axis limits that cut off the highest and lowest q pct. If you want axis unaltered, set q = 0
 }
 }
+\examples{
+# This function is created inside explain_iblm() and is output as an item
+
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
+
+iblm_model <- train_iblm_xgb(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+explain_objects <- explain_iblm(iblm_model, df_list$test)
+
+# plot can be for a categorical variable (produces list of plots, one for each level)
+explain_objects$beta_corrected_density(varname = "Area")
+
+# plot can be for a single categorical level
+explain_objects$beta_corrected_density(varname = "AreaA")
+
+# output can be numerical variable
+explain_objects$beta_corrected_density(varname = "DrivAge")
+}
 \seealso{
 \code{\link{create_beta_corrected_density}}, \code{\link{explain_iblm}}
 }

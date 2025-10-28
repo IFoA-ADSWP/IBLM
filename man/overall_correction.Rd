@@ -17,6 +17,24 @@ Creates a visualization showing for each record the overall booster component (e
 
 \strong{NOTE} This function signature documents the interface of functions created by \code{\link{create_overall_correction}}.
 }
+\examples{
+# This function is created inside explain_iblm() and is output as an item
+
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
+
+iblm_model <- train_iblm_xgb(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+explain_objects <- explain_iblm(iblm_model, df_list$test)
+
+explain_objects$overall_correction()
+}
 \seealso{
 \code{\link{create_overall_correction}}, \code{\link{explain_iblm}}
 }

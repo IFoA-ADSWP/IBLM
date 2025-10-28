@@ -40,6 +40,28 @@ For numerical variables, horizontal lines show the model coefficient (solid) and
 confidence intervals (dashed). SHAP corrections represent local deviations from
 the global model coefficient.
 }
+\examples{
+# This function is created inside explain_iblm() and is output as an item
+
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
+
+iblm_model <- train_iblm_xgb(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+explain_objects <- explain_iblm(iblm_model, df_list$test)
+
+# plot can be for a categorical variable (box plot)
+explain_objects$beta_corrected_scatter(varname = "AreaA")
+
+# plot can be for a numerical variable (scatter plot)
+explain_objects$beta_corrected_scatter(varname = "DrivAge")
+}
 \seealso{
 \code{\link{create_beta_corrected_scatter}}, \code{\link{explain_iblm}}
 }

@@ -160,6 +160,28 @@ create_overall_correction <- function(shap,
 #' @seealso \code{\link{create_beta_corrected_scatter}}, \code{\link{explain_iblm}}
 #'
 #' @export
+#'
+#' @examples
+#' # This function is created inside explain_iblm() and is output as an item
+#'
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm_xgb(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' explain_objects <- explain_iblm(iblm_model, df_list$test)
+#'
+#' # plot can be for a categorical variable (box plot)
+#' explain_objects$beta_corrected_scatter(varname = "AreaA")
+#'
+#' # plot can be for a numerical variable (scatter plot)
+#' explain_objects$beta_corrected_scatter(varname = "DrivAge")
 beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALSE) {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
@@ -200,6 +222,31 @@ beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALS
 #' @seealso \code{\link{create_beta_corrected_density}}, \code{\link{explain_iblm}}
 #'
 #' @export
+#'
+#' @examples
+#' # This function is created inside explain_iblm() and is output as an item
+#'
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm_xgb(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' explain_objects <- explain_iblm(iblm_model, df_list$test)
+#'
+#' # plot can be for a categorical variable (produces list of plots, one for each level)
+#' explain_objects$beta_corrected_density(varname = "Area")
+#'
+#' # plot can be for a single categorical level
+#' explain_objects$beta_corrected_density(varname = "AreaA")
+#'
+#' # output can be numerical variable
+#' explain_objects$beta_corrected_density(varname = "DrivAge")
 beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
@@ -231,6 +278,24 @@ beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
 #' @seealso \code{\link{create_bias_density}}, \code{\link{explain_iblm}}
 #'
 #' @export
+#'
+#' @examples
+#' # This function is created inside explain_iblm() and is output as an item
+#'
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm_xgb(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' explain_objects <- explain_iblm(iblm_model, df_list$test)
+#'
+#' explain_objects$bias_density()
 bias_density <- function(q = 0, type = "hist") {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
@@ -251,7 +316,26 @@ bias_density <- function(q = 0, type = "hist") {
 #' @return A ggplot2 object.
 #'
 #' @seealso \code{\link{create_overall_correction}}, \code{\link{explain_iblm}}
+#'
 #' @export
+#'
+#' @examples
+#' # This function is created inside explain_iblm() and is output as an item
+#'
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm_xgb(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' explain_objects <- explain_iblm(iblm_model, df_list$test)
+#'
+#' explain_objects$overall_correction()
 overall_correction <- function(transform_x_scale_by_link = TRUE) {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
