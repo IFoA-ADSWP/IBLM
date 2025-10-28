@@ -1,0 +1,261 @@
+#' Create Pre-Configured Beta Corrected Scatter Plot Function
+#'
+#' Factory function that returns a plotting function with data pre-configured.
+#'
+#' @param data_beta_coeff Dataframe. Contains the corrected beta coefficients
+#'   for each row of the data.
+#' @param data Dataframe. The testing data.
+#' @param iblm_model Object of class 'iblm'.
+#'
+#' @return Function with signature \code{function(varname, q = 0, color = NULL, marginal = FALSE)}.
+#'
+#' @seealso [beta_corrected_scatter()]
+#'
+#' @export
+create_beta_corrected_scatter <- function(data_beta_coeff,
+                                          data,
+                                          iblm_model) {
+  function(varname,
+           q = 0,
+           color = NULL,
+           marginal = FALSE) {
+    beta_corrected_scatter_internal(
+      varname = varname,
+      q = q,
+      color = color,
+      marginal = marginal,
+      data_beta_coeff = data_beta_coeff,
+      data = data,
+      iblm_model = iblm_model
+    )
+  }
+}
+
+#' Create Pre-Configured Beta Corrected Density Plot Function
+#'
+#' Factory function that returns a plotting function with data pre-configured.
+#'
+#' @param wide_input_frame Dataframe. Wide format input data (one-hot encoded).
+#' @param beta_corrections Dataframe. Output from \code{\link{beta_corrections_derive}}.
+#' @param data Dataframe. The testing data.
+#' @param iblm_model Object of class 'iblm'.
+#'
+#' @return Function with signature \code{function(varname, q = 0.05, type = "kde")}.
+#'
+#' @seealso [beta_corrected_density()]
+#'
+#' @export
+create_beta_corrected_density <- function(wide_input_frame,
+                                          beta_corrections,
+                                          data,
+                                          iblm_model) {
+  function(varname,
+           q = 0.05,
+           type = "kde") {
+    beta_corrected_density_internal(
+      varname = varname,
+      q = q,
+      type = type,
+      wide_input_frame = wide_input_frame,
+      beta_corrections = beta_corrections,
+      data = data,
+      iblm_model = iblm_model
+    )
+  }
+}
+
+#' Create Pre-Configured Bias Density Plot Function
+#'
+#' Factory function that returns a plotting function with data pre-configured.
+#'
+#' @param migrate_reference_to_bias Data for reference migration to bias.
+#' @param shap Dataframe. Contains raw SHAP values.
+#' @param data Dataframe. The testing data.
+#' @param iblm_model Object of class 'iblm'.
+#'
+#' @return Function with signature \code{function(q = 0, type = "hist")}.
+#'
+#' @seealso [bias_density()]
+#'
+#' @export
+create_bias_density <- function(migrate_reference_to_bias,
+                                shap,
+                                data,
+                                iblm_model) {
+  function(q = 0,
+           type = "hist") {
+    bias_density_internal(
+      q = q,
+      type = type,
+      migrate_reference_to_bias = migrate_reference_to_bias,
+      shap = shap,
+      data = data,
+      iblm_model = iblm_model
+    )
+  }
+}
+
+
+#' Create Pre-Configured Overall Correction Plot Function
+#'
+#' Factory function that returns a plotting function with data pre-configured.
+#'
+#' @param shap Dataframe. Contains raw SHAP values.
+#' @param iblm_model Object of class 'iblm'.
+#'
+#' @return Function with signature \code{function(transform_x_scale_by_link = TRUE)}.
+#'
+#' @seealso [overall_correction()]
+#'
+#' @export
+create_overall_correction <- function(shap,
+                                      iblm_model) {
+  function(transform_x_scale_by_link = TRUE) {
+    overall_correction_internal(
+      transform_x_scale_by_link = transform_x_scale_by_link,
+      shap = shap,
+      iblm_model = iblm_model
+    )
+  }
+}
+
+
+
+
+
+
+
+
+#' Create Scatter Plot of Beta Corrections for a Variable
+#'
+#' @description
+#' Generates a scatter plot or boxplot showing SHAP corrections for a specified variable from a fitted model.
+#' For numerical variables, creates a scatter plot with optional coloring and marginal densities. For categorical
+#' variables, creates a boxplot with model coefficients overlaid.
+#'
+#' \strong{NOTE} This function signature documents the interface of functions created by \code{\link{create_beta_corrected_scatter}}.
+#'
+#' @param varname Character. Name of the variable to plot SHAP corrections for.
+#'   Must be present in the fitted model.
+#' @param q Numeric. Quantile threshold for outlier removal. When 0 (default) the function will not remove any outliers
+#' @param color Character or NULL. Name of variable to use for point coloring.
+#'   Must be present in the model. Currently not supported for categorical variables.
+#' @param marginal Logical. Whether to add marginal density plots (numerical variables only).
+#'
+#' @return A ggplot2 object. For numerical variables: scatter plot with SHAP corrections,
+#'   model coefficient line, and confidence bands. For categorical variables: boxplot
+#'   with coefficient points overlaid.
+#'
+#' @details
+#' The function handles both numerical and categorical variables differently:
+#' \itemize{
+#'   \item Numerical: Creates scatter plot of variable values vs. beta + SHAP deviations
+#'   \item Categorical: Creates boxplot of SHAP deviations for each level with coefficient overlay
+#' }
+#'
+#' For numerical variables, horizontal lines show the model coefficient (solid) and
+#' confidence intervals (dashed). SHAP corrections represent local deviations from
+#' the global model coefficient.
+#'
+#' @seealso \code{\link{create_beta_corrected_scatter}}, \code{\link{explain_iblm}}
+#'
+#' @export
+beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALSE) {
+  cli::cli_abort(c(
+    "This function documents the interface only and cannot be called directly. Instead, try one of the following",
+    "i" = "Use explain_iblm()$beta_corrected_scatter()",
+    "i" = "Call a function output from create_beta_corrected_scatter()"
+  ))
+}
+
+#' Create Density Plot of Corrected Beta values for a Variable
+#'
+#' @description
+#' Generates a density plot showing the distribution of corrected Beta values
+#' to a GLM coefficient, along with the original Beta coefficient, and standard error bounds around it.
+#'
+#' \strong{NOTE} This function signature documents the interface of functions created by \code{\link{create_beta_corrected_density}}.
+#'
+#' @param varname Character string specifying the variable name OR coefficient name is accepted as well.
+#' @param q Number, must be between 0 and 0.5. Determines the quantile range of the plot (i.e. value of 0.05 will only show shaps within 5pct --> 95pct quantile range for plot)
+#' @param type Character string, must be "kde" or "hist"
+#'
+#' @return ggplot object(s) showing the density distribution of corrected beta coefficients
+#' with vertical lines indicating the original coefficient value and standard error bounds.
+#'
+#' The item returned will be:
+#' \itemize{
+#'   \item single ggplot object when `varname` was a numerical variable OR a coefficient name
+#'   \item list of ggplot objects when `varname` was a categorical variable
+#' }
+#'
+#' @details The plot shows:
+#' \itemize{
+#'   \item Density curve of corrected coefficient values
+#'   \item Solid vertical line at the original GLM coefficient
+#'   \item Dashed lines at plus/minus 1 standard error from the coefficient
+#'   \item Automatic x-axis limits that cut off the highest and lowest q pct. If you want axis unaltered, set q = 0
+#' }
+#'
+#' @seealso \code{\link{create_beta_corrected_density}}, \code{\link{explain_iblm}}
+#'
+#' @export
+beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
+  cli::cli_abort(c(
+    "This function documents the interface only and cannot be called directly. Instead, try one of the following",
+    "i" = "Use explain_iblm()$beta_corrected_density()",
+    "i" = "Call a function output from create_beta_corrected_density()"
+  ))
+}
+
+
+#' Plot density of bias corrections from SHAP values
+#'
+#' @description
+#' Visualizes the distribution of SHAP corrections that are migrated to bias terms,
+#' showing both per-variable and total bias corrections.
+#'
+#' \strong{NOTE} This function signature documents the interface of functions created by \code{\link{create_bias_density}}.
+#'
+#' @param q Numeric value between 0 and 0.5 for quantile bounds. A higher number will trim more from the edges
+#'  (useful if outliers are distorting your plot window) Default is 0 (i.e. no trimming)
+#' @param type Character string specifying plot type: "kde" for kernel density or "hist" for histogram. Default is "hist".
+#'
+#' @return A list with two ggplot objects:
+#' \itemize{
+#'   \item \code{bias_correction_var}: Faceted plot showing bias correction density from each variable.
+#'     Note that variables with no records contributing to bias correction are dropped from the plot.
+#'   \item \code{bias_correction_total}: Plot showing total corrected bias density.
+#' }
+#'
+#' @seealso \code{\link{create_bias_density}}, \code{\link{explain_iblm}}
+#'
+#' @export
+bias_density <- function(q = 0, type = "hist") {
+  cli::cli_abort(c(
+    "This function documents the interface only and cannot be called directly. Instead, try one of the following",
+    "i" = "Use explain_iblm()$bias_density()",
+    "i" = "Call a function output from create_bias_density()"
+  ))
+}
+
+#' Generate Overall Corrections from Booster as Distribution Plot
+#'
+#' @description
+#' Creates a visualization showing for each record the overall booster component (either multiplicative or additive)
+#'
+#' \strong{NOTE} This function signature documents the interface of functions created by \code{\link{create_overall_correction}}.
+#'
+#' @param transform_x_scale_by_link TRUE/FALSE, whether to transform the x axis by the link function
+#'
+#' @return A ggplot2 object.
+#'
+#' @seealso \code{\link{create_overall_correction}}, \code{\link{explain_iblm}}
+#' @export
+overall_correction <- function(transform_x_scale_by_link = TRUE) {
+  cli::cli_abort(c(
+    "This function documents the interface only and cannot be called directly. Instead, try one of the following",
+    "i" = "Use explain_iblm()$overall_correction()",
+    "i" = "Call a function output from create_overall_correction()"
+  ))
+}

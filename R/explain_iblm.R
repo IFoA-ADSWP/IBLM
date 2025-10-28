@@ -70,56 +70,39 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
 
   # Return explainer object with plotting functions
   list(
+
     shap = shap,
+
     beta_corrections = beta_corrections,
+
     data_beta_coeff = data_beta_coeff,
-    beta_corrected_scatter = function(
-        varname,
-        q = 0,
-        color = NULL,
-        marginal = FALSE) {
-      beta_corrected_scatter(
-        varname = varname,
-        q = q,
-        color = color,
-        marginal = marginal,
-        data_beta_coeff = data_beta_coeff,
-        data = data,
-        iblm_model = iblm_model
+
+    beta_corrected_scatter = create_beta_corrected_scatter(
+      data_beta_coeff = data_beta_coeff,
+      data = data,
+      iblm_model = iblm_model
+      ),
+
+    beta_corrected_density = create_beta_corrected_density(
+      wide_input_frame = wide_input_frame,
+      beta_corrections = beta_corrections,
+      data = data,
+      iblm_model = iblm_model
+      ),
+
+    bias_density = create_bias_density(
+      migrate_reference_to_bias = migrate_reference_to_bias,
+      shap = shap,
+      data = data,
+      iblm_model = iblm_model
+      ),
+
+    overall_correction = create_overall_correction(
+      shap = shap,
+      iblm_model = iblm_model
       )
-    },
-    beta_corrected_density = function(varname,
-                                      q = 0.05,
-                                      type = "kde") {
-      beta_corrected_density(
-        varname = varname,
-        q = q,
-        type = type,
-        wide_input_frame = wide_input_frame,
-        beta_corrections = beta_corrections,
-        data = data,
-        iblm_model = iblm_model
-      )
-    },
-    bias_density = function(q = 0,
-                            type = "hist") {
-      bias_density(
-        q = q,
-        type = type,
-        migrate_reference_to_bias = migrate_reference_to_bias,
-        shap = shap,
-        data = data,
-        iblm_model = iblm_model
-        )
-      },
-    overall_correction = function(transform_x_scale_by_link = TRUE) {
-      overall_correction(
-        transform_x_scale_by_link = transform_x_scale_by_link,
-        shap = shap,
-        iblm_model = iblm_model
-      )
-    }
-  )
+
+    )
 }
 
 

@@ -31,9 +31,10 @@
 #'
 #'
 #' @keywords internal
+#' @noRd
 #'
 #' @import ggplot2
-beta_corrected_scatter <- function(varname,
+beta_corrected_scatter_internal <- function(varname,
                                    q = 0,
                                    color = NULL,
                                    marginal = FALSE,
@@ -192,9 +193,10 @@ beta_corrected_scatter <- function(varname,
 #' }
 #'
 #' @keywords internal
+#' @noRd
 #'
 #' @import ggplot2
-beta_corrected_density <- function(
+beta_corrected_density_internal <- function(
     varname,
     q = 0.05,
     type = "kde",
@@ -248,7 +250,7 @@ beta_corrected_density <- function(
 
     output <- purrr::map(
       levels_to_plot,
-      ~ beta_corrected_density(
+      ~ beta_corrected_density_internal(
         varname = .x,
         q = q,
         type = type,
@@ -326,10 +328,11 @@ beta_corrected_density <- function(
 #' Note that variables with no records contributing to bias correction are dropped from the plot}
 #' \item{bias_correction_total}{Plot showing total corrected total bias density}
 #'
-#' @export
+#' @keywords internal
+#' @noRd
 #'
 #' @import ggplot2
-bias_density <- function(q = 0,
+bias_density_internal <- function(q = 0,
                            type = "hist",
                           migrate_reference_to_bias = TRUE,
                            shap,
@@ -538,9 +541,10 @@ return(output)
 #' @return A ggplot object showing density of total booster values
 #'
 #' @keywords internal
+#' @noRd
 #'
 #' @import ggplot2
-overall_correction <- function(transform_x_scale_by_link = TRUE, shap, iblm_model) {
+overall_correction_internal <- function(transform_x_scale_by_link = TRUE, shap, iblm_model) {
 
   check_iblm_model(iblm_model)
 
