@@ -25,7 +25,7 @@ If unnamed, models are labeled by their class.}
 \value{
 Data frame with 3 columns:
 * "model" - will be homog, glm, iblm and any other models specified in `additional_models`
-* "poisson_deviance" - the value from the loss function based on poisson
+* "`family`_deviance" - the value from the loss function based on the family of the glm function
 * "pinball_score" - The more positive the score, the better the model than a basic homog model (i.e. all predictions are mean value). A negative score indicates worse than homog model.
 }
 \description{
