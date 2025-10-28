@@ -58,7 +58,7 @@ explain_objects <- explain_iblm(iblm_model, df_list$test)
 explain_objects$beta_corrected_density(varname = "Area")
 
 # plot can be for a single categorical level
-explain_objects$beta_corrected_density(varname = "AreaA")
+explain_objects$beta_corrected_density(varname = "AreaB")
 
 # output can be numerical variable
 explain_objects$beta_corrected_density(varname = "DrivAge")

@@ -178,7 +178,7 @@ create_overall_correction <- function(shap,
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)
 #'
 #' # plot can be for a categorical variable (box plot)
-#' explain_objects$beta_corrected_scatter(varname = "AreaA")
+#' explain_objects$beta_corrected_scatter(varname = "Area")
 #'
 #' # plot can be for a numerical variable (scatter plot)
 #' explain_objects$beta_corrected_scatter(varname = "DrivAge")
@@ -243,7 +243,7 @@ beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALS
 #' explain_objects$beta_corrected_density(varname = "Area")
 #'
 #' # plot can be for a single categorical level
-#' explain_objects$beta_corrected_density(varname = "AreaA")
+#' explain_objects$beta_corrected_density(varname = "AreaB")
 #'
 #' # output can be numerical variable
 #' explain_objects$beta_corrected_density(varname = "DrivAge")

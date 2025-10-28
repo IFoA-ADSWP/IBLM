@@ -57,7 +57,7 @@ iblm_model <- train_iblm_xgb(
 explain_objects <- explain_iblm(iblm_model, df_list$test)
 
 # plot can be for a categorical variable (box plot)
-explain_objects$beta_corrected_scatter(varname = "AreaA")
+explain_objects$beta_corrected_scatter(varname = "Area")
 
 # plot can be for a numerical variable (scatter plot)
 explain_objects$beta_corrected_scatter(varname = "DrivAge")
