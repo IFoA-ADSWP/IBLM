@@ -17,6 +17,8 @@ freMTPL2freq <- freMTPL2freq |>
     ClaimRate = pmin(ClaimRate, quantile(ClaimRate, 0.999)), # <-- kept in to help rec with original paper
     VehAge = pmin(VehAge,50) # <-- kept in to help rec with original paper
   ) |>
+  # turn any character fields into factors, should help keep package memory lower
+  dplyr::mutate(dplyr::across(dplyr::where(is.character), function(field) factor(field))) |>
   dplyr::select(-dplyr::all_of(c("IDpol", "Exposure", "ClaimNb")))
 
 usethis::use_data(freMTPL2freq, overwrite = TRUE, compress = "xz")
