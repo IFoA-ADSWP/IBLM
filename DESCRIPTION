@@ -1,19 +1,18 @@
 Package: IBLM
 Type: Package
 Title: Interpretable Boosted Linear Model
-Version: 0.1.0
+Version: 1.0.0
 Authors@R: c(
     person("Karol", "Gawlowski", , "Karol.Gawlowski@citystgeorges.ac.uk", role = c("aut", "cre")),
-    person("Paul", "Beard", , "paul.beard.actuarial@gmail.com", role = "aut", "cre"),
+    person("Paul", "Beard", , "paul.beard.actuarial@gmail.com", role = "aut"),
     person("William", "Flaherty", , "wflaherty99@gmail.com", role = "ctb")
   )
-Description: Created an interpretable boosted linear model. This model hybridises a conventional GLM with a machine learning model.
-  The package also contains tools to analyse the results.
+Description: Provides tools to create an interpretable boosted linear model. This model hybridises a conventional GLM with a machine learning model. The package also contains tools to analyse the results.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 2.10)
+    R (>= 4.1.0)
 RoxygenNote: 7.3.0
 Imports: 
     cli,
@@ -32,3 +31,5 @@ Suggests:
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3
+URL: https://github.com/IFoA-ADSWP/IBLM
+BugReports: https://github.com/IFoA-ADSWP/IBLM/issues
