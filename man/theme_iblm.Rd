@@ -2,7 +2,7 @@
 % Please edit documentation in R/theme_iblm.R
 \name{theme_iblm}
 \alias{theme_iblm}
-\title{Custom ggplot2 theme for IBLM package}
+\title{Custom ggplot2 Theme for IBLM}
 \usage{
 theme_iblm()
 }
@@ -10,6 +10,6 @@ theme_iblm()
 A ggplot2 theme object that can be added to plots.
 }
 \description{
-Custom ggplot2 theme for IBLM package
+Custom ggplot2 Theme for IBLM
 }
 \keyword{internal}

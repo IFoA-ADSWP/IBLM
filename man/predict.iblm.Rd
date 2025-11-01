@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.R
 \name{predict.iblm}
 \alias{predict.iblm}
-\title{Predict method for ensemble models}
+\title{Predict Method for IBLM}
 \usage{
 \method{predict}{iblm}(model, data, trim = NA_real_, type = "response")
 }

@@ -1,4 +1,4 @@
-#' Split a data frame into training, validation, and test sets
+#' Split Dataframe into: 'train', 'validate', 'test'
 #'
 #' This function randomly splits a data frame into three subsets for machine
 #' learning workflows: training, validation, and test sets. The proportions

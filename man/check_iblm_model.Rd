@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_iblm_model.R
 \name{check_iblm_model}
 \alias{check_iblm_model}
-\title{Check IBLM Ensemble Model}
+\title{Check Object of Class `iblm`}
 \usage{
 check_iblm_model(model, booster_models_supported = c("xgb.Booster"))
 }

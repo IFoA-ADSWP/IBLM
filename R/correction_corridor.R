@@ -1,4 +1,4 @@
-#' Plot Correction Corridor for IBLM Model
+#' Plot GLM vs IBLM Predictions with Different Corridors
 #'
 #' Creates a faceted scatter plot comparing GLM predictions to ensemble predictions
 #' across different trim values, showing how the ensemble corrects the base GLM model.

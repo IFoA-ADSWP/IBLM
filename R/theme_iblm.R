@@ -1,4 +1,4 @@
-#' Custom ggplot2 theme for IBLM package
+#' Custom ggplot2 Theme for IBLM
 #'
 #' @return A ggplot2 theme object that can be added to plots.
 #'

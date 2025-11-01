@@ -2,7 +2,7 @@
 % Please edit documentation in R/split_into_train_validate_test.R
 \name{split_into_train_validate_test}
 \alias{split_into_train_validate_test}
-\title{Split a data frame into training, validation, and test sets}
+\title{Split Dataframe into: 'train', 'validate', 'test'}
 \usage{
 split_into_train_validate_test(
   df,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_beta_correction_plot_functions.R
 \name{beta_corrected_density}
 \alias{beta_corrected_density}
-\title{Create Density Plot of Corrected Beta values for a Variable}
+\title{Density Plot of Beta Corrections for a Variable}
 \usage{
 beta_corrected_density(varname, q = 0.05, type = "kde")
 }

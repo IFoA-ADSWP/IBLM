@@ -1,4 +1,4 @@
-#' Check IBLM Ensemble Model
+#' Check Object of Class `iblm`
 #'
 #' Validates an iblm model object has required structure and features
 #'

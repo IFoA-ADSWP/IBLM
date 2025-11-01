@@ -240,7 +240,7 @@ create_overall_correction <- function(shap,
 
 
 
-#' Create Scatter Plot of Beta Corrections for a Variable
+#' Scatter Plot of Beta Corrections for a Variable
 #'
 #' @description
 #' Generates a scatter plot or boxplot showing SHAP corrections for a specified variable from a fitted model.
@@ -311,7 +311,7 @@ beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALS
   ))
 }
 
-#' Create Density Plot of Corrected Beta values for a Variable
+#' Density Plot of Beta Corrections for a Variable
 #'
 #' @description
 #' Generates a density plot showing the distribution of corrected Beta values
@@ -384,7 +384,7 @@ beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
 }
 
 
-#' Plot density of bias corrections from SHAP values
+#' Density Plot of Bias Corrections from SHAP values
 #'
 #' @description
 #' Visualizes the distribution of SHAP corrections that are migrated to bias terms,
@@ -439,7 +439,7 @@ bias_density <- function(q = 0, type = "hist") {
   ))
 }
 
-#' Generate Overall Corrections from Booster as Distribution Plot
+#' Plot Overall Corrections from Booster Component
 #'
 #' @description
 #' Creates a visualization showing for each record the overall booster component (either multiplicative or additive)

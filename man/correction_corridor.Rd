@@ -2,7 +2,7 @@
 % Please edit documentation in R/correction_corridor.R
 \name{correction_corridor}
 \alias{correction_corridor}
-\title{Plot Correction Corridor for IBLM Model}
+\title{Plot GLM vs IBLM Predictions with Different Corridors}
 \usage{
 correction_corridor(
   iblm_model,

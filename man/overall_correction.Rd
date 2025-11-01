@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_beta_correction_plot_functions.R
 \name{overall_correction}
 \alias{overall_correction}
-\title{Generate Overall Corrections from Booster as Distribution Plot}
+\title{Plot Overall Corrections from Booster Component}
 \usage{
 overall_correction(transform_x_scale_by_link = TRUE)
 }

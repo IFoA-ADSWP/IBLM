@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_beta_correction_plot_functions.R
 \name{bias_density}
 \alias{bias_density}
-\title{Plot density of bias corrections from SHAP values}
+\title{Density Plot of Bias Corrections from SHAP values}
 \usage{
 bias_density(q = 0, type = "hist")
 }

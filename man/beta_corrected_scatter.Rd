@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_beta_correction_plot_functions.R
 \name{beta_corrected_scatter}
 \alias{beta_corrected_scatter}
-\title{Create Scatter Plot of Beta Corrections for a Variable}
+\title{Scatter Plot of Beta Corrections for a Variable}
 \usage{
 beta_corrected_scatter(varname, q = 0, color = NULL, marginal = FALSE)
 }

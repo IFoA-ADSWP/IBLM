@@ -1,4 +1,4 @@
-#' Predict method for ensemble models
+#' Predict Method for IBLM
 #'
 #' @description
 #' This function generates predictions from an ensemble model consisting of a GLM
