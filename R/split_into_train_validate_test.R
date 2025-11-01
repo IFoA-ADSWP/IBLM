@@ -11,6 +11,7 @@
 #'   of data to allocate to the validation set.
 #' @param test_prop A numeric value between 0 and 1 specifying the proportion
 #'   of data to allocate to the test set.
+#' @param seed (optional) a numeric value to set the random no. seed within function environment.
 #'
 #' @return A named list with three elements:
 #' \describe{
@@ -19,33 +20,39 @@
 #'   \item{test}{A data frame containing the test subset}
 #' }
 #'
-#' @details The function uses random sampling with replacement to assign each
-#'   row to one of the three sets according to the specified proportions. The
-#'   proportions must sum to 1 (with some tolerance for floating point precision).
+#' @details The function assigns each row to either "train", "validate" or "test" with
+#' the probability defined in the function.
+#'
+#' Because each row is assigned a bucket independently, for very small datasets the proportions may not
+#' be as desired. This should not be an issue as data used for `iblm` must be reasonably large.
 #'
 #' @examples
 #' # Using 'mtcars'
 #' split_into_train_validate_test(
 #'   mtcars,
-#'   train_prop = 0.8,
-#'   validate_prop = 0.1,
-#'   test_prop = 0.1
+#'   train_prop = 0.6,
+#'   validate_prop = 0.2,
+#'   test_prop = 0.2,
+#'   seed = 9000
 #' )
-#'
-#' # Using 'freMTPL2freq'
-#' freMTPL2freq |> split_into_train_validate_test()
 #'
 #' @export
 split_into_train_validate_test <- function(
     df,
     train_prop = 0.7,
     validate_prop = 0.15,
-    test_prop = 0.15) {
+    test_prop = 0.15,
+    seed = NULL) {
 
   stopifnot(
     is.data.frame(df),
     dplyr::near(sum(train_prop, validate_prop, test_prop), 1)
   )
+
+  if (!is.null(seed)) {
+    withr::local_seed(seed)
+  }
+
 
   split <- sample(
     c("train", "validate", "test"),
