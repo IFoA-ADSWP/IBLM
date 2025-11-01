@@ -55,9 +55,9 @@
 #' ex$bias_density()
 #'
 #' # the output contains also dataframes
-#' shap |> dplyr::glimpse()
-#' beta_corrections |> dplyr::glimpse()
-#' data_beta_coeff |> dplyr::glimpse()
+#' ex$shap |> dplyr::glimpse()
+#' ex$beta_corrections |> dplyr::glimpse()
+#' ex$data_beta_coeff |> dplyr::glimpse()
 #'
 #' @export
 explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {

@@ -40,6 +40,7 @@ At this point, only an iblm model with a "booster_model" object of class `xgb.Bo
 \examples{
 data <- freMTPL2freq |>
   head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
   split_into_train_validate_test()
 
 iblm_model <- train_iblm_xgb(
@@ -50,7 +51,7 @@ iblm_model <- train_iblm_xgb(
 
 predictions <- predict(iblm_model, data$test)
 
-predictions
+predictions |> dplyr::glimpse()
 
 }
 \seealso{

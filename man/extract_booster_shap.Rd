@@ -45,7 +45,9 @@ iblm_model <- train_iblm_xgb(
   family = "poisson"
 )
 
-extract_booster_shap(iblm_model$booster_model, df_list$test)
+booster_shap <- extract_booster_shap(iblm_model$booster_model, df_list$test)
+
+booster_shap |> dplyr::glimpse()
 
 }
 \seealso{
