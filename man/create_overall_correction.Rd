@@ -17,6 +17,28 @@ Function with signature \code{function(transform_x_scale_by_link = TRUE)}.
 \description{
 Factory function that returns a plotting function with data pre-configured.
 }
+\examples{
+# prepare iblm objects required
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
+
+iblm_model <- train_iblm_xgb(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+shap <- extract_booster_shap(iblm_model$booster_model, data$test)
+
+# create_overall_correction() can create function of type 'overall_correction'
+my_overall_correction <- create_overall_correction(shap, iblm_model)
+
+# this custom function then acts as per overall_correction()
+my_overall_correction()
+
+}
 \seealso{
 [overall_correction()]
 }

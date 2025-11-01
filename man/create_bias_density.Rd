@@ -4,22 +4,47 @@
 \alias{create_bias_density}
 \title{Create Pre-Configured Bias Density Plot Function}
 \usage{
-create_bias_density(migrate_reference_to_bias, shap, data, iblm_model)
+create_bias_density(shap, data, iblm_model, migrate_reference_to_bias = TRUE)
 }
 \arguments{
-\item{migrate_reference_to_bias}{Data for reference migration to bias.}
-
 \item{shap}{Dataframe. Contains raw SHAP values.}
 
 \item{data}{Dataframe. The testing data.}
 
 \item{iblm_model}{Object of class 'iblm'.}
+
+\item{migrate_reference_to_bias}{TRUE/FALSE determines whether the shap
+values of categorical reference levels be migrated to the bias?
+Default is TRUE}
 }
 \value{
 Function with signature \code{function(q = 0, type = "hist")}.
 }
 \description{
 Factory function that returns a plotting function with data pre-configured.
+}
+\examples{
+# prepare iblm objects required
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
+
+iblm_model <- train_iblm_xgb(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+shap <- extract_booster_shap(iblm_model$booster_model, data$test)
+
+# create_bias_density() can create function of type 'bias_density'
+my_bias_density <- create_bias_density(shap, data$test, iblm_model)
+
+# this custom function then acts as per bias_density()
+my_bias_density()
+
+
 }
 \seealso{
 [bias_density()]

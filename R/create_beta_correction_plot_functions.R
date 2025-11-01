@@ -11,6 +11,33 @@
 #'
 #' @seealso [beta_corrected_scatter()]
 #'
+#' @examples
+#' # prepare iblm objects required
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm_xgb(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' shap <- extract_booster_shap(iblm_model$booster_model, data$test)
+#' wide_input_frame <- data_to_onehot(data$test, iblm_model)
+#' shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
+#' beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model)
+#' data_glm <- data_beta_coeff_glm(data, iblm_model)
+#' data_booster <- data_beta_coeff_booster(data, beta_corrections, iblm_model)
+#' data_beta_coeff <- data_glm + data_booster
+#'
+#' # create_beta_corrected_scatter() can create function of type 'beta_corrected_scatter'
+#' my_beta_corrected_scatter <- create_beta_corrected_scatter(data_beta_coeff, data$test, iblm_model)
+#'
+#' # this custom function then acts as per beta_corrected_scatter()
+#' my_beta_corrected_scatter(varname = "VehAge")
+#'
 #' @export
 create_beta_corrected_scatter <- function(data_beta_coeff,
                                           data,
@@ -44,6 +71,34 @@ create_beta_corrected_scatter <- function(data_beta_coeff,
 #'
 #' @seealso [beta_corrected_density()]
 #'
+#' @examples
+#' # prepare iblm objects required
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm_xgb(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' shap <- extract_booster_shap(iblm_model$booster_model, data$test)
+#'
+#' wide_input_frame <- data_to_onehot(data$test, iblm_model)
+#'
+#' shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
+#'
+#' beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model)
+#'
+#' # create_beta_corrected_density() can create function of type 'beta_corrected_density'
+#' my_beta_corrected_density <- create_beta_corrected_density(wide_input_frame, beta_corrections, data$test, iblm_model)
+#'
+#' # this custom function then acts as per beta_corrected_density()
+#' my_beta_corrected_density(varname = "VehAge")
+#'
+#'
 #' @export
 create_beta_corrected_density <- function(wide_input_frame,
                                           beta_corrections,
@@ -68,20 +123,44 @@ create_beta_corrected_density <- function(wide_input_frame,
 #'
 #' Factory function that returns a plotting function with data pre-configured.
 #'
-#' @param migrate_reference_to_bias Data for reference migration to bias.
 #' @param shap Dataframe. Contains raw SHAP values.
 #' @param data Dataframe. The testing data.
 #' @param iblm_model Object of class 'iblm'.
+#' @param migrate_reference_to_bias TRUE/FALSE determines whether the shap
+#' values of categorical reference levels be migrated to the bias?
+#' Default is TRUE
 #'
 #' @return Function with signature \code{function(q = 0, type = "hist")}.
 #'
 #' @seealso [bias_density()]
 #'
+#' @examples
+#' # prepare iblm objects required
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm_xgb(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' shap <- extract_booster_shap(iblm_model$booster_model, data$test)
+#'
+#' # create_bias_density() can create function of type 'bias_density'
+#' my_bias_density <- create_bias_density(shap, data$test, iblm_model)
+#'
+#' # this custom function then acts as per bias_density()
+#' my_bias_density()
+#'
+#'
 #' @export
-create_bias_density <- function(migrate_reference_to_bias,
-                                shap,
+create_bias_density <- function(shap,
                                 data,
-                                iblm_model) {
+                                iblm_model,
+                                migrate_reference_to_bias = TRUE) {
   function(q = 0,
            type = "hist") {
     bias_density_internal(
@@ -106,6 +185,27 @@ create_bias_density <- function(migrate_reference_to_bias,
 #' @return Function with signature \code{function(transform_x_scale_by_link = TRUE)}.
 #'
 #' @seealso [overall_correction()]
+#'
+#' @examples
+#' # prepare iblm objects required
+#' df_list <- freMTPL2freq |>
+#'   head(10000) |>
+#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+#'   split_into_train_validate_test()
+#'
+#' iblm_model <- train_iblm_xgb(
+#'   df_list,
+#'   response_var = "ClaimRate",
+#'   family = "poisson"
+#' )
+#'
+#' shap <- extract_booster_shap(iblm_model$booster_model, data$test)
+#'
+#' # create_overall_correction() can create function of type 'overall_correction'
+#' my_overall_correction <- create_overall_correction(shap, iblm_model)
+#'
+#' # this custom function then acts as per overall_correction()
+#' my_overall_correction()
 #'
 #' @export
 create_overall_correction <- function(shap,
@@ -182,6 +282,13 @@ create_overall_correction <- function(shap,
 #'
 #' # plot can be for a numerical variable (scatter plot)
 #' explain_objects$beta_corrected_scatter(varname = "DrivAge")
+#'
+#'
+#' # This function must be created, and cannot be called directly from the package
+#'  \dontrun{
+#' # This will cause an error:
+#' beta_corrected_scatter(varname = "DrivAge")
+#' }
 beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALSE) {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
@@ -247,6 +354,13 @@ beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALS
 #'
 #' # output can be numerical variable
 #' explain_objects$beta_corrected_density(varname = "DrivAge")
+#'
+#'
+#' # This function must be created, and cannot be called directly from the package
+#'  \dontrun{
+#' # This will cause an error:
+#' beta_corrected_density(varname = "DrivAge")
+#' }
 beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
@@ -296,6 +410,13 @@ beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)
 #'
 #' explain_objects$bias_density()
+#'
+#'
+#' # This function must be created, and cannot be called directly from the package
+#'  \dontrun{
+#' # This will cause an error:
+#' bias_density()
+#' }
 bias_density <- function(q = 0, type = "hist") {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
@@ -336,6 +457,13 @@ bias_density <- function(q = 0, type = "hist") {
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)
 #'
 #' explain_objects$overall_correction()
+#'
+#'
+#' # This function must be created, and cannot be called directly from the package
+#'  \dontrun{
+#' # This will cause an error:
+#' overall_correction()
+#' }
 overall_correction <- function(transform_x_scale_by_link = TRUE) {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",

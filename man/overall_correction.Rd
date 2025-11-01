@@ -34,6 +34,13 @@ iblm_model <- train_iblm_xgb(
 explain_objects <- explain_iblm(iblm_model, df_list$test)
 
 explain_objects$overall_correction()
+
+
+# This function must be created, and cannot be called directly from the package
+ \dontrun{
+# This will cause an error:
+overall_correction()
+}
 }
 \seealso{
 \code{\link{create_overall_correction}}, \code{\link{explain_iblm}}

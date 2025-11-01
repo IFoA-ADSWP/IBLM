@@ -20,6 +20,34 @@ Function with signature \code{function(varname, q = 0, color = NULL, marginal = 
 \description{
 Factory function that returns a plotting function with data pre-configured.
 }
+\examples{
+# prepare iblm objects required
+df_list <- freMTPL2freq |>
+  head(10000) |>
+  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+  split_into_train_validate_test()
+
+iblm_model <- train_iblm_xgb(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson"
+)
+
+shap <- extract_booster_shap(iblm_model$booster_model, data$test)
+wide_input_frame <- data_to_onehot(data$test, iblm_model)
+shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
+beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model)
+data_glm <- data_beta_coeff_glm(data, iblm_model)
+data_booster <- data_beta_coeff_booster(data, beta_corrections, iblm_model)
+data_beta_coeff <- data_glm + data_booster
+
+# create_beta_corrected_scatter() can create function of type 'beta_corrected_scatter'
+my_beta_corrected_scatter <- create_beta_corrected_scatter(data_beta_coeff, data$test, iblm_model)
+
+# this custom function then acts as per beta_corrected_scatter()
+my_beta_corrected_scatter(varname = "VehAge")
+
+}
 \seealso{
 [beta_corrected_scatter()]
 }
