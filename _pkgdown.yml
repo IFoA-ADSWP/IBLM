@@ -1,6 +1,7 @@
 url: ~
 template:
   bootstrap: 5
+
 reference:
 - title: Train
 - subtitle: Train iblm
@@ -20,7 +21,7 @@ reference:
   - bias_density
   - overall_correction
   - correction_corridor
-- subtitle: Create Plotting Functions
+- subtitle: Create Helper Functions
   contents:
   - create_beta_corrected_density
   - create_beta_corrected_scatter
