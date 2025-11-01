@@ -20,7 +20,6 @@ Imports:
     fastDummies,
     ggExtra,
     ggplot2,
-    isotree,
     purrr,
     scales,
     statmod,

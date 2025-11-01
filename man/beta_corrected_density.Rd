@@ -62,6 +62,13 @@ explain_objects$beta_corrected_density(varname = "AreaB")
 
 # output can be numerical variable
 explain_objects$beta_corrected_density(varname = "DrivAge")
+
+
+# This function must be created, and cannot be called directly from the package
+ \dontrun{
+# This will cause an error:
+beta_corrected_density(varname = "DrivAge")
+}
 }
 \seealso{
 \code{\link{create_beta_corrected_density}}, \code{\link{explain_iblm}}
