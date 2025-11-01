@@ -30,7 +30,8 @@ iblm_model <- train_iblm_xgb(
   family = "poisson"
 )
 
-shap <- extract_booster_shap(iblm_model$booster_model, data$test)
+test_data <- df_list$test
+shap <- extract_booster_shap(iblm_model$booster_model, test_data)
 
 # create_overall_correction() can create function of type 'overall_correction'
 my_overall_correction <- create_overall_correction(shap, iblm_model)

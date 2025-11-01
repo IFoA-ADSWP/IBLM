@@ -36,10 +36,11 @@ iblm_model <- train_iblm_xgb(
   family = "poisson"
 )
 
-shap <- extract_booster_shap(iblm_model$booster_model, data$test)
+test_data <- df_list$test
+shap <- extract_booster_shap(iblm_model$booster_model, test_data)
 
 # create_bias_density() can create function of type 'bias_density'
-my_bias_density <- create_bias_density(shap, data$test, iblm_model)
+my_bias_density <- create_bias_density(shap, test_data, iblm_model)
 
 # this custom function then acts as per bias_density()
 my_bias_density()
