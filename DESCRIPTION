@@ -1,13 +1,13 @@
 Package: IBLM
 Type: Package
-Title: Interpretable Boosted Linear Model
+Title: Interpretable Boosted Linear Models
 Version: 1.0.0
 Authors@R: c(
-    person("Karol", "Gawlowski", , "Karol.Gawlowski@citystgeorges.ac.uk", role = c("aut", "cre")),
+    person("Karol", "Gawlowski", , "Karol.Gawlowski@citystgeorges.ac.uk", role = c("aut", "cre", "cph")),
     person("Paul", "Beard", , "paul.beard.actuarial@gmail.com", role = "aut"),
     person("William", "Flaherty", , "wflaherty99@gmail.com", role = "ctb")
   )
-Description: Provides tools to create an interpretable boosted linear model. This model hybridises a conventional GLM with a machine learning model. The package also contains tools to analyse the results.
+Description: Implements Interpretable Boosted Linear Models (IBLMs), which combine a conventional generalized linear model (GLM) with a machine learning component. Provides tools for fitting, analyzing, and visualizing model results
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -30,5 +30,5 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-URL: https://github.com/IFoA-ADSWP/IBLM
+URL: https://ifoa-adswp.github.io/IBLM/, https://github.com/IFoA-ADSWP/IBLM
 BugReports: https://github.com/IFoA-ADSWP/IBLM/issues
