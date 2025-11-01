@@ -114,7 +114,7 @@ beta_corrected_scatter_internal <- function(varname,
   } else {
     if (q > 0) {
       plot_data <- plot_data |>
-        dplyr::filter(detect_outliers(.data$beta_coeff, method = "quantile", q = q))
+        dplyr::filter(detect_outliers(.data$beta_coeff, q = q))
     }
 
     stderror <- summary(iblm_model$glm_model)$coefficients[varname, "Std. Error"]
