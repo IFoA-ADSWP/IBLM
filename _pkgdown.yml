@@ -1,4 +1,53 @@
 url: ~
 template:
   bootstrap: 5
-
+reference:
+- title: Train
+- subtitle: Train iblm
+  contents:
+  - train_iblm_xgb
+- subtitle: Train xgboost
+  contents:
+  - train_xgb_as_per_iblm
+- title: Explain
+- subtitle: Main Explanation
+  contents:
+  - explain_iblm
+- subtitle: Plotting Functions
+  contents:
+  - beta_corrected_density
+  - beta_corrected_scatter
+  - bias_density
+  - overall_correction
+  - correction_corridor
+- subtitle: Create Plotting Functions
+  contents:
+  - create_beta_corrected_density
+  - create_beta_corrected_scatter
+  - create_bias_density
+  - create_overall_correction
+- subtitle: Data Transformation
+  contents:
+  - extract_booster_shap
+  - data_to_onehot
+  - shap_to_onehot
+  - beta_corrections_derive
+  - data_beta_coeff_booster
+  - data_beta_coeff_glm
+- title: Predict
+  contents:
+  - predict.iblm
+  - get_pinball_scores
+- title: Data
+  contents:
+  - freMTPL2freq
+- title: Other
+- subtitle: Prepare
+  contents:
+  - split_into_train_validate_test
+- subtitle: Theme
+  contents:
+  - theme_iblm
+- subtitle: Check
+  contents:
+  - check_iblm_model
