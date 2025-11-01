@@ -43,8 +43,6 @@ Here’s a minimal example to train and explain an IBLM:
 library(IBLM)
 
 df_list <- freMTPL2freq |>
-  head(10000) |>
-  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
   split_into_train_validate_test()
 
 iblm_model <- train_iblm_xgb(
@@ -82,7 +80,7 @@ If you’d like to report a bug or suggest a feature, please open an issue on Gi
 
 If you use **IBLM** in research or teaching, please cite it as:
 
-> Gawlowski, K., Beard, P., & Flaherty, W. (2025). *IBLM: Interpretable Boosted Linear Models.* R package version 1.0.0.
+> Gawlowski, K., Beard, P. (2025). *IBLM: Interpretable Boosted Linear Models.* R package version 1.0.0.
 
 ---
 
