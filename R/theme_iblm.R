@@ -2,8 +2,6 @@
 #'
 #' @return A ggplot2 theme object that can be added to plots.
 #'
-#' @keywords internal
-#'
 #' @import ggplot2
 #'
 #' @export

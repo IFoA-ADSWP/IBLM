@@ -4,10 +4,9 @@ Title: Interpretable Boosted Linear Models
 Version: 1.0.0
 Authors@R: c(
     person("Karol", "Gawlowski", , "Karol.Gawlowski@citystgeorges.ac.uk", role = c("aut", "cre", "cph")),
-    person("Paul", "Beard", , "paul.beard.actuarial@gmail.com", role = "aut"),
-    person("William", "Flaherty", , "wflaherty99@gmail.com", role = "ctb")
+    person("Paul", "Beard", , "paul.beard.actuarial@gmail.com", role = "aut")
   )
-Description: Implements Interpretable Boosted Linear Models (IBLMs), which combine a conventional generalized linear model (GLM) with a machine learning component. Provides tools for fitting, analyzing, and visualizing model results
+Description: Implements Interpretable Boosted Linear Models (IBLMs). These combine a conventional generalized linear model (GLM) with a machine learning component, such as XGBoost. The package also provides tools within for explaining and analyzing these models.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

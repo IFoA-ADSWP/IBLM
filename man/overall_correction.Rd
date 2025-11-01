@@ -37,10 +37,9 @@ explain_objects$overall_correction()
 
 
 # This function must be created, and cannot be called directly from the package
- \dontrun{
-# This will cause an error:
+try(
 overall_correction()
-}
+)
 }
 \seealso{
 \code{\link{create_overall_correction}}, \code{\link{explain_iblm}}

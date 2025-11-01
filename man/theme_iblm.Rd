@@ -12,4 +12,3 @@ A ggplot2 theme object that can be added to plots.
 \description{
 Custom ggplot2 Theme for IBLM
 }
-\keyword{internal}

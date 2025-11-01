@@ -46,10 +46,9 @@ explain_objects$bias_density()
 
 
 # This function must be created, and cannot be called directly from the package
- \dontrun{
-# This will cause an error:
+try(
 bias_density()
-}
+)
 }
 \seealso{
 \code{\link{create_bias_density}}, \code{\link{explain_iblm}}

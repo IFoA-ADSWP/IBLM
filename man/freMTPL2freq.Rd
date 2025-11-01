@@ -47,9 +47,7 @@ where coefficients typically range from 50 (best) to over 100 (worst),
 reflecting the policyholder's claims history.
 }
 \examples{
-\dontrun{
 head(freMTPL2freq)
-}
 
 }
 \keyword{actuarial}

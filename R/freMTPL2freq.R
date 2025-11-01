@@ -40,9 +40,7 @@
 #' ['https://github.com/dutangc/CASdatasets/blob/master/data/freMTPL2freq.rda']
 #'
 #' @examples
-#' \dontrun{
 #' head(freMTPL2freq)
-#' }
 #'
 #' @keywords datasets insurance actuarial
 "freMTPL2freq"

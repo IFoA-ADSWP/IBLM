@@ -16,11 +16,9 @@
 #'   \item{beta_corrected_density}{Function to create density plots of SHAP corrections for variables (see \code{\link[IBLM]{beta_corrected_density}})}
 #'   \item{bias_density}{Function to create density plots of SHAP corrections migrated to bias (see \code{\link[IBLM]{bias_density}})}
 #'   \item{overall_correction}{Function to show global correction distributions (see \code{\link[IBLM]{overall_correction}})}
-#'   \item{input_frame}{Original input data frame}
-#'   \item{beta_corrections}{Wide format SHAP corrections data frame}
-#'   \item{shap}{Raw SHAP values from XGBoost}
-#'   \item{glm_beta_coeff}{GLM model coefficients}
-#'   \item{allnames}{Names of all model coefficients except intercept}
+#'   \item{shap}{Dataframe showing raw SHAP values of data records}
+#'   \item{beta_corrections}{Dataframe showing beta corrections (in wide/one-hot format) of data records}
+#'   \item{data_beta_coeff}{Dataframe showing beta coefficients of data records}
 #' }
 #'
 #' @details The following outputs are functions that can be called to create plots:

@@ -64,10 +64,9 @@ explain_objects$beta_corrected_scatter(varname = "DrivAge")
 
 
 # This function must be created, and cannot be called directly from the package
- \dontrun{
-# This will cause an error:
+try(
 beta_corrected_scatter(varname = "DrivAge")
-}
+)
 }
 \seealso{
 \code{\link{create_beta_corrected_scatter}}, \code{\link{explain_iblm}}

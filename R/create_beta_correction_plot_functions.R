@@ -299,10 +299,9 @@ create_overall_correction <- function(shap,
 #'
 #'
 #' # This function must be created, and cannot be called directly from the package
-#'  \dontrun{
-#' # This will cause an error:
+#' try(
 #' beta_corrected_scatter(varname = "DrivAge")
-#' }
+#' )
 beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALSE) {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
@@ -371,10 +370,9 @@ beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALS
 #'
 #'
 #' # This function must be created, and cannot be called directly from the package
-#'  \dontrun{
-#' # This will cause an error:
+#' try(
 #' beta_corrected_density(varname = "DrivAge")
-#' }
+#' )
 beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
@@ -427,10 +425,9 @@ beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
 #'
 #'
 #' # This function must be created, and cannot be called directly from the package
-#'  \dontrun{
-#' # This will cause an error:
+#' try(
 #' bias_density()
-#' }
+#' )
 bias_density <- function(q = 0, type = "hist") {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
@@ -474,10 +471,9 @@ bias_density <- function(q = 0, type = "hist") {
 #'
 #'
 #' # This function must be created, and cannot be called directly from the package
-#'  \dontrun{
-#' # This will cause an error:
+#' try(
 #' overall_correction()
-#' }
+#' )
 overall_correction <- function(transform_x_scale_by_link = TRUE) {
   cli::cli_abort(c(
     "This function documents the interface only and cannot be called directly. Instead, try one of the following",
