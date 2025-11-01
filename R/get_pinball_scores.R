@@ -11,9 +11,11 @@
 #' If unnamed, models are labeled by their class.
 #'
 #' @return Data frame with 3 columns:
-#' * "model" - will be homog, glm, iblm and any other models specified in `additional_models`
-#' * "`family`_deviance" - the value from the loss function based on the family of the glm function
-#' * "pinball_score" - The more positive the score, the better the model than a basic homog model (i.e. all predictions are mean value). A negative score indicates worse than homog model.
+#' \itemize{
+#'   \item "model" - will be homog, glm, iblm and any other models specified in `additional_models`
+#'   \item "`family`_deviance" - the value from the loss function based on the family of the glm function
+#'   \item "pinball_score" - The more positive the score, the better the model than a basic homog model (i.e. all predictions are mean value). A negative score indicates worse than homog model.
+#' }
 #'
 #' @details
 #' Pinball scores are calculated relative to a homogeneous model (i.e. a simple mean prediction of training data).

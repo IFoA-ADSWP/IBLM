@@ -21,7 +21,8 @@ Function with signature \code{function(varname, q = 0, color = NULL, marginal = 
 Factory function that returns a plotting function with data pre-configured.
 }
 \examples{
-# prepare iblm objects required
+# ------- prepare iblm objects required -------
+
 df_list <- freMTPL2freq |>
   head(10000) |>
   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
@@ -41,6 +42,8 @@ beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_mo
 data_glm <- data_beta_coeff_glm(test_data, iblm_model)
 data_booster <- data_beta_coeff_booster(test_data, beta_corrections, iblm_model)
 data_beta_coeff <- data_glm + data_booster
+
+# ------- demonstration of functionality -------
 
 # create_beta_corrected_scatter() can create function of type 'beta_corrected_scatter'
 my_beta_corrected_scatter <- create_beta_corrected_scatter(data_beta_coeff, test_data, iblm_model)

@@ -24,9 +24,11 @@ If unnamed, models are labeled by their class.}
 }
 \value{
 Data frame with 3 columns:
-* "model" - will be homog, glm, iblm and any other models specified in `additional_models`
-* "`family`_deviance" - the value from the loss function based on the family of the glm function
-* "pinball_score" - The more positive the score, the better the model than a basic homog model (i.e. all predictions are mean value). A negative score indicates worse than homog model.
+\itemize{
+  \item "model" - will be homog, glm, iblm and any other models specified in `additional_models`
+  \item "`family`_deviance" - the value from the loss function based on the family of the glm function
+  \item "pinball_score" - The more positive the score, the better the model than a basic homog model (i.e. all predictions are mean value). A negative score indicates worse than homog model.
+}
 }
 \description{
 Computes Poisson deviance and pinball scores for an IBLM model alongside

@@ -49,6 +49,6 @@ iblm_model <- train_iblm_xgb(
   family = "poisson"
 )
 
-correction_corridor(iblm_model = iblm_model, data = df_list$test)
+correction_corridor(iblm_model = iblm_model, data = df_list$test, color = "DrivAge")
 
 }

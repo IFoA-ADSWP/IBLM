@@ -28,7 +28,7 @@
 #'   family = "poisson"
 #' )
 #'
-#' correction_corridor(iblm_model = iblm_model, data = df_list$test)
+#' correction_corridor(iblm_model = iblm_model, data = df_list$test, color = "DrivAge")
 #'
 #' @export
 correction_corridor <- function(iblm_model,

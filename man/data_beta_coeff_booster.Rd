@@ -33,6 +33,8 @@ iblm_model <- train_iblm_xgb(
 
 explainer_outputs <- explain_iblm(iblm_model, df_list$test)
 
-data_beta_coeff_booster(df_list$test, explainer_outputs$beta_corrections, iblm_model)
+data_booster <- data_beta_coeff_booster(df_list$test, explainer_outputs$beta_corrections, iblm_model)
+
+data_booster |> dplyr::glimpse()
 
 }

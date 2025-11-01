@@ -284,9 +284,13 @@ beta_corrected_density_internal <- function(
   upper_bound <- max(shap_quantiles[2], beta + stderror)
 
   if (type == "kde") {
-    geom_corrections_density <- list(geom_density(color = iblm_colors[1], fill = iblm_colors[4], alpha = 0.3))
+    geom_corrections_density <- list(
+      geom_density(color = iblm_colors[1], fill = iblm_colors[4], alpha = 0.3, na.rm = TRUE)
+      )
   } else if (type == "hist") {
-    geom_corrections_density <- list(geom_histogram(color = iblm_colors[1], fill = iblm_colors[4], alpha = 0.3, bins = 100))
+    geom_corrections_density <- list(
+      geom_histogram(color = iblm_colors[1], fill = iblm_colors[4], alpha = 0.3, bins = 100, na.rm = TRUE)
+      )
   } else {
     stop("type was not 'kde' or 'hist'")
   }
@@ -388,9 +392,13 @@ bias_density_internal <- function(q = 0,
     dplyr::bind_rows()
 
   if (type == "kde") {
-    geom_corrections_density <- list(geom_density(color = "grey70", fill = "grey70", alpha = 0.3))
+    geom_corrections_density <- list(
+      geom_density(color = "grey70", fill = "grey70", alpha = 0.3, na.rm = TRUE)
+      )
   } else if (type == "hist") {
-    geom_corrections_density <- list(geom_histogram(color = "grey70", fill = "grey70", alpha = 0.3, bins = 100))
+    geom_corrections_density <- list(
+      geom_histogram(color = "grey70", fill = "grey70", alpha = 0.3, bins = 100, na.rm = TRUE)
+      )
   } else {
     stop("type was not 'kde' or 'hist'")
   }

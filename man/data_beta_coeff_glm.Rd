@@ -29,6 +29,8 @@ iblm_model <- train_iblm_xgb(
   family = "poisson"
 )
 
-data_beta_coeff_glm(df_list$train, iblm_model)
+data_glm <- data_beta_coeff_glm(df_list$train, iblm_model)
+
+data_glm |> dplyr::glimpse()
 
 }

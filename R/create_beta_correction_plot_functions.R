@@ -12,7 +12,8 @@
 #' @seealso [beta_corrected_scatter()]
 #'
 #' @examples
-#' # prepare iblm objects required
+#' # ------- prepare iblm objects required -------
+#'
 #' df_list <- freMTPL2freq |>
 #'   head(10000) |>
 #'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
@@ -32,6 +33,8 @@
 #' data_glm <- data_beta_coeff_glm(test_data, iblm_model)
 #' data_booster <- data_beta_coeff_booster(test_data, beta_corrections, iblm_model)
 #' data_beta_coeff <- data_glm + data_booster
+#'
+#' # ------- demonstration of functionality -------
 #'
 #' # create_beta_corrected_scatter() can create function of type 'beta_corrected_scatter'
 #' my_beta_corrected_scatter <- create_beta_corrected_scatter(data_beta_coeff, test_data, iblm_model)
@@ -73,7 +76,8 @@ create_beta_corrected_scatter <- function(data_beta_coeff,
 #' @seealso [beta_corrected_density()]
 #'
 #' @examples
-#' # prepare iblm objects required
+#' # ------- prepare iblm objects required -------
+#'
 #' df_list <- freMTPL2freq |>
 #'   head(10000) |>
 #'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
@@ -90,6 +94,8 @@ create_beta_corrected_scatter <- function(data_beta_coeff,
 #' wide_input_frame <- data_to_onehot(test_data, iblm_model)
 #' shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
 #' beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model)
+#'
+#' # ------- demonstration of functionality -------
 #'
 #' # create_beta_corrected_density() can create function of type 'beta_corrected_density'
 #' my_beta_corrected_density <- create_beta_corrected_density(
@@ -138,7 +144,8 @@ create_beta_corrected_density <- function(wide_input_frame,
 #' @seealso [bias_density()]
 #'
 #' @examples
-#' # prepare iblm objects required
+#' # ------- prepare iblm objects required -------
+#'
 #' df_list <- freMTPL2freq |>
 #'   head(10000) |>
 #'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
@@ -152,6 +159,8 @@ create_beta_corrected_density <- function(wide_input_frame,
 #'
 #' test_data <- df_list$test
 #' shap <- extract_booster_shap(iblm_model$booster_model, test_data)
+#'
+#' # ------- demonstration of functionality -------
 #'
 #' # create_bias_density() can create function of type 'bias_density'
 #' my_bias_density <- create_bias_density(shap, test_data, iblm_model)
@@ -190,7 +199,8 @@ create_bias_density <- function(shap,
 #' @seealso [overall_correction()]
 #'
 #' @examples
-#' # prepare iblm objects required
+#' # ------- prepare iblm objects required -------
+#'
 #' df_list <- freMTPL2freq |>
 #'   head(10000) |>
 #'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
@@ -204,6 +214,8 @@ create_bias_density <- function(shap,
 #'
 #' test_data <- df_list$test
 #' shap <- extract_booster_shap(iblm_model$booster_model, test_data)
+#'
+#' # ------- demonstration of functionality -------
 #'
 #' # create_overall_correction() can create function of type 'overall_correction'
 #' my_overall_correction <- create_overall_correction(shap, iblm_model)

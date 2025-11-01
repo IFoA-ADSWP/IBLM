@@ -27,7 +27,8 @@ Function with signature \code{function(varname, q = 0.05, type = "kde")}.
 Factory function that returns a plotting function with data pre-configured.
 }
 \examples{
-# prepare iblm objects required
+# ------- prepare iblm objects required -------
+
 df_list <- freMTPL2freq |>
   head(10000) |>
   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
@@ -44,6 +45,8 @@ shap <- extract_booster_shap(iblm_model$booster_model, test_data)
 wide_input_frame <- data_to_onehot(test_data, iblm_model)
 shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
 beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model)
+
+# ------- demonstration of functionality -------
 
 # create_beta_corrected_density() can create function of type 'beta_corrected_density'
 my_beta_corrected_density <- create_beta_corrected_density(

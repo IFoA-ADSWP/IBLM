@@ -24,7 +24,8 @@ Function with signature \code{function(q = 0, type = "hist")}.
 Factory function that returns a plotting function with data pre-configured.
 }
 \examples{
-# prepare iblm objects required
+# ------- prepare iblm objects required -------
+
 df_list <- freMTPL2freq |>
   head(10000) |>
   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
@@ -38,6 +39,8 @@ iblm_model <- train_iblm_xgb(
 
 test_data <- df_list$test
 shap <- extract_booster_shap(iblm_model$booster_model, test_data)
+
+# ------- demonstration of functionality -------
 
 # create_bias_density() can create function of type 'bias_density'
 my_bias_density <- create_bias_density(shap, test_data, iblm_model)

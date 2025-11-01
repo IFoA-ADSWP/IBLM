@@ -28,9 +28,11 @@ A data frame with the booster model beta corrections in one-hot (wide) format
 Processes SHAP values in one-hot (wide) format to create beta coefficient corrections.
 
 This includes:
-* scaling shap values of continuous variables by the predictor value for that row
-* migrating shap values to the bias for continuous variables where the predictor value was zero
-* migrating shap values to the bias for categorical variables where the predictor value was reference level
+\itemize{
+  \item scaling shap values of continuous variables by the predictor value for that row
+  \item migrating shap values to the bias for continuous variables where the predictor value was zero
+  \item migrating shap values to the bias for categorical variables where the predictor value was reference level
+}
 }
 \examples{
 df_list <- freMTPL2freq |>
@@ -60,6 +62,6 @@ shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
 
 beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model)
 
-beta_corrections
+beta_corrections |> dplyr::glimpse()
 
 }

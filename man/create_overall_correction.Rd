@@ -18,7 +18,8 @@ Function with signature \code{function(transform_x_scale_by_link = TRUE)}.
 Factory function that returns a plotting function with data pre-configured.
 }
 \examples{
-# prepare iblm objects required
+# ------- prepare iblm objects required -------
+
 df_list <- freMTPL2freq |>
   head(10000) |>
   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
@@ -32,6 +33,8 @@ iblm_model <- train_iblm_xgb(
 
 test_data <- df_list$test
 shap <- extract_booster_shap(iblm_model$booster_model, test_data)
+
+# ------- demonstration of functionality -------
 
 # create_overall_correction() can create function of type 'overall_correction'
 my_overall_correction <- create_overall_correction(shap, iblm_model)

@@ -45,6 +45,6 @@ wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
 
 shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
 
-shap_wide
+shap_wide |> dplyr::glimpse()
 
 }

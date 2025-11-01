@@ -19,15 +19,17 @@
 #'   \item{input_frame}{Original input data frame}
 #'   \item{beta_corrections}{Wide format SHAP corrections data frame}
 #'   \item{shap}{Raw SHAP values from XGBoost}
-#'   \item{ glm_beta_coeff}{GLM model coefficients}
+#'   \item{glm_beta_coeff}{GLM model coefficients}
 #'   \item{allnames}{Names of all model coefficients except intercept}
 #' }
 #'
 #' @details The following outputs are functions that can be called to create plots:
-#' * beta_corrected_scatter
-#' * beta_corrected_density
-#' * bias_density
-#' * overall_correction
+#' \itemize{
+#'   \item beta_corrected_scatter
+#'   \item beta_corrected_density
+#'   \item bias_density
+#'   \item overall_correction
+#' }
 #'
 #' For each of these, the key data arguments (e.g. data, shap, iblm_model) are already populated by `explain_iblm()`.
 #' When calling these functions output from `explain_iblm()` only key settings like variable names, colours...etc need populating.
@@ -44,7 +46,18 @@
 #'   family = "poisson"
 #' )
 #'
-#' explain_iblm(iblm_model, df_list$test)
+#' ex <- explain_iblm(iblm_model, df_list$test)
+#'
+#' # the output contains functions that can be called to visualise iblm
+#' ex$beta_corrected_scatter("DrivAge")
+#' ex$beta_corrected_density("DrivAge")
+#' ex$overall_correction()
+#' ex$bias_density()
+#'
+#' # the output contains also dataframes
+#' shap |> dplyr::glimpse()
+#' beta_corrections |> dplyr::glimpse()
+#' data_beta_coeff |> dplyr::glimpse()
 #'
 #' @export
 explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
@@ -139,7 +152,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
 #'
 #' wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
 #'
-#' wide_input_frame
+#' wide_input_frame |> dplyr::glimpse()
 #'
 #' @export
 data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
@@ -216,7 +229,7 @@ data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
 #'
 #' shap_wide <- shap_to_onehot(shap, wide_input_frame, iblm_model)
 #'
-#' shap_wide
+#' shap_wide |> dplyr::glimpse()
 #'
 #' @export
 shap_to_onehot <- function(shap,
@@ -263,9 +276,11 @@ shap_to_onehot <- function(shap,
 #' Processes SHAP values in one-hot (wide) format to create beta coefficient corrections.
 #'
 #' This includes:
-#' * scaling shap values of continuous variables by the predictor value for that row
-#' * migrating shap values to the bias for continuous variables where the predictor value was zero
-#' * migrating shap values to the bias for categorical variables where the predictor value was reference level
+#' \itemize{
+#'   \item scaling shap values of continuous variables by the predictor value for that row
+#'   \item migrating shap values to the bias for continuous variables where the predictor value was zero
+#'   \item migrating shap values to the bias for categorical variables where the predictor value was reference level
+#' }
 #'
 #' @param shap_wide Data frame containing SHAP values from XGBoost that have been converted to wide format by [shap_to_onehot()]
 #' @param wide_input_frame Wide format input data frame (one-hot encoded).
@@ -303,7 +318,7 @@ shap_to_onehot <- function(shap,
 #'
 #' beta_corrections <- beta_corrections_derive(shap_wide, wide_input_frame, iblm_model)
 #'
-#' beta_corrections
+#' beta_corrections |> dplyr::glimpse()
 #'
 #' @export
 beta_corrections_derive <- function(shap_wide,

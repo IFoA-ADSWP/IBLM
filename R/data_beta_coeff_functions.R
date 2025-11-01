@@ -19,7 +19,9 @@
 #'   family = "poisson"
 #' )
 #'
-#' data_beta_coeff_glm(df_list$train, iblm_model)
+#' data_glm <- data_beta_coeff_glm(df_list$train, iblm_model)
+#'
+#' data_glm |> dplyr::glimpse()
 #'
 #' @export
 data_beta_coeff_glm <- function(
@@ -93,7 +95,9 @@ data_beta_coeff_glm <- function(
 #'
 #' explainer_outputs <- explain_iblm(iblm_model, df_list$test)
 #'
-#' data_beta_coeff_booster(df_list$test, explainer_outputs$beta_corrections, iblm_model)
+#' data_booster <- data_beta_coeff_booster(df_list$test, explainer_outputs$beta_corrections, iblm_model)
+#'
+#' data_booster |> dplyr::glimpse()
 #'
 #' @export
 data_beta_coeff_booster <- function(data,
@@ -107,14 +111,6 @@ data_beta_coeff_booster <- function(data,
   levels_reference_cat <- iblm_model$cat_levels$reference
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
   predictor_vars_categorical <- iblm_model$predictor_vars$categorical
-
-  # levels_non_ref_cat <- purrr::map(
-  #   names(levels_all_cat),
-  #   function(var) {
-  #     levels_all_cat[[var]] |> setdiff(levels_reference_cat[var])
-  #   }
-  # ) |>
-  #   stats::setNames(names(levels_all_cat))
 
   data |>
     dplyr::select(-dplyr::any_of(response_var)) |>

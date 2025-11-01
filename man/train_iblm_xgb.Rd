@@ -52,11 +52,13 @@ The `family` argument will be fed into the GLM fitting. Default values for the X
 
 Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `xgb_additional_params`
 
+
 For "poisson" family the link function is 'log' and XGBoost is configured with:
 \itemize{
   \item objective: "count:poisson"
   \item base_score: 1
 }
+
 
 For "gamma" family the link function is 'log' and XGBoost is configured with:
 \itemize{
@@ -64,12 +66,14 @@ For "gamma" family the link function is 'log' and XGBoost is configured with:
   \item base_score: 1
 }
 
+
 For "tweedie" family the link function is 'log' (with a var.power = 1.5) and XGBoost is configured with:
 \itemize{
   \item objective: "reg:tweedie"
   \item base_score: 1
   \item tweedie_variance_power = 1.5
 }
+
 
 For "gaussian" family the link function is 'identity' and XGBoost is configured with:
 \itemize{

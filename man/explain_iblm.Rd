@@ -26,7 +26,7 @@ A list containing:
   \item{input_frame}{Original input data frame}
   \item{beta_corrections}{Wide format SHAP corrections data frame}
   \item{shap}{Raw SHAP values from XGBoost}
-  \item{ glm_beta_coeff}{GLM model coefficients}
+  \item{glm_beta_coeff}{GLM model coefficients}
   \item{allnames}{Names of all model coefficients except intercept}
 }
 }
@@ -35,10 +35,12 @@ Creates a list that explains the beta values, and their corrections, of the ense
 }
 \details{
 The following outputs are functions that can be called to create plots:
-* beta_corrected_scatter
-* beta_corrected_density
-* bias_density
-* overall_correction
+\itemize{
+  \item beta_corrected_scatter
+  \item beta_corrected_density
+  \item bias_density
+  \item overall_correction
+}
 
 For each of these, the key data arguments (e.g. data, shap, iblm_model) are already populated by `explain_iblm()`.
 When calling these functions output from `explain_iblm()` only key settings like variable names, colours...etc need populating.
@@ -55,6 +57,17 @@ iblm_model <- train_iblm_xgb(
   family = "poisson"
 )
 
-explain_iblm(iblm_model, df_list$test)
+ex <- explain_iblm(iblm_model, df_list$test)
+
+# the output contains functions that can be called to visualise iblm
+ex$beta_corrected_scatter("DrivAge")
+ex$beta_corrected_density("DrivAge")
+ex$overall_correction()
+ex$bias_density()
+
+# the output contains also dataframes
+shap |> dplyr::glimpse()
+beta_corrections |> dplyr::glimpse()
+data_beta_coeff |> dplyr::glimpse()
 
 }
