@@ -12,6 +12,7 @@
 **IBLM** implements *Interpretable Boosted Linear Models* — a hybrid modelling approach that combines the transparency of generalized linear models (GLMs) with the predictive power of gradient boosting.  
 
 The package provides:
+
 - Functions for fitting interpretable boosted linear models  
 - Tools to analyze and visualize model results  
 - Support for model comparison and diagnostics  
