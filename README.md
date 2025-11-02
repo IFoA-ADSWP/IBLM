@@ -2,7 +2,9 @@
 
 ## Interpretable Boosted Linear Models
 
+<!-- Badge will be activated after CRAN publication
 [![CRAN status](https://www.r-pkg.org/badges/version/IBLM)](https://CRAN.R-project.org/package=IBLM)
+-->
 [![R-CMD-check](https://github.com/IFoA-ADSWP/IBLM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/IFoA-ADSWP/IBLM/actions)
 
 ---
@@ -64,7 +66,7 @@ ex <- explain_iblm(iblm_model, df_list$test)
 
 For Documentation on the various functions in this package visit:
 
-🔗 [https://ifoa-adswp.github.io/IBLM](https://ifoa-adswp.github.io/IBLM)
+🔗 [https://ifoa-adswp.github.io/IBLM/](https://ifoa-adswp.github.io/IBLM/)
 
 ---
 
@@ -81,7 +83,7 @@ If you’d like to report a bug or suggest a feature, please open an issue on Gi
 
 If you use **IBLM** in research or teaching, please cite it as:
 
-> Gawlowski, K., Beard, P. (2025). *IBLM: Interpretable Boosted Linear Models.* R package version 1.0.0.
+> Gawlowski, K. and Beard, P. (2025). *IBLM: Interpretable Boosted Linear Models.* R package version 1.0.0.
 
 ---
 
