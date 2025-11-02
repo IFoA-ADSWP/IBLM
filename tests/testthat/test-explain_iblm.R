@@ -176,14 +176,23 @@ testthat::test_that("test against Karol original script", {
 
   # ============================ comparisons =====================
 
+  # increase tolerance slightly for mac-os.
+  # The absolute figures we are reconciling against are ran on windows and show tiny differences
+  is_mac_arm <- Sys.info()["sysname"] == "Darwin" &&
+    grepl("arm", Sys.info()["machine"], ignore.case = TRUE)
+
+  os_tolerance <- if (is_mac_arm) 1e-6 else testthat::testthat_tolerance()
+
   testthat::expect_equal(
     explainer_nu$beta_corrections |> colSums(),
-    explainer_og$shap_wide_colsums
+    explainer_og$shap_wide_colsums,
+    tolerance = os_tolerance
   )
 
   testthat::expect_equal(
     explainer_nu$shap |> colSums(),
-    explainer_og$raw_shap_colsums
+    explainer_og$raw_shap_colsums,
+    tolerance = os_tolerance
   )
 })
 
