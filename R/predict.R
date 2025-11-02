@@ -4,12 +4,13 @@
 #' This function generates predictions from an ensemble model consisting of a GLM
 #' and an XGBoost model.
 #'
-#' @param model An object of class 'iblm'. This should be output by `train_iblm_xgb()`
-#' @param data A data frame or matrix containing the predictor variables for
+#' @param object An object of class 'iblm'. This should be output by `train_iblm_xgb()`
+#' @param newdata A data frame or matrix containing the predictor variables for
 #'   which predictions are desired. Must have the same structure as the
-#'   training data used to fit the ensemble model.
+#'   training data used to fit the 'iblm' model.
 #' @param trim Numeric value for post-hoc truncating of XGBoost predictions. If \code{NA} (default) then no trimming is applied.
 #' @param type string, defines the type argument used in GLM/Booster Currently only "response" is supported
+#' @param ... additional arguments affecting the predictions produced.
 #'
 #'
 #' @return A numeric vector of ensemble predictions computed as the element-wise
@@ -47,9 +48,9 @@
 #'
 #' @export
 #'
-predict.iblm <- function(model, data, trim = NA_real_, type = "response") {
+predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ...) {
 
-  check_iblm_model(model)
+  check_iblm_model(object)
 
   if (type != "response") {
     cli::cli_abort(c(
@@ -58,11 +59,11 @@ predict.iblm <- function(model, data, trim = NA_real_, type = "response") {
     ))
   }
 
-  response_var <- all.vars(model$glm_model$formula)[1]
-  data <- data |> dplyr::select(-dplyr::any_of(response_var))
-  relationship <- model["relationship"]
-  glm <- unname(stats::predict(model$glm_model, data, type = type))
-  booster <- stats::predict(model$booster_model, xgboost::xgb.DMatrix(data.matrix(data)), type = type)
+  response_var <- all.vars(object$glm_model$formula)[1]
+  data <- newdata |> dplyr::select(-dplyr::any_of(response_var))
+  relationship <- object["relationship"]
+  glm <- unname(stats::predict(object$glm_model, data, type = type))
+  booster <- stats::predict(object$booster_model, xgboost::xgb.DMatrix(data.matrix(data)), type = type)
 
   if (!is.na(trim)) {
     truncate <- function(x) {

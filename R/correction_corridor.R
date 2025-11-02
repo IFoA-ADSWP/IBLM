@@ -55,8 +55,8 @@ correction_corridor <- function(iblm_model,
   # Generate predictions for each trim value
   df_list <- lapply(trim_vals, function(trim_val) {
     iblm_pred <- stats::predict(
-      model = iblm_model,
-      data = df,
+      object = iblm_model,
+      newdata = df,
       trim = trim_val
     )
 

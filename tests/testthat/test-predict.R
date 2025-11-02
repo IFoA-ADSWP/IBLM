@@ -46,7 +46,7 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
     exp() |>
     unname()
 
-  predict_w_predict <- predict(IBLM, data = splits$test)
+  predict_w_predict <- predict(IBLM, splits$test)
 
   prediction_max_difference <- max(abs(predict_w_beta_coeff / predict_w_predict - 1))
 

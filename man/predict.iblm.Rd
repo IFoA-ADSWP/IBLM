@@ -4,18 +4,20 @@
 \alias{predict.iblm}
 \title{Predict Method for IBLM}
 \usage{
-\method{predict}{iblm}(model, data, trim = NA_real_, type = "response")
+\method{predict}{iblm}(object, newdata, trim = NA_real_, type = "response", ...)
 }
 \arguments{
-\item{model}{An object of class 'iblm'. This should be output by `train_iblm_xgb()`}
+\item{object}{An object of class 'iblm'. This should be output by `train_iblm_xgb()`}
 
-\item{data}{A data frame or matrix containing the predictor variables for
+\item{newdata}{A data frame or matrix containing the predictor variables for
 which predictions are desired. Must have the same structure as the
-training data used to fit the ensemble model.}
+training data used to fit the 'iblm' model.}
 
 \item{trim}{Numeric value for post-hoc truncating of XGBoost predictions. If \code{NA} (default) then no trimming is applied.}
 
 \item{type}{string, defines the type argument used in GLM/Booster Currently only "response" is supported}
+
+\item{...}{additional arguments affecting the predictions produced.}
 }
 \value{
 A numeric vector of ensemble predictions computed as the element-wise
