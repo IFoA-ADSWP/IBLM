@@ -44,10 +44,7 @@ For each of these, the key data arguments (e.g. data, shap, iblm_model) are alre
 When calling these functions output from `explain_iblm()` only key settings like variable names, colours...etc need populating.
 }
 \examples{
-df_list <- freMTPL2freq |>
-  head(10000) |>
-  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-  split_into_train_validate_test()
+df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
   df_list,

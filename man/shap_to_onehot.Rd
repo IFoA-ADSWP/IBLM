@@ -20,10 +20,7 @@ A data frame where SHAP values are in wide format for categorical variables. Col
 Transforms categorical variables in a data frame into one-hot encoded format. Renames "BIAS" to lowercase.
 }
 \examples{
-df_list <- freMTPL2freq |>
-  head(10000) |>
-  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-  split_into_train_validate_test()
+df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
   df_list,

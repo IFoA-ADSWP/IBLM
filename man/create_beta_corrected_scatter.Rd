@@ -23,10 +23,7 @@ Factory function that returns a plotting function with data pre-configured.
 \examples{
 # ------- prepare iblm objects required -------
 
-df_list <- freMTPL2freq |>
-  head(10000) |>
-  dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-  split_into_train_validate_test()
+df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
   df_list,

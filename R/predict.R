@@ -29,10 +29,7 @@
 #' At this point, only an iblm model with a "booster_model" object of class `xgb.Booster` is supported
 #'
 #' @examples
-#' data <- freMTPL2freq |>
-#'   head(10000) |>
-#'   dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-#'   split_into_train_validate_test()
+#' data <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   data,
