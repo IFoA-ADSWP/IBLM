@@ -54,7 +54,19 @@ The "booster" model is trained on:
 <span>  <span class="va">df_list</span>,</span>
 <span>  <span class="va">response_var</span>,</span>
 <span>  family <span class="op">=</span> <span class="st">"poisson"</span>,</span>
-<span>  xgb_additional_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>nrounds <span class="op">=</span> <span class="fl">1000</span>, verbose <span class="op">=</span> <span class="fl">0</span>, early_stopping_rounds <span class="op">=</span> <span class="fl">25</span><span class="op">)</span>,</span>
+<span>  params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  nrounds <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  obj <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  feval <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  print_every_n <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>  early_stopping_rounds <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>  maximize <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  save_period <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  save_name <span class="op">=</span> <span class="st">"xgboost.model"</span>,</span>
+<span>  xgb_model <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  callbacks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span>,</span>
 <span>  strip_glm <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -79,8 +91,14 @@ column in the datasets. The string MUST appear in both `df_list$train` and `df_l
 Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.</p></dd>
 
 
-<dt id="arg-xgb-additional-params">xgb_additional_params<a class="anchor" aria-label="anchor" href="#arg-xgb-additional-params"></a></dt>
-<dd><p>Named list of additional parameters to pass to <a href="https://rdrr.io/pkg/xgboost/man/xgb.train.html" class="external-link">xgb.train</a></p></dd>
+<dt id="arg-params">params<a class="anchor" aria-label="anchor" href="#arg-params"></a></dt>
+<dd><p>Named list of additional parameters to pass to <a href="https://rdrr.io/pkg/xgboost/man/xgb.train.html" class="external-link">xgb.train</a>.
+Note that train_iblm_xgb will select "objective" and "base_score" for you
+depending on `family` (see details section). However you may overwrite these (do so with caution)</p></dd>
+
+
+<dt id="arg-nrounds-obj-feval-verbose-print-every-n-early-stopping-rounds-maximize-save-period-save-name-xgb-model-callbacks-">nrounds, obj, feval, verbose, print_every_n, early_stopping_rounds, maximize, save_period, save_name, xgb_model, callbacks, ...<a class="anchor" aria-label="anchor" href="#arg-nrounds-obj-feval-verbose-print-every-n-early-stopping-rounds-maximize-save-period-save-name-xgb-model-callbacks-"></a></dt>
+<dd><p>These are passed directly to <a href="https://rdrr.io/pkg/xgboost/man/xgb.train.html" class="external-link">xgb.train</a></p></dd>
 
 
 <dt id="arg-strip-glm">strip_glm<a class="anchor" aria-label="anchor" href="#arg-strip-glm"></a></dt>
@@ -118,7 +136,7 @@ Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. 
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family.</p>
-<p>Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `xgb_additional_params`</p>
+<p>Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `params`</p>
 
 <p>For "poisson" family the link function is 'log' and XGBoost is configured with:</p><ul><li><p>objective: "count:poisson"</p></li>
 <li><p>base_score: 1</p></li>
