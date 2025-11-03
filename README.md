@@ -45,7 +45,7 @@ Here’s a minimal example to train and explain an IBLM:
 ```r
 library(IBLM)
 
-df_list <- freMTPL2freq |>
+df_list <- freMTPLmini  |>
   split_into_train_validate_test()
 
 iblm_model <- train_iblm_xgb(

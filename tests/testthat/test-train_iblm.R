@@ -30,9 +30,7 @@ testthat::test_that("test against Karol original script", {
 
   # ============================ Input data =====================
 
-  withr::with_seed(1, {
-    data <- freMTPL2freq |> split_into_train_validate_test()
-  })
+  data <- freMTPL2freq |> split_into_train_validate_test(seed = 1)
 
   # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script

@@ -12,9 +12,8 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
 
   # ============================ Input data =====================
 
-  withr::with_seed(1, {
-    data <- freMTPL2freq |> dplyr::slice_sample(n=50000) |>  split_into_train_validate_test()
-  })
+  data <- freMTPLmini |>  split_into_train_validate_test(seed = 1)
+
 
   # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script

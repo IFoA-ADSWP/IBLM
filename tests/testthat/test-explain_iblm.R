@@ -18,6 +18,7 @@ testthat::test_that("test against Karol original script", {
 
   load(temp)
 
+
   freMTPL2freq <- freMTPL2freq |>
     dplyr::mutate(
       ClaimRate = ClaimNb / Exposure,
@@ -27,9 +28,8 @@ testthat::test_that("test against Karol original script", {
 
   # ============================ Input data =====================
 
-  withr::with_seed(1, {
-    data <- freMTPL2freq |> split_into_train_validate_test()
-  })
+  data <- freMTPL2freq |> split_into_train_validate_test(seed = 1)
+
 
   # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
@@ -201,13 +201,9 @@ testthat::test_that("test against Karol original script", {
 testthat::test_that("test explain completes when one categorical and one continuous", {
   vars <- c("VehBrand", "VehPower", "ClaimRate")
 
-  withr::with_seed(1, {
-    splits <- freMTPL2freq |>
+    splits <- freMTPLmini  |>
       dplyr::select(dplyr::all_of(vars)) |>
-      dplyr::slice_sample(n = 10000) |>
-      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-      split_into_train_validate_test()
-  })
+      split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
@@ -227,15 +223,12 @@ testthat::test_that("test explain completes when one categorical and one continu
 })
 
 testthat::test_that("test explain completes when categorical only", {
-  vars <- c("VehBrand", "VehGas", "Area", "Region", "ClaimRate")
+  vars <- c("VehBrand", "VehGas", "Area", "ClaimRate")
 
-  withr::with_seed(1, {
-    splits <- freMTPL2freq |>
+
+    splits <- freMTPLmini  |>
       dplyr::select(dplyr::all_of(vars)) |>
-      dplyr::slice_sample(n = 10000) |>
-      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-      split_into_train_validate_test()
-  })
+      split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
@@ -256,15 +249,11 @@ testthat::test_that("test explain completes when categorical only", {
 
 testthat::test_that("test explain completes when continuous only", {
 
-  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "Density", "ClaimRate")
+  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "ClaimRate")
 
-  withr::with_seed(1, {
-    splits <- freMTPL2freq |>
-      dplyr::select(dplyr::all_of(vars)) |>
-      dplyr::slice_sample(n = 10000) |>
-      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-      split_into_train_validate_test()
-  })
+  splits <- freMTPLmini  |>
+    dplyr::select(dplyr::all_of(vars)) |>
+    split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
@@ -286,15 +275,13 @@ testthat::test_that("test explain completes when continuous only", {
 
 testthat::test_that("test explain completes when logical field", {
 
-  vars <- names(freMTPL2freq)
+  vars <- names(freMTPLmini)
 
-  withr::with_seed(1, {
-    splits <- freMTPL2freq |>
-      dplyr::mutate(dummy = sample(c(TRUE, FALSE), size = nrow(freMTPL2freq), replace = TRUE)) |>
-      dplyr::slice_sample(n = 10000) |>
-      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-      split_into_train_validate_test()
-  })
+
+  splits <- freMTPLmini  |>
+    dplyr::select(dplyr::all_of(vars)) |>
+    dplyr::mutate(dummy = sample(c(TRUE, FALSE), size = nrow(freMTPLmini), replace = TRUE)) |>
+    split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
@@ -317,16 +304,12 @@ testthat::test_that("test explain completes when logical field", {
 
 testthat::test_that("test explain completes when no reference/zero levels", {
 
-  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "Density", "ClaimRate")
+  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "ClaimRate")
 
-  withr::with_seed(1, {
-    splits <- freMTPL2freq |>
-      dplyr::select(dplyr::all_of(vars)) |>
-      dplyr::slice_sample(n = 10000) |>
-      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-      dplyr::mutate(dplyr::across(-dplyr::all_of("ClaimRate"), \(x) pmax(x, 1))) |>
-      split_into_train_validate_test()
-  })
+  splits <- freMTPLmini  |>
+    dplyr::select(dplyr::all_of(vars)) |>
+    dplyr::mutate(dplyr::across(-dplyr::all_of("ClaimRate"), \(x) pmax(x, 1))) |>
+    split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
@@ -364,13 +347,8 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
 
   # ============================ Input data =====================
 
-  withr::with_seed(1, {
-    data <- freMTPL2freq |> dplyr::slice_sample(n=50000) |>  split_into_train_validate_test()
-  })
-
-  # changing "ClaimRate" to round to integer values. This is to avoid warnings in the test environment.
-  splits <- data |>
-    purrr::modify(.f = function(x) dplyr::mutate(x, ClaimRate = round(ClaimRate)))
+  splits <- freMTPLmini |>
+    split_into_train_validate_test(seed = 1)
 
   # ============================ IBLM package process =====================
 
@@ -421,14 +399,10 @@ testthat::test_that("test gaussian can run", {
 
   # note this is just a crude test that it will run. should probably expand with numerical reconciliations
 
-  vars <- names(freMTPL2freq)
+  vars <- names(freMTPLmini)
 
-  withr::with_seed(1, {
-    splits <- freMTPL2freq |>
-      dplyr::slice_sample(n = 50000) |>
-      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-      split_into_train_validate_test()
-  })
+  splits <- freMTPLmini |>
+    split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
@@ -455,14 +429,12 @@ testthat::test_that("test gamma can run", {
 
   # note this is just a crude test that it will run. should probably expand with numerical reconciliations
 
-  vars <- names(freMTPL2freq)
+  vars <- names(freMTPLmini)
 
-  withr::with_seed(1, {
-    splits <- freMTPL2freq |>
-      dplyr::slice_sample(n = 50000) |>
-      dplyr::mutate(ClaimRate = round(ClaimRate) |> pmax(0.1)) |> # set min. ClaimRate to 0.1 as pre-requisite for gamma dist is x>0
-      split_into_train_validate_test()
-  })
+  splits <- freMTPLmini |>
+    dplyr::mutate(ClaimRate = round(ClaimRate) |> pmax(0.1)) |> # set min. ClaimRate to 0.1 as pre-requisite for gamma dist is x>0
+    split_into_train_validate_test(seed = 1)
+
 
   IBLM <- train_iblm_xgb(
     splits,
@@ -489,14 +461,10 @@ testthat::test_that("test tweedie can run", {
 
   # note this is just a crude test that it will run. should probably expand with numerical reconciliations
 
-  vars <- names(freMTPL2freq)
+  vars <- names(freMTPLmini)
 
-  withr::with_seed(1, {
-    splits <- freMTPL2freq |>
-      dplyr::slice_sample(n = 50000) |>
-      dplyr::mutate(ClaimRate = round(ClaimRate)) |>
-      split_into_train_validate_test()
-  })
+  splits <- freMTPLmini |>
+    split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,

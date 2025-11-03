@@ -37,7 +37,7 @@ reference:
   - get_pinball_scores
 - title: Data
   contents:
-  - freMTPL2freq
+  - freMTPLmini
   - get_freMTPL2freq
 - title: Other
 - subtitle: Prepare

@@ -110,9 +110,8 @@ testthat::test_that("test against Karol paper", {
 
   # ============================ Input data =====================
 
-  withr::with_seed(1, {
-    data <- freMTPL2freq |> split_into_train_validate_test()
-  })
+  data <- freMTPL2freq |> split_into_train_validate_test(seed = 1)
+
 
   # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
@@ -184,9 +183,7 @@ testthat::test_that("test results are same for character or factor fields", {
 
   # ============================ Input data =====================
 
-  withr::with_seed(1, {
-    data <- freMTPL2freq |> dplyr::slice_sample(n=50000) |> split_into_train_validate_test() # partial data to speed up test
-  })
+  data <- freMTPLmini |> head(25000) |> split_into_train_validate_test(seed = 1)
 
   # get data where categoricals are factors
   splits_fct <- data |>
