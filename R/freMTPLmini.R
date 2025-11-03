@@ -7,7 +7,7 @@
 #' This is a "mini" subset of the CASdatasets `freMTPL2freq` data, with some manipulation (see details)
 #'
 #'
-#' @format A data frame with 50,000 rows and 10 variables:
+#' @format A data frame with 25,000 rows and 8 variables:
 #' \describe{
 #'   \item{ClaimRate}{Number of claims made, at an annualised rate, rounded (integer)}
 #'   \item{VehPower}{Vehicle power rating or engine horsepower category (integer)}
@@ -19,10 +19,6 @@
 #'   \item{VehGas}{Type of fuel used by the vehicle (factor with levels: Regular, Diesel)}
 #'   \item{Area}{Area classification where the policy holder resides
 #'     (factor with levels A through F)}
-#'   \item{Density}{Population density of the area where the policy holder lives
-#'     (integer, inhabitants per square kilometer)}
-#'   \item{Region}{French administrative region where the policy holder resides
-#'     (factor with regions like Rhone-Alpes, Picardie, Aquitaine, etc.)}
 #' }
 #'
 #' @details
@@ -31,7 +27,7 @@
 #'   \itemize{
 #'     \item \code{ClaimRate}: Converted to ClaimNb per Exposure, winsorized at the 99.9th percentile, and rounded.
 #'     \item \code{VehAge}: Ceiling of 50 years applied
-#'     \item All factor variables converted to character type
+#'     \item Dropped columns: Region, Density, Exposure, ClaimNb, IDpol
 #'   }
 #'
 #' @source

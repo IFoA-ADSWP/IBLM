@@ -21,9 +21,9 @@ freMTPLmini <- freMTPL2freq |>
   ) |>
   # turn any character fields into factors, should help keep package memory lower
   dplyr::mutate(dplyr::across(dplyr::where(is.character), function(field) factor(field))) |>
-  dplyr::select(-dplyr::all_of(c("IDpol", "Exposure", "ClaimNb"))) |>
+  dplyr::select(-dplyr::all_of(c("IDpol", "Exposure", "ClaimNb", "Density", "Region"))) |>
   dplyr::mutate(ClaimRate = round(ClaimRate) |> as.integer()) |>
-  dplyr::slice_sample(n = 50000) %>%
+  dplyr::slice_sample(n = 25000) %>%
   withr::with_seed(seed_no, .) |>
   tibble::as_tibble()
 
