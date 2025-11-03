@@ -4,17 +4,14 @@
 \alias{train_xgb_as_per_iblm}
 \title{Train XGBoost Model Using the IBLM Model Parameters}
 \usage{
-train_xgb_as_per_iblm(
-  iblm_model,
-  xgb_additional_params = list(nrounds = 1000, verbose = 0, early_stopping_rounds = 25)
-)
+train_xgb_as_per_iblm(iblm_model, ...)
 }
 \arguments{
 \item{iblm_model}{Ensemble model object of class "iblm" containing GLM and
 XGBoost model components. Also contains data that was used to train it.}
 
-\item{xgb_additional_params}{Named list of XGBoost parameters. Defaults:
-\code{nrounds = 1000}, \code{verbose = 0}, \code{early_stopping_rounds = 25}.}
+\item{...}{optional arguments to insert into xgb.train().
+Note this will cause deviation from the settings used for training `iblm_model`}
 }
 \value{
 Trained XGBoost model object (class "xgb.Booster").
@@ -26,13 +23,35 @@ This is a convenient way to fit an XGBoost model for direct comparison with a fi
 \examples{
 df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
 
-iblm_model <- train_iblm_xgb(
+# training with plenty of rounds allowed
+iblm_model1 <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
-  family = "poisson"
+  family = "poisson",
+  max_depth = 6,
+  nrounds = 1000
 )
 
-xgb <- train_xgb_as_per_iblm(iblm_model)
+xgb1 <- train_xgb_as_per_iblm(iblm_model1)
+
+# training with severe restrictions (expected poorer results)
+iblm_model2 <- train_iblm_xgb(
+  df_list,
+  response_var = "ClaimRate",
+  family = "poisson",
+  max_depth = 1,
+  nrounds = 5
+)
+
+xgb2 <- train_xgb_as_per_iblm(iblm_model2)
+
+# comparison shows the poor training mirrored in second set:
+get_pinball_scores(
+  df_list$test,
+  iblm_model1,
+  trim = NA_real_,
+  additional_models = list(iblm2 = iblm_model2, xgb1 = xgb1, xgb2 = xgb2)
+)
 
 }
 \seealso{

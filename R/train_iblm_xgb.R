@@ -326,6 +326,10 @@ train_iblm_xgb <- function(df_list,
   iblm_model$cat_levels <- cat_levels
   iblm_model$coeff_names <- coeff_names
 
+  # ==================== Add the parameters used on booster  ====================
+
+  iblm_model$xgb_params <- drop_xgb_data_params(xgb_all_params)
+
   class(iblm_model) <- "iblm"
 
   return(iblm_model)
