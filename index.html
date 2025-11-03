@@ -98,7 +98,7 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ifoa-adswp.github.io/IBLM/">IBLM</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">df_list</span> <span class="op">&lt;-</span> <span class="va">freMTPL2freq</span> <span class="op">|&gt;</span></span>
+<span><span class="va">df_list</span> <span class="op">&lt;-</span> <span class="va">freMTPLmini</span>  <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/split_into_train_validate_test.html">split_into_train_validate_test</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">iblm_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/train_iblm_xgb.html">train_iblm_xgb</a></span><span class="op">(</span></span>
