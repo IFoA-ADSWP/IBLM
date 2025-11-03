@@ -1,0 +1,73 @@
+
+#' Get French Motor Third-Party Liability Frequency Dataset
+#'
+#' Downloads the French Motor Third-Party Liability (freMTPL2freq)
+#' dataset from the CASdatasets GitHub repository, and apply minor
+#' transformations.
+#'
+#' @return A data frame containing the following columns:
+#'   \describe{
+#'     \item{ClaimNb}{Number of claims per year.}
+#'     \item{VehPower}{The power of the car (ordered categorical).}
+#'     \item{VehAge}{The vehicle age in years, capped at 50.}
+#'     \item{DrivAge}{The driver age in years (minimum 18, the legal driving age
+#'       in France).}
+#'     \item{BonusMalus}{Bonus/malus coefficient, ranging from 50 to 350. Values
+#'       below 100 indicate a bonus (discount), while values above 100 indicate
+#'       a malus (surcharge) in the French insurance system.}
+#'     \item{VehBrand}{The car brand (categorical, with unknown/proprietary
+#'       category labels).}
+#'     \item{VehGas}{The car fuel type: "Diesel" or "Regular".}
+#'     \item{Area}{The density classification of the city community where the
+#'       driver lives, ranging from "A" (rural area) to "F" (urban centre).}
+#'     \item{Density}{The population density (inhabitants per square kilometer)
+#'       of the city where the driver lives.}
+#'     \item{Region}{The policy region in France, based on the 1970-2015
+#'       administrative classification.}
+#'   }
+#'
+#' @details
+#' The function performs the following modifications to the sourced:
+#'   \itemize{
+#'     \item \code{ClaimNb}: Converted to ClaimNb per Exposure, and winsorized at the 99.9th percentile
+#'     \item \code{VehAge}: Ceiling of 50 years applied
+#'     \item All factor variables converted to character type
+#'   }
+#'
+#' @note This function requires an internet connection to download the data.
+#'
+#' @references
+#' Dutang, C. CASdatasets: Insurance datasets.
+#' \url{https://github.com/dutangc/CASdatasets/raw/c49cbbb37235fc49616cac8ccac32e1491cdc619/data/freMTPL2freq.rda}
+#'
+#' @examples
+#' \dontrun{
+#' # Load the preprocessed dataset
+#' freMTPL2freq <- get_freMTPL2freq()
+#'
+#' freMTPL2freq |> dplyr::glimpse()
+#' }
+#'
+#' @export
+get_freMTPL2freq <- function() {
+
+commit <- "c49cbbb37235fc49616cac8ccac32e1491cdc619"  # <- use this commit
+
+url <- paste0("https://github.com/dutangc/CASdatasets/raw/", commit, "/data/freMTPL2freq.rda")
+
+temp <- tempfile()
+
+utils::download.file(url, temp)
+
+load(temp)
+
+freMTPL2freq <- freMTPL2freq |>
+  dplyr::mutate(ClaimNb = .data$ClaimNb / .data$Exposure) |>
+  dplyr::mutate(ClaimNb = pmin(.data$ClaimNb, stats::quantile(.data$ClaimNb, 0.999))) |>  # <-- kept in to help rec with original paper
+  dplyr::mutate(VehAge = pmin(.data$VehAge,50)) |>  # <-- kept in to help rec with original paper
+  dplyr::select(-dplyr::all_of(c("IDpol", "Exposure"))) |>
+  dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field)))
+
+return(freMTPL2freq)
+
+}

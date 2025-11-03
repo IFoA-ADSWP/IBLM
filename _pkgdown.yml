@@ -36,7 +36,9 @@ reference:
   - predict.iblm
   - get_pinball_scores
 - title: Data
-  contents: freMTPL2freq
+  contents:
+  - freMTPL2freq
+  - get_freMTPL2freq
 - title: Other
 - subtitle: Prepare
   contents: split_into_train_validate_test
