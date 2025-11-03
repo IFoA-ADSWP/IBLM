@@ -8,7 +8,19 @@ train_iblm_xgb(
   df_list,
   response_var,
   family = "poisson",
-  xgb_additional_params = list(nrounds = 1000, verbose = 0, early_stopping_rounds = 25),
+  params = list(),
+  nrounds = 1000,
+  obj = NULL,
+  feval = NULL,
+  verbose = 0,
+  print_every_n = 1L,
+  early_stopping_rounds = 25,
+  maximize = NULL,
+  save_period = NULL,
+  save_name = "xgboost.model",
+  xgb_model = NULL,
+  callbacks = list(),
+  ...,
   strip_glm = TRUE
 )
 }
@@ -23,7 +35,11 @@ column in the datasets. The string MUST appear in both `df_list$train` and `df_l
 \item{family}{Character string specifying the distributional family for the model.
 Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.}
 
-\item{xgb_additional_params}{Named list of additional parameters to pass to \link[xgboost]{xgb.train}}
+\item{params}{Named list of additional parameters to pass to \link[xgboost]{xgb.train}.
+Note that \link{train_iblm_xgb} will select "objective" and "base_score" for you
+depending on `family` (see details section). However you may overwrite these (do so with caution)}
+
+\item{nrounds, obj, feval, verbose, print_every_n, early_stopping_rounds, maximize, save_period, save_name, xgb_model, callbacks, ...}{These are passed directly to \link[xgboost]{xgb.train}}
 
 \item{strip_glm}{TRUE/FALSE, whether to strip superfluous data from the `glm_model` object saved within `iblm` class that is output. Only serves to reduce memory constraints.}
 }
@@ -50,7 +66,7 @@ The "booster" model is trained on:
 \details{
 The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family.
 
-Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `xgb_additional_params`
+Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `params`
 
 
 For "poisson" family the link function is 'log' and XGBoost is configured with:

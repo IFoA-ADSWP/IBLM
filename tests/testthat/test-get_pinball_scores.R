@@ -133,7 +133,6 @@ testthat::test_that("test against Karol paper", {
     response_var = "ClaimNb",
     family = "poisson",
     # additional param settings required for rec...
-    xgb_additional_params = list(
       params = list(
         base_score = 0.5,
         objective = "count:poisson"
@@ -141,7 +140,6 @@ testthat::test_that("test against Karol paper", {
       nrounds = 1000,
       verbose = 0,
       early_stopping_rounds = 25
-      )
   )
   )
 
