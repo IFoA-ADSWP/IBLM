@@ -4,13 +4,12 @@
 #' A dataset containing information about French motor insurance policies and claims,
 #' commonly used for actuarial modeling and risk assessment studies.
 #'
-#' **IMPORTANT**: This dataset is based on commit "c49cbbb37235fc49616cac8ccac32e1491cdc619" of CASdatasets
-#' There are multiple versions of this dataset circulating online, so be weary when comparing to other versions of `freMTPL2freq`
+#' This is a "mini" subset of the CASdatasets `freMTPL2freq` data, with some manipulation (see details)
 #'
 #'
-#' @format A data frame with 677,991 rows and 10 variables:
+#' @format A data frame with 50,000 rows and 10 variables:
 #' \describe{
-#'   \item{ClaimRate}{Number of claims made, at an annualised rate (numeric)}
+#'   \item{ClaimRate}{Number of claims made, at an annualised rate, rounded (integer)}
 #'   \item{VehPower}{Vehicle power rating or engine horsepower category (integer)}
 #'   \item{VehAge}{Age of the vehicle in years (integer)}
 #'   \item{DrivAge}{Age of the driver in years (integer)}
@@ -27,20 +26,19 @@
 #' }
 #'
 #' @details
-#' This dataset is frequently used in actuarial science and insurance analytics
-#' for modeling claim frequency and severity. The ClaimRate variable represents
-#' the response (i.e. number of claims, annualised) while the other variables serve as
-#' potential predictors for risk assessment.
-#'
-#' The BonusMalus system is a characteristic feature of French motor insurance,
-#' where coefficients typically range from 50 (best) to over 100 (worst),
-#' reflecting the policyholder's claims history.
+#' The dataset is a random sample of 50,000 records from `freMTPL2freq` from the `CASdatasets` pacakge.
+#' Other modifications applied are:
+#'   \itemize{
+#'     \item \code{ClaimRate}: Converted to ClaimNb per Exposure, winsorized at the 99.9th percentile, and rounded.
+#'     \item \code{VehAge}: Ceiling of 50 years applied
+#'     \item All factor variables converted to character type
+#'   }
 #'
 #' @source
-#' ['https://github.com/dutangc/CASdatasets/blob/master/data/freMTPL2freq.rda']
+#' ['https://github.com/dutangc/CASdatasets/raw/c49cbbb37235fc49616cac8ccac32e1491cdc619/data/freMTPL2freq.rda']
 #'
 #' @examples
-#' head(freMTPL2freq)
+#' head(freMTPLmini)
 #'
 #' @keywords datasets insurance actuarial
-"freMTPL2freq"
+"freMTPLmini"
