@@ -62,7 +62,7 @@ utils::download.file(url, temp)
 load(temp)
 
 freMTPL2freq <- freMTPL2freq |>
-  dplyr::mutate(ClaimNb = as.numeric(ClaimNb)) |>
+  dplyr::mutate(ClaimNb = as.numeric(.data$ClaimNb)) |>
   dplyr::mutate(ClaimNb = .data$ClaimNb / .data$Exposure) |>
   dplyr::mutate(ClaimNb = pmin(.data$ClaimNb, stats::quantile(.data$ClaimNb, 0.999))) |>  # <-- kept in to help rec with original paper
   dplyr::mutate(VehAge = pmin(.data$VehAge,50)) |>  # <-- kept in to help rec with original paper
