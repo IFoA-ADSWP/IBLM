@@ -1,5 +1,5 @@
 
-#' Get French Motor Third-Party Liability Frequency Dataset
+#' Load French Motor Third-Party Liability Frequency Dataset
 #'
 #' Downloads the French Motor Third-Party Liability (freMTPL2freq)
 #' dataset from the CASdatasets GitHub repository, and apply minor
@@ -43,13 +43,13 @@
 #' @examples
 #' \dontrun{
 #' # Load the preprocessed dataset
-#' freMTPL2freq <- get_freMTPL2freq()
+#' freMTPL2freq <- load_freMTPL2freq()
 #'
 #' freMTPL2freq |> dplyr::glimpse()
 #' }
 #'
 #' @export
-get_freMTPL2freq <- function() {
+load_freMTPL2freq <- function() {
 
 commit <- "c49cbbb37235fc49616cac8ccac32e1491cdc619"  # <- use this commit
 

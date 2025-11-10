@@ -38,7 +38,7 @@ reference:
 - title: Data
   contents:
   - freMTPLmini
-  - get_freMTPL2freq
+  - load_freMTPL2freq
 - title: Other
 - subtitle: Prepare
   contents: split_into_train_validate_test
