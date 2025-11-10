@@ -84,43 +84,9 @@ testthat::test_that("test against Karol paper", {
   # test takes too long for CRAN
   testthat::skip_on_cran()
 
-
-  # ============================ Download data =====================
-
-  # download the correct version of freMTPL2freq dataset to complete the rec
-
-  commit <- "c49cbbb37235fc49616cac8ccac32e1491cdc619"  # <- use this commit
-
-  url <- paste0("https://github.com/dutangc/CASdatasets/raw/", commit, "/data/freMTPL2freq.rda")
-
-  temp <- tempfile()
-
-  download.file(url, temp)
-
-  load(temp)
-
-  freMTPL2freq <- freMTPL2freq |>
-    dplyr::mutate(
-      ClaimRate = ClaimNb / Exposure,
-      ClaimRate = pmin(ClaimRate, quantile(ClaimRate, 0.999)), # <-- kept in to help rec with original paper
-      VehAge = pmin(VehAge,50) # <-- kept in to help rec with original paper
-    ) |>
-    dplyr::select(-dplyr::all_of(c("IDpol", "Exposure", "ClaimNb")))
-
-
   # ============================ Input data =====================
 
-  data <- freMTPL2freq |> split_into_train_validate_test(seed = 1)
-
-
-  # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
-  # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
-  # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
-  splits <- data |>
-    purrr::modify(.f = function(x) x |> dplyr::select(-dplyr::any_of(c("IDpol", "Exposure")))) |>
-    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field)))) |>
-    purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate"))
-    #purrr::modify(.f = function(x) dplyr::mutate(x, ClaimNb = round(ClaimNb)))
+  splits <- load_freMTPL2freq() |> split_into_train_validate_test(seed = 1)
 
   # ============================ IBLM package process =====================
 
