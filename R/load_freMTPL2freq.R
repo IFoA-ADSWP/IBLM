@@ -41,7 +41,7 @@
 #' \url{https://github.com/dutangc/CASdatasets/raw/c49cbbb37235fc49616cac8ccac32e1491cdc619/data/freMTPL2freq.rda}
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Load the preprocessed dataset
 #' freMTPL2freq <- load_freMTPL2freq()
 #'

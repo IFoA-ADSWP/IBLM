@@ -45,7 +45,7 @@ The function performs the following modifications to the sourced:
 This function requires an internet connection to download the data.
 }
 \examples{
-\dontrun{
+\donttest{
 # Load the preprocessed dataset
 freMTPL2freq <- load_freMTPL2freq()
 

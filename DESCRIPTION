@@ -6,7 +6,7 @@ Authors@R: c(
     person("Karol", "Gawlowski", , "Karol.Gawlowski@citystgeorges.ac.uk", role = c("aut", "cre", "cph")),
     person("Paul", "Beard", , "paul.beard.actuarial@gmail.com", role = "aut")
   )
-Description: Implements Interpretable Boosted Linear Models (IBLMs). These combine a conventional generalized linear model (GLM) with a machine learning component, such as XGBoost. The package also provides tools within for explaining and analyzing these models.
+Description: Implements Interpretable Boosted Linear Models (IBLMs). These combine a conventional generalized linear model (GLM) with a machine learning component, such as XGBoost. The package also provides tools within for explaining and analyzing these models. For more details see Gawlowski and Wang (2025) <https://ifoa-adswp.github.io/IBLM/reference/figures/iblm_paper.pdf>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
