@@ -1,6 +1,14 @@
 url: https://ifoa-adswp.github.io/IBLM/
 template:
   bootstrap: 5
+navbar:
+  left:
+    - text: "Reference"
+      href: reference/index.html
+    - text: "Changelog"
+      href: news/index.html
+    - text: "Paper"
+      href: reference/figures/iblm_paper.pdf
 reference:
 - title: Train
 - subtitle: Train iblm
