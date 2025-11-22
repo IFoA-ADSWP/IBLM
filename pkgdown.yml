@@ -2,7 +2,7 @@ pandoc: 3.1.11
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles: {}
-last_built: 2025-11-15T20:05Z
+last_built: 2025-11-22T17:06Z
 urls:
   reference: https://ifoa-adswp.github.io/IBLM/reference
   article: https://ifoa-adswp.github.io/IBLM/articles

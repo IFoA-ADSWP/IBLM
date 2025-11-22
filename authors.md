@@ -9,7 +9,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/IFoA-ADSWP/IBLM/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/IFoA-ADSWP/IBLM/blob/v1.0.1/DESCRIPTION)
 
 Gawlowski K, Beard P (2025). *IBLM: Interpretable Boosted Linear
 Models*. R package version 1.0.1, <https://ifoa-adswp.github.io/IBLM/>.
