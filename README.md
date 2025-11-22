@@ -2,10 +2,9 @@
 
 ## Interpretable Boosted Linear Models
 
-<!-- Badge will be activated after CRAN publication
 [![CRAN status](https://www.r-pkg.org/badges/version/IBLM)](https://CRAN.R-project.org/package=IBLM)
--->
 [![R-CMD-check](https://github.com/IFoA-ADSWP/IBLM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/IFoA-ADSWP/IBLM/actions)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/IBLM)](https://CRAN.R-project.org/package=IBLM)
 
 ---
 

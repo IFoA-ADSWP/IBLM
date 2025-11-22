@@ -1,0 +1,521 @@
+---
+title: "IBLM"
+author: "Karol Gawlowski and Paul Beard"
+date: today
+engine: knitr
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-expand: true
+    code-fold: false
+    embed-resources: true
+    css: style.css
+---
+
+```{r}
+#| label: setup
+#| include: false
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  fig.align = "center"
+)
+```
+
+```{r create-tabset, include = FALSE}
+check_is_rendering <- function() {
+  Sys.getenv("QUARTO_PROJECT_ROOT") != ""
+}
+
+create_tabset_for_console <- function(x, title = NULL) {
+  if (!is.list(x) || is.null(names(x))) {
+    stop("Input must be a *named* list.")
+  }
+
+  if (!is.null(title)) {
+    cat("##", title, "{.tabset}\n\n")
+  } else {
+    cat("## Output {.tabset}\n\n")
+  }
+
+  purrr::iwalk(x, function(value, name) {
+    cat("###", name, "\n\n")
+
+    if (is.character(value)) {
+      cat(paste(value, collapse = "\n"), "\n\n")
+    } else if (is.data.frame(value)) {
+      print(gt::gt(value))
+    } else {
+      print(value)
+    }
+
+    cat("\n")
+  })
+}
+
+create_tabset_for_render <- function(list) {
+  chunk <- purrr::imap_chr(list, function(x, y) {
+    knitr::knit_child(
+      text = c(
+        "## `r y`",
+        "",
+        "```{r}",
+        "#| echo: false",
+        "x",
+        "```",
+        "",
+        ""
+      ), envir = environment(), quiet = TRUE
+    )
+  })
+  cat(chunk, sep = "\n")
+}
+
+
+create_tabset <- function(list, is_rendering = check_is_rendering()) {
+  if (is_rendering) {
+    create_tabset_for_render(list)
+  } else {
+    create_tabset_for_console(list)
+  }
+}
+```
+
+## Installation
+
+IBLM can be installed from CRAN or GitHub:
+
+```{r}
+#| label: install
+#| eval: false
+# From CRAN
+install.packages("IBLM")
+
+# From GitHub
+remotes::install_github("IFoA-ADSWP/IBLM")
+```
+
+## Introduction
+
+IBLM stands for "Interpretable Boosted Linear Model".
+
+An IBLM is essentially a hybrid model consisting of two components:
+
+1.  Generalised Linear Model (GLM) - fitted to the training data
+
+2.  Booster Model[^1] - fitted to the residuals of the training data against GLM predictions in step 1.
+
+[^1]: As of v.1.0.0 the IBLM package can only fit a booster model of type XGBoost, however we are looking to add other options in the future.
+
+The purpose of this article is to show you how to use IBLM to train, explain and predict using functions from this package.
+
+```{r}
+#| label: load-package
+library(IBLM)
+```
+
+```{r}
+#| label: other-packages
+#| echo: false
+#| message: false
+library(dplyr)
+library(ggplot2)
+library(gt)
+```
+
+## Theory
+
+The overall process for fitting and interpreting an IBLM is as follows:
+
+**Step 1: Fit a GLM**
+
+::: eq-block
+$$
+g(\mu) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_n x_n
+$$
+:::
+
+Where g(·) is the link function, μ is the expected value of the response, and β values are your standard regression coefficients.
+
+::: eq-block
+$$
+\text{GLM prediction} = g^{-1} (\beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_n x_n)
+$$
+:::
+
+Where β values are your standard regression coefficients.
+
+**Step 2: Train a Booster on GLM's Errors**
+
+Train a booster model (i.e. XGBoost) on the residuals of the actual response values against the GLM predictions.
+
+**Step 3: Use SHAP to Break Down the Booster**
+
+SHAP decomposition allows the booster's prediction to be apportioned into contributions from each feature:
+
+::: eq-block
+$$
+\text{Booster prediction} = g^{-1} (\varphi_0 + \varphi_1(x) + \varphi_2(x) + \cdots + \varphi_n(x))
+$$
+:::
+
+Where $\varphi_j(x)$ is how much feature j contributed to a specific prediction.
+
+**Step 4: Convert SHAP Values to Beta Coefficient Corrections**
+
+Transform each SHAP contribution into beta corrections:
+
+::: eq-block
+$$
+\alpha_j(x) \approx \frac{\varphi_j(x)}{x_j}
+$$
+:::
+
+There are two situations where the value of $\alpha_j(x)$ is set to zero and the value for $\varphi_j(x)$ is added to the intercept instead. This is when $x$ is a numerical variable, and the value is zero. Or, when $x$ is a categorical variable, and the value is that of the reference level[^2].
+
+[^2]: The reference level of a categorical variable is the value that is the value for which there is no coefficient in the GLM. The reference levels of an "iblm" class object can be found in `.$cat_levels$reference`
+
+::: eq-block
+$$
+\begin{aligned}
+\alpha_j(x) &= 0 \text{ when } 
+\begin{cases}
+x_j = 0 & \text{(numerical)} \\
+x_j = \text{ref} & \text{(categorical)}
+\end{cases} \\[1em]
+\alpha_0(x) &= \sum_{\substack{j: x_j = 0 \\ \text{or } x_j = \text{ref}}} \varphi_j(x)
+\end{aligned}
+$$
+:::
+
+**Step 5: Combine**
+
+The final IBLM can be interpreted as a collection of adjusted GLMs. Each row of the data will essentially have its own GLM coefficients. These are the addition of:
+
+1.  The GLM coefficients derived in step 1, which are the same for all rows
+
+2.  The beta corrections derived in step 4, which are unique to that predictor variable combination.
+
+::: eq-block
+$$
+g(\mu) = (\beta_0 + \varphi_0 + \alpha_0) + (\beta_1 + \alpha_1(x))x_1 + (\beta_2 + \alpha_2(x))x_2 + \cdots + (\beta_n + \alpha_n(x))x_n
+$$
+:::
+
+or
+
+::: eq-block
+$$
+\begin{aligned}
+g(\mu) &= \beta'_0 + \beta'_1 x_1 + \beta'_2 x_2 + \cdots + \beta'_n x_n \\
+\text{where } \beta'_j &= \beta_j + \alpha_j(x) \\
+\text{and } \beta'_0 &= \beta_0 + \varphi_0 + \alpha_0
+\end{aligned}
+$$
+:::
+
+Where h(·) is the link function, μ is the expected value of the response, and β values are your standard regression coefficients.
+
+The IBLM prediction is a combination of components.
+
+::: eq-block
+$$
+\begin{aligned}
+\text{IBLM prediction} &= g^{-1} (\beta'_0 + \beta'_1 x_1 + \beta'_2 x_2 + \cdots + \beta'_n x_n) \\[0.5em]
+&= \begin{cases}
+\text{GLM prediction} \times \text{Booster prediction} & \text{when } g = \log \\
+\text{GLM prediction} + \text{Booster prediction} & \text{when } g = \text{identity}
+\end{cases}
+\end{aligned}
+$$
+:::
+
+This preserves the familiar GLM form while incorporating the booster's superior predictive power.
+
+## Train
+
+To train an IBLM we must get our data into an appropriate format. In this document our demonstrations will be completed using French motor claims dataset `freMTPL2freq`.
+
+Data for training an IBLM model must be in the form of a list of 3 dataframes. These will be named "train", "validate" and "test". The function `split_into_train_validate_test()` can conveniently split a single dataframe into such a structure.
+
+```{r}
+#| label: data-prep
+df <- load_freMTPL2freq()
+
+df <- df |> mutate(ClaimNb = round(ClaimNb))
+
+df_list <- df |> split_into_train_validate_test(seed = 1)
+
+```
+
+There is currently only one function available to train an IBLM. This is `train_iblm_xgb()` which will use xgboost as the booster model. This performs steps 1 and 2 of the [Theory].
+
+The output is of class "iblm". Objects of this class contain two component models "glm_model" and "booster_model". There are also other items containing information (see Value section of `train_iblm_xgb()` for more information)
+
+```{r}
+#| label: train
+iblm_model <- train_iblm_xgb(
+  df_list,
+  response_var = "ClaimNb",
+  family = "poisson"
+)
+
+class(iblm_model)
+
+```
+
+For convenience, it is also possible to train an XGBoost model using the same settings that were used for you model of class "iblm". This can be useful when directly comparing (for example see [Pinball Score])
+
+```{r}
+#| label: train-xgb
+xgb_model <- train_xgb_as_per_iblm(iblm_model)
+
+# training params are the same
+identical(xgb_model$params, iblm_model$booster_model$params)
+
+```
+
+
+## Explain
+
+Code to explain and interpret an object of class "iblm" are conveniently wrapped in the `explain_iblm()` function. This performs steps 3, 4 and 5 of the [Theory]. The values derived are all based on the data fed in, which would usually be the test portion of your dataset.
+
+The following line is all that is required:
+
+```{r}
+#| label: explain-example
+ex <- explain_iblm(iblm_model, df_list$test)
+```
+
+The output object is a list containing the following items:
+
+-   **beta_corrected_scatter** Function to create scatter plots showing SHAP corrections vs variable values (see `beta_corrected_scatter()`)
+
+-   **beta_corrected_density** Function to create density plots of SHAP corrections for variables (see `beta_corrected_density()`)
+
+-   **bias_density** Function to create density plots of SHAP corrections migrated to bias (see `bias_density()`)
+
+-   **overall_correction** Function to show global correction distributions (see `overall_correction()`)
+
+-   **shap** Dataframe showing raw SHAP values of data records. These are the $\varphi_n(x)$ values described in step 3 of [Theory].
+
+-   **beta_corrections** Dataframe showing beta corrections (in wide/one-hot format) of data records.  These are the $\alpha_0(x)$ and $\alpha_j(x)$ values described in step 4 of [Theory].
+
+-   **data_beta_coeff** Dataframe showing corrected beta coefficients of data records. These are the $\beta'_0$ and $\beta'_j$ values described in step 5 of [Theory]. For categorical variables, the value corresponds to the relevant coefficient for that datapoint. 
+
+Many of the items output are functions. The functions can then be called to observe the components of the "iblm" object in different ways.
+
+### Beta Corrected Density
+
+The corrected beta coefficients (β'ⱼ) can be observed in a density plot. This plotting function allows the user to see corrected beta coefficient values for a particular variable.
+
+The density plot also shows the standard error for the original beta coefficient, fitted in the GLM model component. This can be useful to understanding the significance of the range in corrected beta coefficients.
+
+#### Numerical Variables
+
+For numerical variables, calling the function creates a single plot. Below we show examples with different numerical variables from our freMTPL2freq dataset.
+
+::: panel-tabset
+##### VehPower
+
+```{r}
+#| label: explain-beta_correct_density-VehPower
+ex$beta_corrected_density(varname = "VehPower")
+```
+
+##### VehAge
+
+```{r}
+#| label: explain-beta_correct_density-VehAge
+ex$beta_corrected_density(varname = "VehAge")
+```
+
+##### DrivAge
+
+```{r}
+#| label: explain-beta_correct_density-DrivAge
+ex$beta_corrected_density(varname = "DrivAge")
+```
+
+##### BonusMalus
+
+```{r}
+#| label: explain-beta_correct_density-BonusMalus
+ex$beta_corrected_density(varname = "BonusMalus")
+```
+:::
+
+#### Categorical Variables
+
+For categorical variables, calling the function creates a **list** of ggplot objects. A separate plot is produced for each level of that categorical variable. Note this does not include the reference level.
+
+In the example below "VehBrand" has 11 levels and produces 10 plots. Level "B1" was a reference level and does not have a beta coefficient within the GLM component. Instead, for "B1", the SHAP values are migrated to the bias (see [Bias Corrected Density]). Also in the example, we have wrapped our list using patchwork to create a single graphic for simplicity.
+
+```{r}
+#| label: beta_correct_density-cat
+#| fig-width: 12
+#| fig-height: 20
+#| fig-align: center
+
+VehBrand <- ex$beta_corrected_density(varname = "VehBrand", type = "hist")
+
+VehBrand |> patchwork::wrap_plots(ncol = 2) 
+
+```
+
+### Beta Corrected Scatter
+
+The corrected beta coefficients (β'ⱼ) can be observed in a scatter plot (or boxplot). This plotting function allows the user to see corrected beta coefficient values for a particular variable and the relationship to that particlar variable value.
+
+#### Numerical Variables
+
+When varname is set to a numerical variable, a scatter plot is produced. The example below shows the relationship of corrected beta coefficient values against driver age. Note that the original beta coefficient fitted to the GLM component is shown by a dashed black line (and stated near the top of the plot in orange). We can see that corrected beta coefficients can be materially different. There is also a smoothed trend line fitted that shows the overall pattern of correction.
+
+Note the color argument can also be set to try and observe interactions with a second variable.
+
+```{r}
+#| label: explain-beta_correct_scatter-num
+ex$beta_corrected_scatter(varname = "DrivAge", color = "VehPower")
+```
+
+#### Categorical Variables
+
+When varname is set to a categorical variable, a boxplot is produced. This shows the distribution for each individual level within that categorical variable.
+
+Note the color argument can also be set to try and observe interactions with a second variable.
+
+```{r}
+#| label: explain-beta_correct_scatter-cat
+ex$beta_corrected_scatter(varname = "VehBrand")
+```
+
+### Bias Corrected Density
+
+As described in step 4 of [Theory], some shap values cannot be translated to beta corrections. These values are instead migrated to the bias. There are two situations where this can occur:
+
+1.  Numerical variable where the value was zero for that data point.
+2.  Categorical variable where the value was the reference level for that data point.
+
+In the `bias_correction_var` plot we visualise all the individual times this occured in our test dataset. For categorical variables Area, Region, VehBrand and VehGas the total counts in the repsective facets of the histogram will equal the total occurences of the reference level for that variable. For numerical variable VehAge the total count in that facet will equal the total occurences of zero for VehAge in the dataset. Other numerical variables are dropped from the plot as they had no instances of zero value (for example DrivAge)
+
+The `bias_correction_total` plot is the cumulative sum of these components across each data point. Note any data point with no bias migration (i.e. conditions 1 and 2 do not occur) will have the standard bias adjustment and is not counted in the plot. The standard bias value, along with standard error around this, can be observed as the straight blue line and dashed orange lines either side.
+
+The bias values can be observed with `bias_density()`.
+
+::: panel-tabset
+#### Variable
+
+```{r}
+#| label: explain-bias_density-var
+bias_corrections <- ex$bias_density()
+bias_corrections$bias_correction_var
+```
+
+#### Total
+
+```{r}
+#| label: explain-bias_density-total
+bias_corrections <- ex$bias_density()
+bias_corrections$bias_correction_total
+```
+:::
+
+### Overall Correction
+
+The distribution of overall corrections across your test data can be observed. If the link function is log then the correction is a multiplier (as is the case below). If the link function is identity, then the overall correction is an addition. By default the x scale is transformed by the link function, but this can be switched off.
+
+::: panel-tabset
+#### Link Transformed
+
+```{r}
+#| label: explain-overall_correction-log
+ex$overall_correction()
+```
+
+#### Not transformed
+
+```{r}
+#| label: explain-overall_correction-identity
+ex$overall_correction(transform_x_scale_by_link = FALSE)
+```
+:::
+
+## Predict
+
+The package contains a predict method for the class "iblm". This employs the `predict()` method of both the "glm_model" and "booster_model" items within the "iblm" class object.
+
+```{r}
+#| label: predict-example
+predictions <- predict(iblm_model, df_list$test)
+```
+
+The predict method contains an option to trim. This truncates the values of the booster model predictions to prevent extreme deviation from the foundation GLM. This is explored further in [Correction Corridor].
+
+Because IBLM is essentially a collection of GLMs, and the corrected beta coefficients are derived by the `explain_iblm()` function, it is also possible to predict through linear calculation.
+
+```{r}
+#| label: predict-alternative
+coeff_multiplier <- 
+  df_list$test |>
+  select(-all_of("ClaimNb")) |>
+  mutate(
+    across(
+      all_of(iblm_model$predictor_vars$categorical),
+      ~1
+      )
+    ) |>
+  mutate(bias = 1, .before = 1)
+
+predictions_alt <- 
+  (ex$data_beta_coeff * coeff_multiplier) |>
+  rowSums() |> 
+  exp() |>
+  unname()
+
+# difference in predictions very small between two alternative methods
+range(predictions_alt / predictions - 1)
+```
+
+### Pinball Score
+
+The pinball score is a way to measure the performance of the models. It shows the increase (or decrease when negative) of predictability compared to using the training data mean instead.
+
+In the example below, we see the iblm has increased score compared to the glm. We have also added the xgb_model (derived in section [Train]) as a further comparison.
+
+
+```{r}
+#| label: pinball-alternative
+
+get_pinball_scores(
+  data = df_list$test, 
+  iblm_model = iblm_model,
+  additional_models = list(xgb = xgb_model)
+  ) |> 
+  gt() |> 
+  fmt_percent("pinball_score")
+
+```
+
+
+### Correction Corridor
+
+As described in [Predict] it is possible to trim the contribution from the booster component of an iblm object when predicting. This prevents estimates deviating too far from the GLM foundational model.  
+
+The correction corridor function applies `predict.iblm()` with different settings of trim, and plots the results. It is also possible to set the color to a variable to observe any patterns. Note that when the trim value is zero, the IBLM predictions are the same as the GLM predictions. 
+
+```{r}
+#| label: correction-corridor
+
+correction_corridor(
+  iblm_model, 
+  df_list$test,
+  trim_vals = c(0.5, 0),
+  sample_perc = 0.1,
+  color = "DrivAge")
+
+
+```
+
