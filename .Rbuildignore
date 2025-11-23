@@ -9,3 +9,5 @@
 ^\.github$
 ^CRAN-SUBMISSION$
 ^vignettes/articles$
+^doc$
+^Meta$
