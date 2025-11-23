@@ -30,7 +30,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
-    gt
+    gt,
+    patchwork
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://ifoa-adswp.github.io/IBLM/, https://github.com/IFoA-ADSWP/IBLM
