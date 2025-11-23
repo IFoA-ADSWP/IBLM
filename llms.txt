@@ -185,3 +185,8 @@ See the `LICENSE` file for full details.
 - [`check_iblm_model()`](https://ifoa-adswp.github.io/IBLM/reference/check_iblm_model.md)
   : Check Object of Class \`iblm\`
 
+# Articles
+
+### IBLM
+
+- [IBLM](https://ifoa-adswp.github.io/IBLM/articles/IBLM.md):
