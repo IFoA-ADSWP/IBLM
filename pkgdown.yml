@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   IBLM: IBLM.html
-last_built: 2025-11-23T10:43Z
+last_built: 2025-11-24T09:02Z
 urls:
   reference: https://ifoa-adswp.github.io/IBLM/reference
   article: https://ifoa-adswp.github.io/IBLM/articles

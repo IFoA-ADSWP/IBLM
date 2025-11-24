@@ -85,7 +85,7 @@ on GitHub:
 If you use **IBLM** in research or teaching, please cite it as:
 
 > Gawlowski, K. and Beard, P. (2025). *IBLM: Interpretable Boosted
-> Linear Models.* R package version 1.0.0.
+> Linear Models.* R package version 1.0.1.
 
 ------------------------------------------------------------------------
 
