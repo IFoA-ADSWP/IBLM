@@ -39,15 +39,7 @@ iblm_model <- train_iblm_xgb(
   family = "poisson"
 )
 
-shap <- stats::predict(
-  iblm_model$booster_model,
-  newdata = xgboost::xgb.DMatrix(
-    data.matrix(
-      dplyr::select(df_list$test, -dplyr::all_of(iblm_model$response_var))
-    )
-  ),
-  predcontrib = TRUE
-) |> data.frame()
+shap <- extract_booster_shap(iblm_model$booster_model, df_list$test)
 
 wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
 

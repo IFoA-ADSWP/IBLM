@@ -168,9 +168,17 @@ Score](#pinball-score))
 ``` r
 xgb_model <- train_xgb_as_per_iblm(iblm_model)
 
-# training params are the same
-identical(xgb_model$params, iblm_model$booster_model$params)
-#> [1] TRUE
+is_identical_config <- purrr::map2_lgl(
+  xgboost::xgb.config(xgb_model) |> unlist(),
+  xgboost::xgb.config(iblm_model$booster_model) |> unlist(),
+  identical
+) 
+
+# the config is mostly identical. In our example the differences are:
+is_identical_config[!is_identical_config] |> names()
+#> [1] "learner.generic_param.random_state"                   
+#> [2] "learner.generic_param.seed"                           
+#> [3] "learner.gradient_booster.gbtree_model_param.num_trees"
 ```
 
 ## Explain
@@ -453,7 +461,7 @@ predictions_alt <-
 
 # difference in predictions very small between two alternative methods
 range(predictions_alt / predictions - 1)
-#> [1] -1.036473e-06  9.208822e-07
+#> [1] -1.422597e-06  8.286781e-07
 ```
 
 ### Pinball Score
@@ -474,14 +482,18 @@ get_pinball_scores(
   ) |> 
   gt() |> 
   fmt_percent("pinball_score")
+#> Warning in FUN(X[[i]], ...): NAs introduced by coercion
+#> Warning in FUN(X[[i]], ...): NAs introduced by coercion
+#> Warning in FUN(X[[i]], ...): NAs introduced by coercion
+#> Warning in FUN(X[[i]], ...): NAs introduced by coercion
 ```
 
 | model | poisson_deviance | pinball_score |
 |-------|------------------|---------------|
 | homog | 1.407148         | 0.00%         |
 | glm   | 1.348394         | 4.18%         |
-| iblm  | 1.236061         | 12.16%        |
-| xgb   | 1.224574         | 12.97%        |
+| iblm  | 1.238663         | 11.97%        |
+| xgb   | 1.363077         | 3.13%         |
 
 ### Correction Corridor
 

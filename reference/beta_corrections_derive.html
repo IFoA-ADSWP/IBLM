@@ -99,15 +99,7 @@ This applied to categorical vars only. It is recommended to leave this setting o
 <span class="r-in"><span>  family <span class="op">=</span> <span class="st">"poisson"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">shap</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">iblm_model</span><span class="op">$</span><span class="va">booster_model</span>,</span></span>
-<span class="r-in"><span>  newdata <span class="op">=</span> <span class="fu">xgboost</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/xgboost/man/xgb.DMatrix.html" class="external-link">xgb.DMatrix</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/data.matrix.html" class="external-link">data.matrix</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>      <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">df_list</span><span class="op">$</span><span class="va">test</span>, <span class="op">-</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">iblm_model</span><span class="op">$</span><span class="va">response_var</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span>,</span></span>
-<span class="r-in"><span>  predcontrib <span class="op">=</span> <span class="cn">TRUE</span></span></span>
-<span class="r-in"><span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">shap</span> <span class="op">&lt;-</span> <span class="fu"><a href="extract_booster_shap.html">extract_booster_shap</a></span><span class="op">(</span><span class="va">iblm_model</span><span class="op">$</span><span class="va">booster_model</span>, <span class="va">df_list</span><span class="op">$</span><span class="va">test</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">wide_input_frame</span> <span class="op">&lt;-</span> <span class="fu"><a href="data_to_onehot.html">data_to_onehot</a></span><span class="op">(</span><span class="va">df_list</span><span class="op">$</span><span class="va">test</span>, <span class="va">iblm_model</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

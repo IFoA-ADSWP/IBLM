@@ -40,7 +40,7 @@ iblm_model1 <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
   family = "poisson",
-  max_depth = 6,
+  params = list(max_depth = 6),
   nrounds = 1000
 )
 
@@ -51,7 +51,7 @@ iblm_model2 <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
   family = "poisson",
-  max_depth = 1,
+  params = list(max_depth = 1),
   nrounds = 5
 )
 
@@ -69,6 +69,6 @@ get_pinball_scores(
 #> 2   glm         1.232683    0.06179691
 #> 3  iblm         1.187413    0.09625226
 #> 4 iblm2         1.211137    0.07819591
-#> 5  xgb1         1.216096    0.07442165
+#> 5  xgb1         1.275006    0.02958450
 #> 6  xgb2         1.660000   -0.26343662
 ```

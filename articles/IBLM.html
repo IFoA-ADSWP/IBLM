@@ -60,7 +60,7 @@
                         <h4 data-toc-skip class="author">Karol Gawlowski
 and Paul Beard</h4>
             
-            <h4 data-toc-skip class="date">2025-11-24</h4>
+            <h4 data-toc-skip class="date">2025-12-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/IFoA-ADSWP/IBLM/blob/main/vignettes/IBLM.Rmd" class="external-link"><code>vignettes/IBLM.Rmd</code></a></small>
       <div class="d-none name"><code>IBLM.Rmd</code></div>
@@ -244,9 +244,17 @@ be useful when directly comparing (for example see <a href="#pinball-score">Pinb
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">xgb_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_xgb_as_per_iblm.html">train_xgb_as_per_iblm</a></span><span class="op">(</span><span class="va">iblm_model</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># training params are the same</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">xgb_model</span><span class="op">$</span><span class="va">params</span>, <span class="va">iblm_model</span><span class="op">$</span><span class="va">booster_model</span><span class="op">$</span><span class="va">params</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<span><span class="va">is_identical_config</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2_lgl</a></span><span class="op">(</span></span>
+<span>  <span class="fu">xgboost</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/xgboost/man/xgb.config.html" class="external-link">xgb.config</a></span><span class="op">(</span><span class="va">xgb_model</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="fu">xgboost</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/xgboost/man/xgb.config.html" class="external-link">xgb.config</a></span><span class="op">(</span><span class="va">iblm_model</span><span class="op">$</span><span class="va">booster_model</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="va">identical</span></span>
+<span><span class="op">)</span> </span>
+<span></span>
+<span><span class="co"># the config is mostly identical. In our example the differences are:</span></span>
+<span><span class="va">is_identical_config</span><span class="op">[</span><span class="op">!</span><span class="va">is_identical_config</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "learner.generic_param.random_state"                   </span></span>
+<span><span class="co">#&gt; [2] "learner.generic_param.seed"                           </span></span>
+<span><span class="co">#&gt; [3] "learner.gradient_booster.gbtree_model_param.num_trees"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="explain">Explain<a class="anchor" aria-label="anchor" href="#explain"></a>
@@ -539,7 +547,7 @@ function, it is also possible to predict through linear calculation.</p>
 <span></span>
 <span><span class="co"># difference in predictions very small between two alternative methods</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">predictions_alt</span> <span class="op">/</span> <span class="va">predictions</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -1.036473e-06  9.208822e-07</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] -1.422597e-06  8.286781e-07</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="pinball-score">Pinball Score<a class="anchor" aria-label="anchor" href="#pinball-score"></a>
 </h3>
@@ -555,24 +563,28 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
 <span>  additional_models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>xgb <span class="op">=</span> <span class="va">xgb_model</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">gt</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">fmt_percent</span><span class="op">(</span><span class="st">"pinball_score"</span><span class="op">)</span></span></code></pre></div>
-<div id="hqbyvedrkm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#hqbyvedrkm table {
+<span>  <span class="fu">fmt_percent</span><span class="op">(</span><span class="st">"pinball_score"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in FUN(X[[i]], ...): NAs introduced by coercion</span></span>
+<span><span class="co">#&gt; Warning in FUN(X[[i]], ...): NAs introduced by coercion</span></span>
+<span><span class="co">#&gt; Warning in FUN(X[[i]], ...): NAs introduced by coercion</span></span>
+<span><span class="co">#&gt; Warning in FUN(X[[i]], ...): NAs introduced by coercion</span></span></code></pre></div>
+<div id="kmpfzvwrqh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#kmpfzvwrqh table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#hqbyvedrkm thead, #hqbyvedrkm tbody, #hqbyvedrkm tfoot, #hqbyvedrkm tr, #hqbyvedrkm td, #hqbyvedrkm th {
+#kmpfzvwrqh thead, #kmpfzvwrqh tbody, #kmpfzvwrqh tfoot, #kmpfzvwrqh tr, #kmpfzvwrqh td, #kmpfzvwrqh th {
   border-style: none;
 }
 
-#hqbyvedrkm p {
+#kmpfzvwrqh p {
   margin: 0;
   padding: 0;
 }
 
-#hqbyvedrkm .gt_table {
+#kmpfzvwrqh .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -598,12 +610,12 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-left-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_caption {
+#kmpfzvwrqh .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#hqbyvedrkm .gt_title {
+#kmpfzvwrqh .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -615,7 +627,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-bottom-width: 0;
 }
 
-#hqbyvedrkm .gt_subtitle {
+#kmpfzvwrqh .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -627,7 +639,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-top-width: 0;
 }
 
-#hqbyvedrkm .gt_heading {
+#kmpfzvwrqh .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -639,13 +651,13 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-right-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_bottom_border {
+#kmpfzvwrqh .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_col_headings {
+#kmpfzvwrqh .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -660,7 +672,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-right-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_col_heading {
+#kmpfzvwrqh .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -680,7 +692,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   overflow-x: hidden;
 }
 
-#hqbyvedrkm .gt_column_spanner_outer {
+#kmpfzvwrqh .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -692,15 +704,15 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   padding-right: 4px;
 }
 
-#hqbyvedrkm .gt_column_spanner_outer:first-child {
+#kmpfzvwrqh .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#hqbyvedrkm .gt_column_spanner_outer:last-child {
+#kmpfzvwrqh .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#hqbyvedrkm .gt_column_spanner {
+#kmpfzvwrqh .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -712,11 +724,11 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   width: 100%;
 }
 
-#hqbyvedrkm .gt_spanner_row {
+#kmpfzvwrqh .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#hqbyvedrkm .gt_group_heading {
+#kmpfzvwrqh .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -742,7 +754,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   text-align: left;
 }
 
-#hqbyvedrkm .gt_empty_group_heading {
+#kmpfzvwrqh .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -757,15 +769,15 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   vertical-align: middle;
 }
 
-#hqbyvedrkm .gt_from_md > :first-child {
+#kmpfzvwrqh .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#hqbyvedrkm .gt_from_md > :last-child {
+#kmpfzvwrqh .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#hqbyvedrkm .gt_row {
+#kmpfzvwrqh .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -784,7 +796,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   overflow-x: hidden;
 }
 
-#hqbyvedrkm .gt_stub {
+#kmpfzvwrqh .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -797,7 +809,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   padding-right: 5px;
 }
 
-#hqbyvedrkm .gt_stub_row_group {
+#kmpfzvwrqh .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -811,15 +823,15 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   vertical-align: top;
 }
 
-#hqbyvedrkm .gt_row_group_first td {
+#kmpfzvwrqh .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#hqbyvedrkm .gt_row_group_first th {
+#kmpfzvwrqh .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#hqbyvedrkm .gt_summary_row {
+#kmpfzvwrqh .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -829,16 +841,16 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   padding-right: 5px;
 }
 
-#hqbyvedrkm .gt_first_summary_row {
+#kmpfzvwrqh .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_first_summary_row.thick {
+#kmpfzvwrqh .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#hqbyvedrkm .gt_last_summary_row {
+#kmpfzvwrqh .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -848,7 +860,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-bottom-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_grand_summary_row {
+#kmpfzvwrqh .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -858,7 +870,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   padding-right: 5px;
 }
 
-#hqbyvedrkm .gt_first_grand_summary_row {
+#kmpfzvwrqh .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -868,7 +880,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-top-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_last_grand_summary_row_top {
+#kmpfzvwrqh .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -878,11 +890,11 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-bottom-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_striped {
+#kmpfzvwrqh .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#hqbyvedrkm .gt_table_body {
+#kmpfzvwrqh .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -891,7 +903,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-bottom-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_footnotes {
+#kmpfzvwrqh .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -905,7 +917,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-right-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_footnote {
+#kmpfzvwrqh .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -914,7 +926,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   padding-right: 5px;
 }
 
-#hqbyvedrkm .gt_sourcenotes {
+#kmpfzvwrqh .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -928,7 +940,7 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   border-right-color: #D3D3D3;
 }
 
-#hqbyvedrkm .gt_sourcenote {
+#kmpfzvwrqh .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -936,72 +948,72 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
   padding-right: 5px;
 }
 
-#hqbyvedrkm .gt_left {
+#kmpfzvwrqh .gt_left {
   text-align: left;
 }
 
-#hqbyvedrkm .gt_center {
+#kmpfzvwrqh .gt_center {
   text-align: center;
 }
 
-#hqbyvedrkm .gt_right {
+#kmpfzvwrqh .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#hqbyvedrkm .gt_font_normal {
+#kmpfzvwrqh .gt_font_normal {
   font-weight: normal;
 }
 
-#hqbyvedrkm .gt_font_bold {
+#kmpfzvwrqh .gt_font_bold {
   font-weight: bold;
 }
 
-#hqbyvedrkm .gt_font_italic {
+#kmpfzvwrqh .gt_font_italic {
   font-style: italic;
 }
 
-#hqbyvedrkm .gt_super {
+#kmpfzvwrqh .gt_super {
   font-size: 65%;
 }
 
-#hqbyvedrkm .gt_footnote_marks {
+#kmpfzvwrqh .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#hqbyvedrkm .gt_asterisk {
+#kmpfzvwrqh .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#hqbyvedrkm .gt_indent_1 {
+#kmpfzvwrqh .gt_indent_1 {
   text-indent: 5px;
 }
 
-#hqbyvedrkm .gt_indent_2 {
+#kmpfzvwrqh .gt_indent_2 {
   text-indent: 10px;
 }
 
-#hqbyvedrkm .gt_indent_3 {
+#kmpfzvwrqh .gt_indent_3 {
   text-indent: 15px;
 }
 
-#hqbyvedrkm .gt_indent_4 {
+#kmpfzvwrqh .gt_indent_4 {
   text-indent: 20px;
 }
 
-#hqbyvedrkm .gt_indent_5 {
+#kmpfzvwrqh .gt_indent_5 {
   text-indent: 25px;
 }
 
-#hqbyvedrkm .katex-display {
+#kmpfzvwrqh .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#hqbyvedrkm div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#kmpfzvwrqh div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1024,13 +1036,13 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
 </tr>
 <tr>
 <td headers="model" class="gt_row gt_left">iblm</td>
-<td headers="poisson_deviance" class="gt_row gt_right">1.236061</td>
-<td headers="pinball_score" class="gt_row gt_right">12.16%</td>
+<td headers="poisson_deviance" class="gt_row gt_right">1.238663</td>
+<td headers="pinball_score" class="gt_row gt_right">11.97%</td>
 </tr>
 <tr>
 <td headers="model" class="gt_row gt_left">xgb</td>
-<td headers="poisson_deviance" class="gt_row gt_right">1.224574</td>
-<td headers="pinball_score" class="gt_row gt_right">12.97%</td>
+<td headers="poisson_deviance" class="gt_row gt_right">1.363077</td>
+<td headers="pinball_score" class="gt_row gt_right">3.13%</td>
 </tr>
 </tbody>
 </table>
