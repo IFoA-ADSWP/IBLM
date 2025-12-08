@@ -25,7 +25,7 @@ Imports:
     stats,
     utils,
     withr,
-    xgboost
+    xgboost (>= 3.1.2.0)
 Suggests: 
     knitr,
     rmarkdown,

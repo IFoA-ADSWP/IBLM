@@ -204,8 +204,15 @@ For convenience, it is also possible to train an XGBoost model using the same se
 ```{r train-xgb}
 xgb_model <- train_xgb_as_per_iblm(iblm_model)
 
-# training params are the same
-identical(xgb_model$params, iblm_model$booster_model$params)
+is_identical_config <- purrr::map2_lgl(
+  xgboost::xgb.config(xgb_model) |> unlist(),
+  xgboost::xgb.config(iblm_model$booster_model) |> unlist(),
+  identical
+) 
+
+# the config is mostly identical. In our example the differences are:
+is_identical_config[!is_identical_config] |> names()
+
 ```
 
 

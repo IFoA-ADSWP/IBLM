@@ -8,13 +8,13 @@ drop_xgb_data_params <- function(xgb_all_params) {
   # Remove the 'data' item
   cleaned_params$data <- NULL
 
-  # Remove 'validation' from watchlist if it exists
-  if (!is.null(cleaned_params$watchlist)) {
-    cleaned_params$watchlist$validation <- NULL
+  # Remove 'validation' from evals if it exists
+  if (!is.null(cleaned_params$evals)) {
+    cleaned_params$evals$validation <- NULL
 
-    # If watchlist is now empty, remove it entirely
-    if (length(cleaned_params$watchlist) == 0) {
-      cleaned_params$watchlist <- NULL
+    # If evals is now empty, remove it entirely
+    if (length(cleaned_params$evals) == 0) {
+      cleaned_params$evals <- NULL
     }
   }
 

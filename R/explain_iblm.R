@@ -204,15 +204,7 @@ data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
 #'   family = "poisson"
 #' )
 #'
-#' shap <- stats::predict(
-#'   iblm_model$booster_model,
-#'   newdata = xgboost::xgb.DMatrix(
-#'     data.matrix(
-#'       dplyr::select(df_list$test, -dplyr::all_of(iblm_model$response_var))
-#'     )
-#'   ),
-#'   predcontrib = TRUE
-#' ) |> data.frame()
+#' shap <- extract_booster_shap(iblm_model$booster_model, df_list$test)
 #'
 #' wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
 #'
@@ -288,15 +280,7 @@ shap_to_onehot <- function(shap,
 #'   family = "poisson"
 #' )
 #'
-#' shap <- stats::predict(
-#'   iblm_model$booster_model,
-#'   newdata = xgboost::xgb.DMatrix(
-#'     data.matrix(
-#'       dplyr::select(df_list$test, -dplyr::all_of(iblm_model$response_var))
-#'     )
-#'   ),
-#'   predcontrib = TRUE
-#' ) |> data.frame()
+#' shap <- extract_booster_shap(iblm_model$booster_model, df_list$test)
 #'
 #' wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
 #'
@@ -349,7 +333,7 @@ beta_corrections_derive <- function(shap_wide,
         )
       )
   } else {
-    shap_for_cat_ref <- 0
+    shap_for_cat_ref <- rep(0, nrow(beta_corrections))
   }
 
   beta_corrections$bias <- beta_corrections$bias + shap_for_zeros + shap_for_cat_ref

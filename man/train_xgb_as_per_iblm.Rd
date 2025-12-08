@@ -28,7 +28,7 @@ iblm_model1 <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
   family = "poisson",
-  max_depth = 6,
+  params = list(max_depth = 6),
   nrounds = 1000
 )
 
@@ -39,7 +39,7 @@ iblm_model2 <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
   family = "poisson",
-  max_depth = 1,
+  params = list(max_depth = 1),
   nrounds = 5
 )
 

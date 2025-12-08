@@ -45,9 +45,11 @@ extract_booster_shap <- function(booster_model, data, ...) {
 #' @export
 extract_booster_shap.xgb.Booster <- function(booster_model, data, ...) {
 
-  data <- data |> dplyr::select(dplyr::all_of(booster_model$feature_names))
+  feature_names <- xgboost::getinfo(booster_model, "feature_name")
 
-  stats::predict(
+  data <- data |> dplyr::select(dplyr::all_of(feature_names))
+
+  shap <- stats::predict(
     booster_model,
     newdata = xgboost::xgb.DMatrix(
       data.matrix(data)
@@ -55,5 +57,9 @@ extract_booster_shap.xgb.Booster <- function(booster_model, data, ...) {
     predcontrib = TRUE
   ) |>
     data.frame()
+
+  shap <- shap |> dplyr::rename(dplyr::any_of(c("BIAS" = "X.Intercept.")))
+
+  return(shap)
 }
 

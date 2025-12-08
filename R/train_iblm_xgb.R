@@ -236,7 +236,7 @@ train_iblm_xgb <- function(df_list,
   xgb_core_params <- list(
     params = params,
     data = train$xgb_matrix,
-    watchlist = list(validation = validate$xgb_matrix)
+    evals = list(validation = validate$xgb_matrix)
   )
   xgb_all_params <- utils::modifyList(xgb_core_params, xgb_additional_params)
 
