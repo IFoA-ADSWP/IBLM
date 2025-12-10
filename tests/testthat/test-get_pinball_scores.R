@@ -46,7 +46,8 @@ testthat::test_that("test against Karol original script", {
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimNb",
-    family = "poisson"
+    family = "poisson",
+    params = list(seed=0, tree_method = "exact")
   )
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
@@ -100,7 +101,9 @@ testthat::test_that("test against Karol paper", {
     # additional param settings required for rec...
       params = list(
         base_score = 0.5,
-        objective = "count:poisson"
+        objective = "count:poisson",
+        seed=0,
+        tree_method = "exact"
         ),
       nrounds = 1000,
       verbose = 0,
