@@ -113,6 +113,12 @@ train_iblm_xgb <- function(df_list,
     )
   }
 
+  if(any(vapply(df_list$train, is.character, logical(1)))) {
+    cli::cli_abort(
+      "'df_list' cannot contain character columns. Convert to factor."
+    )
+  }
+
   check_data_variability(df_list[["train"]], response_var)
 
 
