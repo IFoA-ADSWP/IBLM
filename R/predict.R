@@ -60,7 +60,7 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
   data <- newdata |> dplyr::select(-dplyr::any_of(response_var))
   relationship <- object["relationship"]
   glm <- unname(stats::predict(object$glm_model, data, type = type))
-  booster <- stats::predict(object$booster_model, xgboost::xgb.DMatrix(data.matrix(data)), type = type)
+  booster <- stats::predict(object$booster_model, xgboost::xgb.DMatrix(data), type = type)
 
   if (!is.na(trim)) {
     truncate <- function(x) {

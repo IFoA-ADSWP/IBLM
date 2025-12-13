@@ -79,8 +79,8 @@ train_xgb_as_per_iblm <- function(iblm_model, ...) {
 
   # ==================== Preparing for XGB  ====================
 
-  train$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(train$features), label = train$targets)
-  validate$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(validate$features), label = validate$targets)
+  train$xgb_matrix <- xgboost::xgb.DMatrix(train$features, label = train$targets)
+  validate$xgb_matrix <- xgboost::xgb.DMatrix(validate$features, label = validate$targets)
 
 
   # ==================== Fitting XGB  ====================

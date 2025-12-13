@@ -234,7 +234,6 @@ shap_to_onehot <- function(shap,
       lvl <- levels_all_cat[[x]]
       mask <- wide_input_frame |>
         dplyr::select(dplyr::all_of(paste0(x, lvl))) |>
-        data.matrix()
       matrix(rep(shap[, x], length(lvl)), byrow = FALSE, ncol = length(lvl)) * mask
     }) |>
       dplyr::bind_cols()

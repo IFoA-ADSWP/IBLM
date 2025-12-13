@@ -113,6 +113,12 @@ train_iblm_xgb <- function(df_list,
     )
   }
 
+  if(any(vapply(df_list$train, is.character, logical(1)))) {
+    cli::cli_abort(
+      "'df_list' cannot contain character columns. Convert to factor."
+    )
+  }
+
   check_data_variability(df_list[["train"]], response_var)
 
 
@@ -202,8 +208,8 @@ train_iblm_xgb <- function(df_list,
     stop(paste0("link function was ", link, " but should be one of: log, identity"))
   }
 
-  train$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(train$features), label = train$targets)
-  validate$xgb_matrix <- xgboost::xgb.DMatrix(data.matrix(validate$features), label = validate$targets)
+  train$xgb_matrix <- xgboost::xgb.DMatrix(train$features, label = train$targets)
+  validate$xgb_matrix <- xgboost::xgb.DMatrix(validate$features, label = validate$targets)
 
 
   # ==================== Fitting XGB  ====================

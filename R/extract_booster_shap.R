@@ -52,7 +52,7 @@ extract_booster_shap.xgb.Booster <- function(booster_model, data, ...) {
   shap <- stats::predict(
     booster_model,
     newdata = xgboost::xgb.DMatrix(
-      data.matrix(data)
+      data
     ),
     predcontrib = TRUE
   ) |>
