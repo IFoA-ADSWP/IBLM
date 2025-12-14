@@ -78,5 +78,5 @@ iblm_model <- train_iblm_xgb(
 predictions <- predict(iblm_model, data$test)
 
 predictions |> dplyr::glimpse()
-#>  num [1:3764] 0.1709 0.3083 0.1078 0.1846 0.0687 ...
+#>  num [1:3764] 0.196 0.195 0.112 0.206 0.071 ...
 ```

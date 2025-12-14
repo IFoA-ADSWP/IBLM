@@ -71,5 +71,5 @@ get_pinball_scores(data = df_list$test, iblm_model = iblm_model)
 #>   model poisson_deviance pinball_score
 #> 1 homog         1.313877    0.00000000
 #> 2   glm         1.232683    0.06179691
-#> 3  iblm         1.187413    0.09625226
+#> 3  iblm         1.201009    0.08590424
 ```

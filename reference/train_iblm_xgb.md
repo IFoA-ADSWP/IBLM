@@ -18,8 +18,8 @@ train_iblm_xgb(
   family = "poisson",
   params = list(),
   nrounds = 1000,
-  obj = NULL,
-  feval = NULL,
+  objective = NULL,
+  custom_metric = NULL,
   verbose = 0,
   print_every_n = 1L,
   early_stopping_rounds = 25,
@@ -62,8 +62,9 @@ train_iblm_xgb(
   depending on \`family\` (see details section). However you may
   overwrite these (do so with caution)
 
-- nrounds, obj, feval, verbose, print_every_n, early_stopping_rounds,
-  maximize, save_period, save_name, xgb_model, callbacks, ...:
+- nrounds, objective, custom_metric, verbose, print_every_n,
+  early_stopping_rounds, maximize, save_period, save_name, xgb_model,
+  callbacks, ...:
 
   These are passed directly to
   [xgb.train](https://rdrr.io/pkg/xgboost/man/xgb.train.html)
@@ -117,41 +118,21 @@ An object of class "iblm" containing:
 
 ## Details
 
-The \`family\` argument will be fed into the GLM fitting. Default values
-for the XGBoost fitting are also selected based on family.
+The \`family\` argument will be fed into the GLM fitting. Default
+\`params\` values for the XGBoost fitting are also selected based on
+family:
+
+- For "poisson" family, the "objective" is set to "count:poisson"
+
+- For "gamma" family, the "objective" is set to "reg:gamma"
+
+- For "tweedie" family, the "objective" is set to "reg:tweedie". Also,
+  "tweedie_variance_power = 1.5".
+
+- For "gaussian" family, the "objective" is set to "reg:squarederror"
 
 Note: Any xgboost configuration below will be overwritten by any
-explicit arguments input via \`params\`
-
-For "poisson" family the link function is 'log' and XGBoost is
-configured with:
-
-- objective: "count:poisson"
-
-- base_score: 1
-
-For "gamma" family the link function is 'log' and XGBoost is configured
-with:
-
-- objective: "reg:gamma"
-
-- base_score: 1
-
-For "tweedie" family the link function is 'log' (with a var.power = 1.5)
-and XGBoost is configured with:
-
-- objective: "reg:tweedie"
-
-- base_score: 1
-
-- tweedie_variance_power = 1.5
-
-For "gaussian" family the link function is 'identity' and XGBoost is
-configured with:
-
-- objective: "reg:squarederror"
-
-- base_score: 0
+explicit arguments input into \`train_iblm_xgb()\`
 
 ## See also
 

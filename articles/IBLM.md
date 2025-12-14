@@ -133,7 +133,7 @@ can conveniently split a single dataframe into such a structure.
 ``` r
 df <- load_freMTPL2freq()
 
-df <- df |> mutate(ClaimNb = round(ClaimNb))
+df <- df |> mutate(ClaimNb = round(ClaimNb)) 
 
 df_list <- df |> split_into_train_validate_test(seed = 1)
 ```
@@ -153,7 +153,8 @@ for more information)
 iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimNb",
-  family = "poisson"
+  family = "poisson",
+  params = list(seed = 1)
 )
 
 class(iblm_model)
@@ -176,9 +177,8 @@ is_identical_config <- purrr::map2_lgl(
 
 # the config is mostly identical. In our example the differences are:
 is_identical_config[!is_identical_config] |> names()
-#> [1] "learner.generic_param.random_state"                   
-#> [2] "learner.generic_param.seed"                           
-#> [3] "learner.gradient_booster.gbtree_model_param.num_trees"
+#> [1] "learner.gradient_booster.gbtree_model_param.num_trees"
+#> [2] "learner.learner_model_param.base_score"
 ```
 
 ## Explain
@@ -461,7 +461,7 @@ predictions_alt <-
 
 # difference in predictions very small between two alternative methods
 range(predictions_alt / predictions - 1)
-#> [1] -1.422597e-06  8.286781e-07
+#> [1] -9.531663e-07  9.788184e-07
 ```
 
 ### Pinball Score
@@ -482,18 +482,14 @@ get_pinball_scores(
   ) |> 
   gt() |> 
   fmt_percent("pinball_score")
-#> Warning in FUN(X[[i]], ...): NAs introduced by coercion
-#> Warning in FUN(X[[i]], ...): NAs introduced by coercion
-#> Warning in FUN(X[[i]], ...): NAs introduced by coercion
-#> Warning in FUN(X[[i]], ...): NAs introduced by coercion
 ```
 
 | model | poisson_deviance | pinball_score |
 |-------|------------------|---------------|
 | homog | 1.407148         | 0.00%         |
 | glm   | 1.348394         | 4.18%         |
-| iblm  | 1.238663         | 11.97%        |
-| xgb   | 1.363077         | 3.13%         |
+| iblm  | 1.234015         | 12.30%        |
+| xgb   | 1.227481         | 12.77%        |
 
 ### Correction Corridor
 
