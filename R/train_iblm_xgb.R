@@ -33,12 +33,12 @@
 #'   \item{coeff_names}{A list describing the coefficient names}
 #'
 #' @details
-#' The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family:
+#' The `family` argument will be fed into the GLM fitting. Default `params` values for the XGBoost fitting are also selected based on family:
 #' \itemize{
-#'   \item For "poisson" family, the `objective` is set to "count:poisson"
-#'   \item For "gamma" family, the `objective` is set to "reg:gamma"
-#'   \item For "tweedie" family, the `objective` is set to "reg:tweedie". The `params` is also furnished with "tweedie_variance_power = 1.5".
-#'   \item For "gaussian" family, the `objective` is set to "reg:squarederror"
+#'   \item For "poisson" family, the "objective" is set to "count:poisson"
+#'   \item For "gamma" family, the "objective" is set to "reg:gamma"
+#'   \item For "tweedie" family, the "objective" is set to "reg:tweedie". Also, "tweedie_variance_power = 1.5".
+#'   \item For "gaussian" family, the "objective" is set to "reg:squarederror"
 #' }
 #'
 #' Note: Any xgboost configuration below will be overwritten by any explicit arguments input into `train_iblm_xgb()`
@@ -145,20 +145,19 @@ train_iblm_xgb <- function(df_list,
 
   if (family == "poisson") {
 
-    objective <- "count:poisson"
+    xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "count:poisson"))
 
   } else if (family == "gamma") {
 
-    objective <- "reg:gamma"
+    xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "reg:gamma"))
 
   } else if (family == "tweedie") {
 
-    objective <- "reg:tweedie"
-    xgb_family_params <- utils::modifyList(xgb_family_params, list(tweedie_variance_power = 1.5))
+    xgb_family_params <- utils::modifyList(xgb_family_params, list(tweedie_variance_power = 1.5, objective = "reg:tweedie"))
 
   } else if (family == "gaussian") {
 
-    objective <- "reg:squarederror"
+    xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "reg:squarederror"))
 
   } else {
 

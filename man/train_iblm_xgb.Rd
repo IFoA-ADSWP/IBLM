@@ -64,12 +64,12 @@ The "booster" model is trained on:
 - actual responses - GLM predictions, when the link function is identity
 }
 \details{
-The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family:
+The `family` argument will be fed into the GLM fitting. Default `params` values for the XGBoost fitting are also selected based on family:
 \itemize{
-  \item For "poisson" family, the `objective` is set to "count:poisson"
-  \item For "gamma" family, the `objective` is set to "reg:gamma"
-  \item For "tweedie" family, the `objective` is set to "reg:tweedie". The `params` is also furnished with "tweedie_variance_power = 1.5".
-  \item For "gaussian" family, the `objective` is set to "reg:squarederror"
+  \item For "poisson" family, the "objective" is set to "count:poisson"
+  \item For "gamma" family, the "objective" is set to "reg:gamma"
+  \item For "tweedie" family, the "objective" is set to "reg:tweedie". Also, "tweedie_variance_power = 1.5".
+  \item For "gaussian" family, the "objective" is set to "reg:squarederror"
 }
 
 Note: Any xgboost configuration below will be overwritten by any explicit arguments input into `train_iblm_xgb()`
