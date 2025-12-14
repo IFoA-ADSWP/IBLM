@@ -19,7 +19,7 @@
 #' @param params Named list of additional parameters to pass to \link[xgboost]{xgb.train}.
 #' Note that \link{train_iblm_xgb} will select "objective" and "base_score" for you
 #' depending on `family` (see details section). However you may overwrite these (do so with caution)
-#' @param nrounds,obj,feval,verbose,print_every_n,early_stopping_rounds,maximize,save_period,save_name,xgb_model,callbacks,... These are passed directly to \link[xgboost]{xgb.train}
+#' @param nrounds,objective,custom_metric,verbose,print_every_n,early_stopping_rounds,maximize,save_period,save_name,xgb_model,callbacks,... These are passed directly to \link[xgboost]{xgb.train}
 #' @param strip_glm TRUE/FALSE, whether to strip superfluous data from the `glm_model` object saved within `iblm` class that is output. Only serves to reduce memory constraints.
 #'
 #' @return An object of class "iblm" containing:
@@ -33,38 +33,15 @@
 #'   \item{coeff_names}{A list describing the coefficient names}
 #'
 #' @details
-#' The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family.
-#'
-#' Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `params`
-#'
-#'
-#' For "poisson" family the link function is 'log' and XGBoost is configured with:
+#' The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family:
 #' \itemize{
-#'   \item objective: "count:poisson"
-#'   \item base_score: 1
+#'   \item For "poisson" family, the `objective` is set to "count:poisson"
+#'   \item For "gamma" family, the `objective` is set to "reg:gamma"
+#'   \item For "tweedie" family, the `objective` is set to "reg:tweedie". The `params` is also furnished with "tweedie_variance_power = 1.5".
+#'   \item For "gaussian" family, the `objective` is set to "reg:squarederror"
 #' }
 #'
-#'
-#' For "gamma" family the link function is 'log' and XGBoost is configured with:
-#' \itemize{
-#'   \item objective: "reg:gamma"
-#'   \item base_score: 1
-#' }
-#'
-#'
-#' For "tweedie" family the link function is 'log' (with a var.power = 1.5) and XGBoost is configured with:
-#' \itemize{
-#'   \item objective: "reg:tweedie"
-#'   \item base_score: 1
-#'   \item tweedie_variance_power = 1.5
-#' }
-#'
-#'
-#' For "gaussian" family the link function is 'identity' and XGBoost is configured with:
-#' \itemize{
-#'   \item objective: "reg:squarederror"
-#'   \item base_score: 0
-#' }
+#' Note: Any xgboost configuration below will be overwritten by any explicit arguments input into `train_iblm_xgb()`
 #'
 #' @examples
 #' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
@@ -84,8 +61,8 @@ train_iblm_xgb <- function(df_list,
                        family = "poisson",
                        params = list(),
                        nrounds = 1000,
-                       obj = NULL,
-                       feval = NULL,
+                       objective = NULL,
+                       custom_metric = NULL,
                        verbose = 0,
                        print_every_n = 1L,
                        early_stopping_rounds = 25,
@@ -135,49 +112,65 @@ train_iblm_xgb <- function(df_list,
   train$features <- df_list[["train"]] |> dplyr::select(-dplyr::all_of(response_var))
   validate$features <- df_list[["validate"]] |> dplyr::select(-dplyr::all_of(response_var))
 
-  # ==================== glm/xgb distribution and link choices ====================
+  # ==================== glm distribution choices ====================
 
   if (family == "poisson") {
-
-    xgb_family_params <- list(
-      base_score = 1,
-      objective = "count:poisson"
-    )
 
     glm_family <- stats::poisson()
 
   } else if (family == "gamma") {
 
-    xgb_family_params <- list(
-      base_score = 1,
-      objective = "reg:gamma"
-    )
-
     glm_family <- stats::Gamma(link = "log")
 
   } else if (family == "tweedie") {
-
-    xgb_family_params <- list(
-      base_score = 1,
-      objective = "reg:tweedie",
-      tweedie_variance_power = 1.5
-    )
 
     glm_family <- statmod::tweedie(var.power = 1.5, link.power = 0)
     glm_family$link <- "log"
 
   } else if (family == "gaussian") {
 
-    xgb_family_params <- list(
-      base_score = 0,
-      objective = "reg:squarederror"
-    )
-
     glm_family <- stats::gaussian()
 
   } else {
 
     stop(paste0("family was ", family, " but should be one of: poisson, gamma, tweedie, gaussian"))
+
+  }
+
+  # ==================== xgb distribution choices ====================
+
+  xgb_family_params <- list()
+
+  if(is.null(objective)) {
+
+  if (family == "poisson") {
+
+    objective <- "count:poisson"
+
+  } else if (family == "gamma") {
+
+    objective <- "reg:gamma"
+
+  } else if (family == "tweedie") {
+
+    objective <- "reg:tweedie"
+    xgb_family_params <- utils::modifyList(xgb_family_params, list(tweedie_variance_power = 1.5))
+
+  } else if (family == "gaussian") {
+
+    objective <- "reg:squarederror"
+
+  } else {
+
+    stop(paste0("family was ", family, " but should be one of: poisson, gamma, tweedie, gaussian"))
+
+  }
+
+  } else {
+
+    cli::cli_alert_info(
+      "The 'objective' was defined in input and used over default settings"
+    )
 
   }
 
@@ -217,8 +210,8 @@ train_iblm_xgb <- function(df_list,
   xgb_additional_params <- c(
     list(
       nrounds = nrounds,
-      obj = obj,
-      feval = feval,
+      objective = objective,
+      custom_metric = custom_metric,
       verbose = verbose,
       print_every_n = print_every_n,
       early_stopping_rounds = early_stopping_rounds,

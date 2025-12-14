@@ -10,8 +10,8 @@ train_iblm_xgb(
   family = "poisson",
   params = list(),
   nrounds = 1000,
-  obj = NULL,
-  feval = NULL,
+  objective = NULL,
+  custom_metric = NULL,
   verbose = 0,
   print_every_n = 1L,
   early_stopping_rounds = 25,
@@ -39,7 +39,7 @@ Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. 
 Note that \link{train_iblm_xgb} will select "objective" and "base_score" for you
 depending on `family` (see details section). However you may overwrite these (do so with caution)}
 
-\item{nrounds, obj, feval, verbose, print_every_n, early_stopping_rounds, maximize, save_period, save_name, xgb_model, callbacks, ...}{These are passed directly to \link[xgboost]{xgb.train}}
+\item{nrounds, objective, custom_metric, verbose, print_every_n, early_stopping_rounds, maximize, save_period, save_name, xgb_model, callbacks, ...}{These are passed directly to \link[xgboost]{xgb.train}}
 
 \item{strip_glm}{TRUE/FALSE, whether to strip superfluous data from the `glm_model` object saved within `iblm` class that is output. Only serves to reduce memory constraints.}
 }
@@ -64,38 +64,15 @@ The "booster" model is trained on:
 - actual responses - GLM predictions, when the link function is identity
 }
 \details{
-The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family.
-
-Note: Any xgboost configuration below will be overwritten by any explicit arguments input via `params`
-
-
-For "poisson" family the link function is 'log' and XGBoost is configured with:
+The `family` argument will be fed into the GLM fitting. Default values for the XGBoost fitting are also selected based on family:
 \itemize{
-  \item objective: "count:poisson"
-  \item base_score: 1
+  \item For "poisson" family, the `objective` is set to "count:poisson"
+  \item For "gamma" family, the `objective` is set to "reg:gamma"
+  \item For "tweedie" family, the `objective` is set to "reg:tweedie". The `params` is also furnished with "tweedie_variance_power = 1.5".
+  \item For "gaussian" family, the `objective` is set to "reg:squarederror"
 }
 
-
-For "gamma" family the link function is 'log' and XGBoost is configured with:
-\itemize{
-  \item objective: "reg:gamma"
-  \item base_score: 1
-}
-
-
-For "tweedie" family the link function is 'log' (with a var.power = 1.5) and XGBoost is configured with:
-\itemize{
-  \item objective: "reg:tweedie"
-  \item base_score: 1
-  \item tweedie_variance_power = 1.5
-}
-
-
-For "gaussian" family the link function is 'identity' and XGBoost is configured with:
-\itemize{
-  \item objective: "reg:squarederror"
-  \item base_score: 0
-}
+Note: Any xgboost configuration below will be overwritten by any explicit arguments input into `train_iblm_xgb()`
 }
 \examples{
 df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
