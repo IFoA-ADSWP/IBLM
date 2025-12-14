@@ -36,7 +36,6 @@ testthat::test_that("test against Karol original script", {
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
   # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
   splits <- data |>
-    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field)))) |>
     purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate")) |>
     purrr::modify(.f = function(x) dplyr::mutate(x, ClaimNb = round(ClaimNb)))
 
@@ -204,7 +203,6 @@ testthat::test_that("test against Karol original script", {
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
   # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
   splits <- data |>
-    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field)))) |>
     purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate")) |>
     purrr::modify(.f = function(x) dplyr::mutate(x, ClaimNb = round(ClaimNb)))
 
@@ -215,7 +213,7 @@ testthat::test_that("test against Karol original script", {
     response_var = "ClaimNb",
     family = "poisson",
     verbose = 2,
-    params = list(seed=0, tree_method = "exact")
+    params = list(seed=0, tree_method = "auto")
   )
 
   # ============================ Karol (og) process =====================

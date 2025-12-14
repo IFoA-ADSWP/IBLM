@@ -37,7 +37,6 @@ testthat::test_that("test against Karol original script", {
   # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
   # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
   splits <- data |>
-    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field)))) |>
     purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate")) |>
     purrr::modify(.f = function(x) dplyr::mutate(x, ClaimNb = round(ClaimNb)))
 
@@ -47,7 +46,7 @@ testthat::test_that("test against Karol original script", {
     splits,
     response_var = "ClaimNb",
     family = "poisson",
-    params = list(seed=0, tree_method = "exact")
+    params = list(seed=0, tree_method = "auto")
   )
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
@@ -164,25 +163,14 @@ testthat::test_that("test results are same for character or factor fields", {
   splits_chr <- splits_fct |>
     purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field))))
 
-  # ============================ IBLM package process =====================
-
-  IBLM_fct <- train_iblm_xgb(
-    splits_fct,
-    response_var = "ClaimNb",
-    family = "poisson"
-  )
-
+  testthat::expect_error(
   IBLM_chr <- train_iblm_xgb(
     splits_chr,
     response_var = "ClaimNb",
     family = "poisson"
   )
+)
 
-  ps_fct <- get_pinball_scores(splits_fct$test, IBLM_fct)
-
-  ps_chr <- get_pinball_scores(splits_chr$test, IBLM_chr)
-
-  testthat::expect_equal(ps_fct, ps_chr)
 
 })
 
