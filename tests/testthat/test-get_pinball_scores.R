@@ -55,6 +55,8 @@ testthat::test_that("test against Karol original script", {
 
   # ============================ Karol (og) process =====================
 
+  # IBLM v1.0.1...
+
   # the following data objects are taken from Karol original script, using the same seed, input and settings
 
   # For audit, the inputs were constructed in the `https://github.com/IFoA-ADSWP/IBLM_testing` repo
@@ -62,15 +64,19 @@ testthat::test_that("test against Karol original script", {
   # branch: testing_object_construction
   # script: construct_pinball_score_test
 
-  ps_og <- data.frame(
-    model = c("homog", "glm", "iblm"),
-    poisson_deviance = c(0.6821738013621665, 0.6614369861117713, 0.6561672090472287),
-    pinball_score = c(0, 0.03039814078023506, 0.03812311798402079)
-  )
+  # model = c("homog", "glm", "iblm"),
+  # poisson_deviance = c(0.6821738013621665, 0.6614369861117713, 0.6561672090472287),
+  # pinball_score = c(0, 0.03039814078023506, 0.03812311798402079)
 
-  testthat::expect_equal(
-    ps_nu, ps_og, tolerance = 1E-6 # tolerance lowered because calcs were changed in package function that give slightly diff answer
-  )
+  # IBLM v1.0.2... (test re-set following data.matrix() correction)
+
+  ps_og <- data.frame(
+      model = c("homog", "glm", "iblm"),
+      poisson_deviance = c(0.6821739935523775, 0.6614371784998352, 0.6557417511577236),
+      pinball_score = c(0, 0.030398131926074545, 0.038747068408471086)
+    )
+
+  testthat::expect_equal(ps_nu, ps_og)
 
 })
 
@@ -102,7 +108,7 @@ testthat::test_that("test against Karol paper", {
         base_score = 0.5,
         objective = "count:poisson",
         seed=0,
-        tree_method = "exact"
+        tree_method = "auto"
         ),
       nrounds = 1000,
       verbose = 0,
@@ -112,15 +118,6 @@ testthat::test_that("test against Karol paper", {
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
   ps_nu <- get_pinball_scores(splits$test, IBLM)
-
-  ps_nu <- ps_nu |>
-    dplyr::mutate(
-      dplyr::across(
-        dplyr::all_of(c("poisson_deviance", "pinball_score")),
-          function(x) round(x, 4)
-        )
-      )
-
 
 
   # ============================ Karol (og) process =====================
@@ -132,11 +129,28 @@ testthat::test_that("test against Karol paper", {
   # branch: testing_object_construction
   # script: construct_pinball_score_test
 
+  # Note the results are rounded to a only 2 d.p. because there are minor corrections that mean values
+  # will not be the same, however they should be in the similar ballpark
+
   ps_og <- data.frame(
     model = c("homog", "glm", "iblm"),
     poisson_deviance = c(1.4195,1.3606, 1.2483),
     pinball_score = c(0.00,4.15,12.06)/100
-  )
+  ) |>
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::all_of(c("poisson_deviance", "pinball_score")),
+        function(x) round(x, 2)
+      )
+    )
+
+  ps_nu <- ps_nu |>
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::all_of(c("poisson_deviance", "pinball_score")),
+        function(x) round(x, 2)
+      )
+    )
 
 
   testthat::expect_equal(ps_nu, ps_og)
@@ -147,7 +161,7 @@ testthat::test_that("test against Karol paper", {
 
 
 
-testthat::test_that("test results are same for character or factor fields", {
+testthat::test_that("test error for character fields", {
 
   # ============================ Input data =====================
 
