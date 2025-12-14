@@ -31,7 +31,7 @@
 #'   \itemize{
 #'     \item \code{ClaimNb}: Converted to ClaimNb per Exposure, and winsorized at the 99.9th percentile
 #'     \item \code{VehAge}: Ceiling of 50 years applied
-#'     \item All factor variables converted to character type
+#'     \item Any character variables converted to factor type
 #'   }
 #'
 #' @note This function requires an internet connection to download the data.
@@ -67,7 +67,7 @@ freMTPL2freq <- freMTPL2freq |>
   dplyr::mutate(ClaimNb = pmin(.data$ClaimNb, stats::quantile(.data$ClaimNb, 0.999))) |>  # <-- kept in to help rec with original paper
   dplyr::mutate(VehAge = pmin(.data$VehAge,50)) |>  # <-- kept in to help rec with original paper
   dplyr::select(-dplyr::all_of(c("IDpol", "Exposure"))) |>
-  dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field)))
+  dplyr::mutate(dplyr::across(dplyr::where(is.character), function(field) as.factor(field)))
 
 return(freMTPL2freq)
 

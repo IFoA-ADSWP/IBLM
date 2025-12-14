@@ -72,7 +72,7 @@ get_pinball_scores <- function(data,
         function() stats::predict(model, data, type = "response"),
         function() stats::predict(model, as.matrix(data)),
         function() stats::predict(model, data),
-        function() stats::predict(model, xgboost::xgb.DMatrix(data.matrix(data)))
+        function() stats::predict(model, xgboost::xgb.DMatrix(data))
       )
 
       for (method in methods) {

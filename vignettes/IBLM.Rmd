@@ -180,7 +180,7 @@ Data for training an IBLM model must be in the form of a list of 3 dataframes. T
 ```{r data-prep}
 df <- load_freMTPL2freq()
 
-df <- df |> mutate(ClaimNb = round(ClaimNb))
+df <- df |> mutate(ClaimNb = round(ClaimNb)) 
 
 df_list <- df |> split_into_train_validate_test(seed = 1)
 ```
@@ -193,7 +193,8 @@ The output is of class "iblm". Objects of this class contain two component model
 iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimNb",
-  family = "poisson"
+  family = "poisson",
+  params = list(seed = 1)
 )
 
 class(iblm_model)
