@@ -38,7 +38,7 @@ The function performs the following modifications to the sourced:
   \itemize{
     \item \code{ClaimNb}: Converted to ClaimNb per Exposure, and winsorized at the 99.9th percentile
     \item \code{VehAge}: Ceiling of 50 years applied
-    \item All factor variables converted to character type
+    \item Any character variables converted to factor type
   }
 }
 \note{
