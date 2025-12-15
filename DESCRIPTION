@@ -1,7 +1,7 @@
 Package: IBLM
 Type: Package
 Title: Interpretable Boosted Linear Models
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(
     person("Karol", "Gawlowski", , "Karol.Gawlowski@citystgeorges.ac.uk", role = c("aut", "cre", "cph")),
     person("Paul", "Beard", , "paul.beard.actuarial@gmail.com", role = "aut")
