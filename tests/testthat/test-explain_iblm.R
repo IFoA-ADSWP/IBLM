@@ -191,12 +191,11 @@ testthat::test_that("test against Karol original script", {
 
   # ============================ comparisons =====================
 
-  # increase tolerance slightly for mac-os.
+  # increase tolerance slightly for non-Windows
   # The absolute figures we are reconciling against are ran on windows and show tiny differences
-  is_mac_arm <- Sys.info()["sysname"] == "Darwin" &&
-    grepl("arm", Sys.info()["machine"], ignore.case = TRUE)
+  is_windows <- (Sys.info()["sysname"] == "windows")
 
-  os_tolerance <- if (is_mac_arm) 1e-6 else testthat::testthat_tolerance()
+  os_tolerance <- if (!is_windows) 1e-6 else testthat::testthat_tolerance()
 
   testthat::expect_equal(
     explainer_nu$beta_corrections |> colSums(),
