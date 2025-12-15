@@ -77,25 +77,7 @@ iblm_model <- train_iblm_xgb(
 
 explain_objects <- explain_iblm(iblm_model, df_list$test)
 
-# plot can be for a categorical variable (produces list of plots, one for each level)
-explain_objects$beta_corrected_density(varname = "Area")
-#> $AreaB
-
-#> 
-#> $AreaC
-
-#> 
-#> $AreaD
-
-#> 
-#> $AreaE
-
-#> 
-#> $AreaF
-
-#> 
-
-# plot can be for a single categorical level
+# plot can be for a single categorical level OR a categorical variable
 explain_objects$beta_corrected_density(varname = "AreaB")
 
 

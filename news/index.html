@@ -34,7 +34,24 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.1" id="iblm-101">IBLM 1.0.1<a class="anchor" aria-label="anchor" href="#iblm-101"></a></h2><p class="text-muted">CRAN release: 2025-11-19</p>
+<h2 class="pkg-version" data-toc-text="1.0.2" id="iblm-102">IBLM 1.0.2<a class="anchor" aria-label="anchor" href="#iblm-102"></a></h2>
+<div class="section level3">
+<h3 id="major-changes-1-0-2">Major changes<a class="anchor" aria-label="anchor" href="#major-changes-1-0-2"></a></h3>
+<ul><li>
+<code>iblm</code> class model objects now require factor variables for categorical features. Users should explicitly convert character columns to factors before training.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-1-0-2">New features<a class="anchor" aria-label="anchor" href="#new-features-1-0-2"></a></h3>
+<ul><li>Added “IBLM” vignette providing a comprehensive walkthrough of package functionality.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-1-0-2">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-0-2"></a></h3>
+<ul><li>Fixed bug where all variable types were converted to numeric before training and predicting of booster model, which could lead to improper handling of categorical features.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="internal-changes-1-0-2">Internal changes<a class="anchor" aria-label="anchor" href="#internal-changes-1-0-2"></a></h3>
+<ul><li>Updated to maintain compatibility with xgboost v3.1.2.1. Package now requires xgboost &gt;= 3.1.2.1.</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="iblm-100">IBLM 1.0.0<a class="anchor" aria-label="anchor" href="#iblm-100"></a></h2>

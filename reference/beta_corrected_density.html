@@ -98,31 +98,13 @@ with vertical lines indicating the original coefficient value and standard error
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">explain_objects</span> <span class="op">&lt;-</span> <span class="fu"><a href="explain_iblm.html">explain_iblm</a></span><span class="op">(</span><span class="va">iblm_model</span>, <span class="va">df_list</span><span class="op">$</span><span class="va">test</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># plot can be for a categorical variable (produces list of plots, one for each level)</span></span></span>
-<span class="r-in"><span><span class="va">explain_objects</span><span class="op">$</span><span class="fu">beta_corrected_density</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"Area"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $AreaB</span>
-<span class="r-plt img"><img src="beta_corrected_density-1.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $AreaC</span>
-<span class="r-plt img"><img src="beta_corrected_density-2.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $AreaD</span>
-<span class="r-plt img"><img src="beta_corrected_density-3.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $AreaE</span>
-<span class="r-plt img"><img src="beta_corrected_density-4.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $AreaF</span>
-<span class="r-plt img"><img src="beta_corrected_density-5.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># plot can be for a single categorical level</span></span></span>
+<span class="r-in"><span><span class="co"># plot can be for a single categorical level OR a categorical variable</span></span></span>
 <span class="r-in"><span><span class="va">explain_objects</span><span class="op">$</span><span class="fu">beta_corrected_density</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"AreaB"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="beta_corrected_density-6.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="beta_corrected_density-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># output can be numerical variable</span></span></span>
 <span class="r-in"><span><span class="va">explain_objects</span><span class="op">$</span><span class="fu">beta_corrected_density</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"DrivAge"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="beta_corrected_density-7.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="beta_corrected_density-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># This function must be created, and cannot be called directly from the package</span></span></span>
