@@ -2,6 +2,8 @@
 
 ## IBLM 1.0.2
 
+CRAN release: 2025-12-16
+
 ### Major changes
 
 - `iblm` class model objects now require factor variables for
