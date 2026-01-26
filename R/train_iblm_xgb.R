@@ -275,13 +275,13 @@ train_iblm_xgb <- function(df_list,
   coef_names_glm <- names(glm_beta_coeff)
 
   vartypes <- lapply(df_list$train |> dplyr::select(-dplyr::all_of(response_var)), typeof) |> unlist()
-  varclasses <- lapply(df_list$train |> dplyr::select(-dplyr::all_of(response_var)), class) |> unlist()
+  varisfactor <- lapply(df_list$train |> dplyr::select(-dplyr::all_of(response_var)), is.factor) |> unlist()
 
   # create data objects that explain variables
 
   predictor_vars <- list()
   predictor_vars$all <- names(vartypes) |> setdiff(response_var)
-  predictor_vars$categorical <- predictor_vars$all[(!vartypes %in% c("integer", "double") | varclasses == "factor")]
+  predictor_vars$categorical <- predictor_vars$all[(!vartypes %in% c("integer", "double") | varisfactor)]
   predictor_vars$continuous <- predictor_vars$all |> setdiff(predictor_vars$categorical)
 
   # Factor levels for categorical variables
