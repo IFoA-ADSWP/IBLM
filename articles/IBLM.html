@@ -60,7 +60,7 @@
                         <h4 data-toc-skip class="author">Karol Gawlowski
 and Paul Beard</h4>
             
-            <h4 data-toc-skip class="date">2025-12-19</h4>
+            <h4 data-toc-skip class="date">2026-01-26</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/IFoA-ADSWP/IBLM/blob/main/vignettes/IBLM.Rmd" class="external-link"><code>vignettes/IBLM.Rmd</code></a></small>
       <div class="d-none name"><code>IBLM.Rmd</code></div>
@@ -338,25 +338,25 @@ freMTPL2freq dataset.</p>
 
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span><span class="op">$</span><span class="fu">beta_corrected_density</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"VehPower"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-beta_correct_density-VehPower-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-beta_correct_density-VehPower-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="tab-pane" id="vehage" role="tabpanel" aria-labelledby="vehage-tab">
 
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span><span class="op">$</span><span class="fu">beta_corrected_density</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"VehAge"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-beta_correct_density-VehAge-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-beta_correct_density-VehAge-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="tab-pane" id="drivage" role="tabpanel" aria-labelledby="drivage-tab">
 
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span><span class="op">$</span><span class="fu">beta_corrected_density</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"DrivAge"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-beta_correct_density-DrivAge-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-beta_correct_density-DrivAge-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="tab-pane" id="bonusmalus" role="tabpanel" aria-labelledby="bonusmalus-tab">
 
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span><span class="op">$</span><span class="fu">beta_corrected_density</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"BonusMalus"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-beta_correct_density-BonusMalus-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-beta_correct_density-BonusMalus-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 </div>
 </div>
@@ -379,7 +379,7 @@ using patchwork to create a single graphic for simplicity.</p>
 <code class="sourceCode R"><span><span class="va">VehBrand</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">$</span><span class="fu">beta_corrected_density</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"VehBrand"</span>, type <span class="op">=</span> <span class="st">"hist"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">VehBrand</span> <span class="op">|&gt;</span> <span class="fu">patchwork</span><span class="fu">::</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span>ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> </span></code></pre></div>
-<p><img src="IBLM_files/figure-html/beta_correct_density-cat-1.png" class="r-plt" width="1152" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/beta_correct_density-cat-1.png" class="r-plt" alt="" width="1152" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level3">
@@ -405,7 +405,7 @@ interactions with a second variable.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span><span class="op">$</span><span class="fu">beta_corrected_scatter</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"DrivAge"</span>, color <span class="op">=</span> <span class="st">"VehPower"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-beta_correct_scatter-num-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-beta_correct_scatter-num-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="categorical-variables-1">Categorical Variables<a class="anchor" aria-label="anchor" href="#categorical-variables-1"></a>
@@ -417,7 +417,7 @@ categorical variable.</p>
 interactions with a second variable.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span><span class="op">$</span><span class="fu">beta_corrected_scatter</span><span class="op">(</span>varname <span class="op">=</span> <span class="st">"VehBrand"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-beta_correct_scatter-cat-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-beta_correct_scatter-cat-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level3">
@@ -463,14 +463,14 @@ the straight blue line and dashed orange lines either side.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bias_corrections</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">$</span><span class="fu">bias_density</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">bias_corrections</span><span class="op">$</span><span class="va">bias_correction_var</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-bias_density-var-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-bias_density-var-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="tab-pane" id="total" role="tabpanel" aria-labelledby="total-tab">
 
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bias_corrections</span> <span class="op">&lt;-</span> <span class="va">ex</span><span class="op">$</span><span class="fu">bias_density</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">bias_corrections</span><span class="op">$</span><span class="va">bias_correction_total</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-bias_density-total-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-bias_density-total-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 </div>
 </div>
@@ -499,13 +499,13 @@ transformed by the link function, but this can be switched off.</p>
 
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span><span class="op">$</span><span class="fu">overall_correction</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-overall_correction-log-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-overall_correction-log-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="tab-pane" id="not-transformed" role="tabpanel" aria-labelledby="not-transformed-tab">
 
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span><span class="op">$</span><span class="fu">overall_correction</span><span class="op">(</span>transform_x_scale_by_link <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/explain-overall_correction-identity-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/explain-overall_correction-identity-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 </div>
 </div>
@@ -1063,7 +1063,7 @@ the GLM predictions.</p>
 <span>  trim_vals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  sample_perc <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  color <span class="op">=</span> <span class="st">"DrivAge"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="IBLM_files/figure-html/correction-corridor-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
+<p><img src="IBLM_files/figure-html/correction-corridor-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 </div>
 

@@ -11,13 +11,13 @@
 Source:
 [`DESCRIPTION`](https://github.com/IFoA-ADSWP/IBLM/blob/main/DESCRIPTION)
 
-Gawlowski K, Beard P (2025). *IBLM: Interpretable Boosted Linear
+Gawlowski K, Beard P (2026). *IBLM: Interpretable Boosted Linear
 Models*. R package version 1.0.2, <https://ifoa-adswp.github.io/IBLM/>.
 
     @Manual{,
       title = {IBLM: Interpretable Boosted Linear Models},
       author = {Karol Gawlowski and Paul Beard},
-      year = {2025},
+      year = {2026},
       note = {R package version 1.0.2},
       url = {https://ifoa-adswp.github.io/IBLM/},
     }
