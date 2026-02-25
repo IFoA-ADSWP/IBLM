@@ -167,10 +167,14 @@ testthat::test_that("test against Karol original script", {
 
 
 testthat::test_that("test weighting feature", {
+
   # A note on this test...
 
-  # This test compares an ungrouped dataset with a grouped and weighted dataset.
-  # Expect same outcome if weighting feature is correct.
+  # This test compares the IBLM trained model predictions from:
+    # an ungrouped dataset
+    # the same dataset, but grouped, with a "weight" col.
+
+  # We expect same outcome if weighting feature is applied correctly.
 
 
   # ============================ Input data =====================
@@ -189,7 +193,7 @@ testthat::test_that("test weighting feature", {
         x |> dplyr::summarise(
           ClaimRate = mean(ClaimRate),
           weight = dplyr::n(),
-          .by = setdiff(names(trim_data), "ClaimRate")
+          .by = setdiff(names(df), "ClaimRate")
         )
     )
 
@@ -202,13 +206,15 @@ testthat::test_that("test weighting feature", {
     family = "poisson"
   )
 
+  # get warnings because ClaimRate is now a mean and has non-integer values. This is expected so suppress
+  suppressWarnings(
   IBLM_w <- train_iblm_xgb(
     splits_weighted,
     response_var = "ClaimRate",
     weight_var = "weight",
     family = "poisson"
   )
-
+  )
   pred <- predict(IBLM, splits$test)
 
   pred_w <- predict(IBLM_w, splits$test)
