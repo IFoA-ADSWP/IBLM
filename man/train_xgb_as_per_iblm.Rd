@@ -40,7 +40,7 @@ iblm_model2 <- train_iblm_xgb(
   response_var = "ClaimRate",
   family = "poisson",
   params = list(max_depth = 1),
-  nrounds = 5
+  nrounds = 2
 )
 
 xgb2 <- train_xgb_as_per_iblm(iblm_model2)
