@@ -7,6 +7,7 @@
 train_iblm_xgb(
   df_list,
   response_var,
+  weight_var = NULL,
   family = "poisson",
   params = list(),
   nrounds = 1000,
@@ -31,6 +32,9 @@ same structure. This item is naturally output from the function [split_into_trai
 
 \item{response_var}{Character string specifying the name of the response variable
 column in the datasets. The string MUST appear in both `df_list$train` and `df_list$validate`.}
+
+\item{weight_var}{Character string specifying the name of a variable to weight by.
+Value of NULL (default) for no weighting. Any string MUST appear in both `df_list$train` and `df_list$validate`.}
 
 \item{family}{Character string specifying the distributional family for the model.
 Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.}

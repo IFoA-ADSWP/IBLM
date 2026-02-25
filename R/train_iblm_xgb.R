@@ -14,6 +14,8 @@
 #'   same structure. This item is naturally output from the function [split_into_train_validate_test()]
 #' @param response_var Character string specifying the name of the response variable
 #'   column in the datasets. The string MUST appear in both `df_list$train` and `df_list$validate`.
+#' @param weight_var Character string specifying the name of a variable to weight by.
+#'  Value of NULL (default) for no weighting. Any string MUST appear in both `df_list$train` and `df_list$validate`.
 #' @param family Character string specifying the distributional family for the model.
 #'   Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
 #' @param params Named list of additional parameters to pass to \link[xgboost]{xgb.train}.
@@ -57,28 +59,33 @@
 #'
 #' @export
 train_iblm_xgb <- function(df_list,
-                       response_var,
-                       family = "poisson",
-                       params = list(),
-                       nrounds = 1000,
-                       objective = NULL,
-                       custom_metric = NULL,
-                       verbose = 0,
-                       print_every_n = 1L,
-                       early_stopping_rounds = 25,
-                       maximize = NULL,
-                       save_period = NULL,
-                       save_name = "xgboost.model",
-                       xgb_model = NULL,
-                       callbacks = list(),
-                       ...,
-                       strip_glm = TRUE) {
+                             response_var,
+                             weight_var = NULL,
+                             family = "poisson",
+                             params = list(),
+                             nrounds = 1000,
+                             objective = NULL,
+                             custom_metric = NULL,
+                             verbose = 0,
+                             print_every_n = 1L,
+                             early_stopping_rounds = 25,
+                             maximize = NULL,
+                             save_period = NULL,
+                             save_name = "xgboost.model",
+                             xgb_model = NULL,
+                             callbacks = list(),
+                             ...,
+                             strip_glm = TRUE) {
 
   # ==================== checks ====================
 
   check_required_names(df_list, c("train", "validate"))
   check_required_names(df_list[["train"]], response_var)
   check_required_names(df_list[["validate"]], response_var)
+  if (!is.null(weight_var)) {
+    check_required_names(df_list[["train"]], weight_var)
+    check_required_names(df_list[["validate"]], weight_var)
+  }
   stopifnot(
     length(response_var) == 1,
     names(df_list[["train"]]) == names(df_list[["validate"]])
@@ -104,13 +111,19 @@ train_iblm_xgb <- function(df_list,
   train <- list()
   validate <- list()
 
-  predictor_vars <- setdiff(names(df_list[["train"]]), response_var)
-
   train$responses <- df_list[["train"]] |> dplyr::pull(response_var)
   validate$responses <- df_list[["validate"]] |> dplyr::pull(response_var)
 
-  train$features <- df_list[["train"]] |> dplyr::select(-dplyr::all_of(response_var))
-  validate$features <- df_list[["validate"]] |> dplyr::select(-dplyr::all_of(response_var))
+  train$features <- df_list[["train"]] |> dplyr::select(-dplyr::all_of(c(response_var, weight_var)))
+  validate$features <- df_list[["validate"]] |> dplyr::select(-dplyr::all_of(c(response_var, weight_var)))
+
+  if (!is.null(weight_var)) {
+    train$weights <- df_list[["train"]] |> dplyr::pull(weight_var)
+    validate$weights <- df_list[["validate"]] |> dplyr::pull(weight_var)
+  } else {
+    train$weights <- NULL
+    validate$weights <- NULL
+  }
 
   # ==================== glm distribution choices ====================
 
@@ -143,27 +156,27 @@ train_iblm_xgb <- function(df_list,
 
   if(is.null(objective)) {
 
-  if (family == "poisson") {
+    if (family == "poisson") {
 
-    xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "count:poisson"))
+      xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "count:poisson"))
 
-  } else if (family == "gamma") {
+    } else if (family == "gamma") {
 
-    xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "reg:gamma"))
+      xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "reg:gamma"))
 
-  } else if (family == "tweedie") {
+    } else if (family == "tweedie") {
 
-    xgb_family_params <- utils::modifyList(xgb_family_params, list(tweedie_variance_power = 1.5, objective = "reg:tweedie"))
+      xgb_family_params <- utils::modifyList(xgb_family_params, list(tweedie_variance_power = 1.5, objective = "reg:tweedie"))
 
-  } else if (family == "gaussian") {
+    } else if (family == "gaussian") {
 
-    xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "reg:squarederror"))
+      xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "reg:squarederror"))
 
-  } else {
+    } else {
 
-    stop(paste0("family was ", family, " but should be one of: poisson, gamma, tweedie, gaussian"))
+      stop(paste0("family was ", family, " but should be one of: poisson, gamma, tweedie, gaussian"))
 
-  }
+    }
 
   } else {
 
@@ -175,11 +188,16 @@ train_iblm_xgb <- function(df_list,
 
   # ==================== GLM fitting ====================
 
-  predictor_vars <- setdiff(names(df_list[["train"]]), response_var)
+  predictor_vars <- names(train$features)
 
   formula <- stats::as.formula(paste(response_var, "~", paste(predictor_vars, collapse = " + ")))
 
-  glm_model <- stats::glm(formula, data = df_list[["train"]], family = glm_family)
+  glm_model <- stats::glm(
+    formula,
+    data = df_list[["train"]] |> dplyr::select(-dplyr::all_of(weight_var)),
+    family = glm_family,
+    weights = train$weights
+  )
 
   # ==================== Preparing for XGB  ====================
 
@@ -200,8 +218,8 @@ train_iblm_xgb <- function(df_list,
     stop(paste0("link function was ", link, " but should be one of: log, identity"))
   }
 
-  train$xgb_matrix <- xgboost::xgb.DMatrix(train$features, label = train$targets)
-  validate$xgb_matrix <- xgboost::xgb.DMatrix(validate$features, label = validate$targets)
+  train$xgb_matrix <- xgboost::xgb.DMatrix(train$features, label = train$targets, weight = train$weights)
+  validate$xgb_matrix <- xgboost::xgb.DMatrix(validate$features, label = validate$targets, weight = validate$weights)
 
 
   # ==================== Fitting XGB  ====================
@@ -320,6 +338,7 @@ train_iblm_xgb <- function(df_list,
   # ==================== Add Additional 'iblm' Metadata  ====================
 
   iblm_model$response_var <- response_var
+  iblm_model$weight_var <- weight_var
   iblm_model$predictor_vars <- predictor_vars
   iblm_model$cat_levels <- cat_levels
   iblm_model$coeff_names <- coeff_names
