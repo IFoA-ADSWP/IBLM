@@ -41,10 +41,19 @@ get_pinball_scores <- function(data,
   check_iblm_model(iblm_model)
 
   response_var <- iblm_model$response_var
+  weight_var <- iblm_model$weight_var
 
   data_predictors <- data |> dplyr::select(dplyr::all_of(iblm_model$predictor_vars$all))
 
   actual <- data[[response_var]]
+
+  if (!is.null(weight_var)) {
+    if(weight_var %in% names(data)) {
+      cli::cli_abort(
+        "weight_var {.field {weight_var}} found in {.arg data}. Cannot use weights for pinball scores. Provide data un-weighted."
+      )
+    }
+  }
 
   # get predictions for homogenous, glm and iblm
 
@@ -66,28 +75,19 @@ get_pinball_scores <- function(data,
     }
 
     # Create a safe predict function that tries multiple approaches
-    safe_predict <- function(model, data) {
-      # Try methods in order of preference
-      methods <- list(
-        function() stats::predict(model, data, type = "response"),
-        function() stats::predict(model, as.matrix(data)),
-        function() stats::predict(model, data),
-        function() stats::predict(model, xgboost::xgb.DMatrix(data))
-      )
+    predict_dispatch <- function(model, data) {
 
-      for (method in methods) {
-        result <- tryCatch(method(), error = function(e) NULL)
-        if (!is.null(result)) {
-          return(result)
-        }
+      if (inherits(model, "xgb.Booster")) {
+        stats::predict(model, xgboost::xgb.DMatrix(data))
+      } else {
+        stats::predict(model, data, type = "response")
       }
 
-      stop("Could not generate predictions for model: ", class(model)[1])
     }
 
     additional_model_predictions <- purrr::map(
       additional_models,
-      .f = ~ safe_predict(.x, data_predictors)
+      .f = function(x) predict_dispatch(x, data_predictors)
     ) |>
       stats::setNames(names(additional_models)) |>
       dplyr::bind_cols()
