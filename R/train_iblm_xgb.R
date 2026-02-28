@@ -292,13 +292,14 @@ train_iblm_xgb <- function(df_list,
   glm_beta_coeff <- iblm_model$glm_model$coefficients
   coef_names_glm <- names(glm_beta_coeff)
 
-  vartypes <- lapply(df_list$train |> dplyr::select(-dplyr::all_of(response_var)), typeof) |> unlist()
-  varisfactor <- lapply(df_list$train |> dplyr::select(-dplyr::all_of(response_var)), is.factor) |> unlist()
+  vartypes <- lapply(train$features, typeof) |> unlist()
+
+  varisfactor <- lapply(train$features, is.factor) |> unlist()
 
   # create data objects that explain variables
 
   predictor_vars <- list()
-  predictor_vars$all <- names(vartypes) |> setdiff(response_var)
+  predictor_vars$all <- names(vartypes)
   predictor_vars$categorical <- predictor_vars$all[(!vartypes %in% c("integer", "double") | varisfactor)]
   predictor_vars$continuous <- predictor_vars$all |> setdiff(predictor_vars$categorical)
 
