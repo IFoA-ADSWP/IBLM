@@ -11,7 +11,7 @@ testthat::test_that("test weighting feature (mini) poisson", {
 
   # ============================ Input data =====================
 
-  df <- freMTPLmini |> dplyr::select(Area, VehPower, DrivAge, VehGas, ClaimRate)
+  df <- freMTPLmini |> dplyr::select(Area, VehPower, DrivAge, ClaimRate)
 
   data <- df |>  split_into_train_validate_test(seed = 1)
 
@@ -38,15 +38,13 @@ testthat::test_that("test weighting feature (mini) poisson", {
     family = "poisson"
   )
 
-  # get warnings because ClaimRate is now a mean and has non-integer values. This is expected so suppress
-  suppressWarnings(
-    IBLM_w <- train_iblm_xgb(
-      splits_weighted,
-      response_var = "ClaimRate",
-      weight_var = "weight",
-      family = "poisson"
-    )
+  IBLM_w <- train_iblm_xgb(
+    splits_weighted,
+    response_var = "ClaimRate",
+    weight_var = "weight",
+    family = "quasipoisson"
   )
+
 
   # ============================ Test predict() =====================
 
@@ -94,7 +92,7 @@ testthat::test_that("test weighting feature (mini) gaussian", {
 
   # ============================ Input data =====================
 
-  df <- freMTPLmini |> dplyr::select(Area, VehPower, DrivAge, VehGas, ClaimRate)
+  df <- freMTPLmini |> dplyr::select(Area, VehPower, DrivAge, ClaimRate)
 
   data <- df |>  split_into_train_validate_test(seed = 1)
 
@@ -121,14 +119,11 @@ testthat::test_that("test weighting feature (mini) gaussian", {
     family = "gaussian"
   )
 
-  # get warnings because ClaimRate is now a mean and has non-integer values. This is expected so suppress
-  suppressWarnings(
-    IBLM_w <- train_iblm_xgb(
-      splits_weighted,
-      response_var = "ClaimRate",
-      weight_var = "weight",
-      family = "gaussian"
-    )
+  IBLM_w <- train_iblm_xgb(
+    splits_weighted,
+    response_var = "ClaimRate",
+    weight_var = "weight",
+    family = "gaussian"
   )
 
   # ============================ Test predict() =====================
@@ -166,13 +161,13 @@ testthat::test_that("test weighting feature (mini) gamma", {
 
   # ============================ Input data =====================
 
-  df <- freMTPLmini |> dplyr::select(Area, VehPower, DrivAge, VehGas, ClaimRate)
+  df <- freMTPLmini |> dplyr::select(Area, VehPower, DrivAge, ClaimRate)
 
   data <- df |>  split_into_train_validate_test(seed = 1)
 
   withr::with_seed(1, {
-  splits <- data |>
-    purrr::modify(.f = function(x) dplyr::mutate(x, ClaimRate = rgamma(nrow(x), DrivAge/10, VehPower/1000)))
+    splits <- data |>
+      purrr::modify(.f = function(x) dplyr::mutate(x, ClaimRate = rgamma(nrow(x), DrivAge/10, VehPower/1000)))
   }
   )
 
@@ -197,12 +192,12 @@ testthat::test_that("test weighting feature (mini) gamma", {
   )
 
 
-    IBLM_w <- train_iblm_xgb(
-      splits_weighted,
-      response_var = "ClaimRate",
-      weight_var = "weight",
-      family = "gamma"
-    )
+  IBLM_w <- train_iblm_xgb(
+    splits_weighted,
+    response_var = "ClaimRate",
+    weight_var = "weight",
+    family = "gamma"
+  )
 
 
 
@@ -240,7 +235,7 @@ testthat::test_that("test weighting feature (mini) tweedie", {
 
   # ============================ Input data =====================
 
-  df <- freMTPLmini |> dplyr::select(Area, VehPower, DrivAge, VehGas, ClaimRate)
+  df <- freMTPLmini |> dplyr::select(Area, VehPower, DrivAge, ClaimRate)
 
   data <- df |>  split_into_train_validate_test(seed = 1)
 
@@ -270,12 +265,12 @@ testthat::test_that("test weighting feature (mini) tweedie", {
     family = "tweedie"
   )
 
-    IBLM_w <- train_iblm_xgb(
-      splits_weighted,
-      response_var = "ClaimRate",
-      weight_var = "weight",
-      family = "tweedie"
-    )
+  IBLM_w <- train_iblm_xgb(
+    splits_weighted,
+    response_var = "ClaimRate",
+    weight_var = "weight",
+    family = "tweedie"
+  )
 
 
 
@@ -306,17 +301,15 @@ testthat::test_that("test weighting feature (mini) tweedie", {
 
 testthat::test_that("test explain completes with weighting", {
 
-  vars <- names(freMTPLmini) |> setdiff("ClaimRate")
+  vars <- names(freMTPLmini) |> setdiff(c("ClaimRate", "Exposure"))
 
-  splits <- freMTPLmini  |>
-    dplyr::mutate(dummy = sample(c(1, 2, 3), nrow(freMTPLmini), replace = T)) |>
-    split_into_train_validate_test(seed = 1)
+  splits <- freMTPLmini  |> split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
-    weight_var = "dummy",
-    family = "poisson"
+    weight_var = "Exposure",
+    family = "quasipoisson"
   )
 
   testthat::expect_no_error(
@@ -329,3 +322,4 @@ testthat::test_that("test explain completes with weighting", {
     }
   )
 })
+

@@ -43,7 +43,7 @@ testthat::test_that("test against Karol original script", {
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimNb",
-    family = "poisson",
+    family = "quasipoisson",
     params = list(seed=0, tree_method = "auto")
   )
 
@@ -112,55 +112,55 @@ testthat::test_that("test against Karol original script", {
       `RegionProvence-Alpes-Cotes-D'Azur` = 350.3612418755074,
       `RegionRhone-Alpes` = -585.5019154318434
     )
-    # c(
-    #   bias = -2067.634628662665,
-    #   VehPower = 77.15579762084639,
-    #   VehAge = -23.215015305266128,
-    #   DrivAge = -61.24309050987545,
-    #   BonusMalus = -22.445602931956973,
-    #   Density = 25.378615547426733,
-    #   VehBrandB1 = 0.4929784910491435,
-    #   VehBrandB10 = 20.502513993749744,
-    #   VehBrandB11 = 47.836586910823826,
-    #   VehBrandB12 = 586.8557514288768,
-    #   VehBrandB13 = -16.759563245454046,
-    #   VehBrandB14 = -10.66495745186694,
-    #   VehBrandB2 = -354.99009596340693,
-    #   VehBrandB3 = -169.61300241362187,
-    #   VehBrandB4 = -47.662840547491214,
-    #   VehBrandB5 = -57.07242563375621,
-    #   VehBrandB6 = -4.931066558579914,
-    #   VehGasDiesel = 262.6049230671415,
-    #   VehGasRegular = -260.8031225083723,
-    #   AreaA = -7.057203395199394,
-    #   AreaB = 8.401192414939942,
-    #   AreaC = 6.267889281658995,
-    #   AreaD = 7.026916613533103,
-    #   AreaE = 7.206054686117568,
-    #   AreaF = 0.7287656644657545,
-    #   RegionAlsace = 29.41269837069558,
-    #   RegionAquitaine = 219.19630470527773,
-    #   RegionAuvergne = 0.03033583141223062,
-    #   `RegionBasse-Normandie` = 9.1936749826491,
-    #   RegionBourgogne = -52.224121282157284,
-    #   RegionBretagne = -227.96657285522087,
-    #   RegionCentre = -1098.584975179394,
-    #   `RegionChampagne-Ardenne` = 32.18406923182192,
-    #   RegionCorse = 32.32750511944323,
-    #   `RegionFranche-Comte` = 7.144027646740142,
-    #   `RegionHaute-Normandie` = 47.25576676859055,
-    #   `RegionIle-de-France` = 304.6266946428623,
-    #   `RegionLanguedoc-Roussillon` = 222.1023564936586,
-    #   RegionLimousin = 23.28911739943578,
-    #   RegionLorraine = 58.126529967139504,
-    #   `RegionMidi-Pyrenees` = 91.25889614265907,
-    #   `RegionNord-Pas-de-Calais` = 89.35858378249577,
-    #   `RegionPays-de-la-Loire` = 83.542801530637,
-    #   RegionPicardie = 14.302402913701371,
-    #   `RegionPoitou-Charentes` = 19.301416881062323,
-    #   `RegionProvence-Alpes-Cotes-D'Azur` = 143.6244444957265,
-    #   `RegionRhone-Alpes` = -398.0069321255505
-    # )
+  # c(
+  #   bias = -2067.634628662665,
+  #   VehPower = 77.15579762084639,
+  #   VehAge = -23.215015305266128,
+  #   DrivAge = -61.24309050987545,
+  #   BonusMalus = -22.445602931956973,
+  #   Density = 25.378615547426733,
+  #   VehBrandB1 = 0.4929784910491435,
+  #   VehBrandB10 = 20.502513993749744,
+  #   VehBrandB11 = 47.836586910823826,
+  #   VehBrandB12 = 586.8557514288768,
+  #   VehBrandB13 = -16.759563245454046,
+  #   VehBrandB14 = -10.66495745186694,
+  #   VehBrandB2 = -354.99009596340693,
+  #   VehBrandB3 = -169.61300241362187,
+  #   VehBrandB4 = -47.662840547491214,
+  #   VehBrandB5 = -57.07242563375621,
+  #   VehBrandB6 = -4.931066558579914,
+  #   VehGasDiesel = 262.6049230671415,
+  #   VehGasRegular = -260.8031225083723,
+  #   AreaA = -7.057203395199394,
+  #   AreaB = 8.401192414939942,
+  #   AreaC = 6.267889281658995,
+  #   AreaD = 7.026916613533103,
+  #   AreaE = 7.206054686117568,
+  #   AreaF = 0.7287656644657545,
+  #   RegionAlsace = 29.41269837069558,
+  #   RegionAquitaine = 219.19630470527773,
+  #   RegionAuvergne = 0.03033583141223062,
+  #   `RegionBasse-Normandie` = 9.1936749826491,
+  #   RegionBourgogne = -52.224121282157284,
+  #   RegionBretagne = -227.96657285522087,
+  #   RegionCentre = -1098.584975179394,
+  #   `RegionChampagne-Ardenne` = 32.18406923182192,
+  #   RegionCorse = 32.32750511944323,
+  #   `RegionFranche-Comte` = 7.144027646740142,
+  #   `RegionHaute-Normandie` = 47.25576676859055,
+  #   `RegionIle-de-France` = 304.6266946428623,
+  #   `RegionLanguedoc-Roussillon` = 222.1023564936586,
+  #   RegionLimousin = 23.28911739943578,
+  #   RegionLorraine = 58.126529967139504,
+  #   `RegionMidi-Pyrenees` = 91.25889614265907,
+  #   `RegionNord-Pas-de-Calais` = 89.35858378249577,
+  #   `RegionPays-de-la-Loire` = 83.542801530637,
+  #   RegionPicardie = 14.302402913701371,
+  #   `RegionPoitou-Charentes` = 19.301416881062323,
+  #   `RegionProvence-Alpes-Cotes-D'Azur` = 143.6244444957265,
+  #   `RegionRhone-Alpes` = -398.0069321255505
+  # )
 
   explainer_og$raw_shap_colsums <-
     c(
@@ -175,18 +175,18 @@ testthat::test_that("test against Karol original script", {
       Region = -387.8696117562795,
       BIAS = -823.2791528105736
     )
-    # c(
-    #   VehPower = 120.16935467716758,
-    #   VehAge = -550.591719013908,
-    #   DrivAge = -1125.4035902854048,
-    #   BonusMalus = -946.9910313908222,
-    #   VehBrand = -6.006120989677584,
-    #   VehGas = 1.8018005587691732,
-    #   Area = 22.57361526551597,
-    #   Density = 97.71078889113824,
-    #   Region = -350.50497453631397,
-    #   BIAS = -1023.7343763839453
-    # )
+  # c(
+  #   VehPower = 120.16935467716758,
+  #   VehAge = -550.591719013908,
+  #   DrivAge = -1125.4035902854048,
+  #   BonusMalus = -946.9910313908222,
+  #   VehBrand = -6.006120989677584,
+  #   VehGas = 1.8018005587691732,
+  #   Area = 22.57361526551597,
+  #   Density = 97.71078889113824,
+  #   Region = -350.50497453631397,
+  #   BIAS = -1023.7343763839453
+  # )
 
 
   # ============================ comparisons =====================
@@ -215,14 +215,14 @@ testthat::test_that("test against Karol original script", {
 testthat::test_that("test explain completes when one categorical and one continuous", {
   vars <- c("VehBrand", "VehPower", "ClaimRate")
 
-    splits <- freMTPLmini  |>
-      dplyr::select(dplyr::all_of(vars)) |>
-      split_into_train_validate_test(seed = 1)
+  splits <- freMTPLmini  |>
+    dplyr::select(dplyr::all_of(vars)) |>
+    split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
-    family = "poisson"
+    family = "quasipoisson"
   )
 
   testthat::expect_no_error(
@@ -237,17 +237,17 @@ testthat::test_that("test explain completes when one categorical and one continu
 })
 
 testthat::test_that("test explain completes when categorical only", {
-  vars <- c("VehBrand", "VehGas", "Area", "ClaimRate")
+  vars <- c("VehBrand", "Area", "ClaimRate")
 
 
-    splits <- freMTPLmini  |>
-      dplyr::select(dplyr::all_of(vars)) |>
-      split_into_train_validate_test(seed = 1)
+  splits <- freMTPLmini  |>
+    dplyr::select(dplyr::all_of(vars)) |>
+    split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
-    family = "poisson"
+    family = "quasipoisson"
   )
 
   testthat::expect_no_error(
@@ -272,7 +272,7 @@ testthat::test_that("test explain completes when continuous only", {
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
-    family = "poisson"
+    family = "quasipoisson"
   )
 
   testthat::expect_no_error(
@@ -294,13 +294,13 @@ testthat::test_that("test explain completes when logical field", {
 
   splits <- freMTPLmini  |>
     dplyr::select(dplyr::all_of(vars)) |>
-    dplyr::mutate(dummy = sample(c(TRUE, FALSE), size = nrow(freMTPLmini), replace = TRUE)) |>
     split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
-    family = "poisson"
+    weight_var = "Exposure",
+    family = "quasipoisson"
   )
 
   testthat::expect_no_error(
@@ -328,7 +328,7 @@ testthat::test_that("test explain completes when no reference/zero levels", {
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
-    family = "poisson"
+    family = "quasipoisson"
   )
 
   testthat::expect_no_error(
@@ -369,7 +369,8 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
-    family = "poisson"
+    weight_var = "Exposure",
+    family = "quasipoisson"
   )
 
   explainer_w_migrate <- explain_iblm(iblm_model = IBLM, data = splits$test, migrate_reference_to_bias = TRUE)
@@ -377,7 +378,7 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
   explainer_wout_migrate <- explain_iblm(iblm_model = IBLM, data = splits$test, migrate_reference_to_bias = FALSE)
 
   coeff_multiplier <- splits$test |>
-    dplyr::select(-dplyr::all_of("ClaimRate")) |>
+    dplyr::select(-dplyr::all_of(c("ClaimRate", "Exposure"))) |>
     dplyr::mutate(
       dplyr::across(
         dplyr::all_of(IBLM$predictor_vars$categorical),
@@ -421,6 +422,7 @@ testthat::test_that("test gaussian can run", {
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
+    weight_var = "Exposure",
     family = "gaussian"
   )
 
@@ -453,6 +455,7 @@ testthat::test_that("test gamma can run", {
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
+    weight_var = "Exposure",
     family = "gamma"
   )
 
@@ -483,6 +486,7 @@ testthat::test_that("test tweedie can run", {
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
+    weight_var = "Exposure",
     family = "tweedie"
   )
 
@@ -514,7 +518,8 @@ testthat::test_that("test can change objective function", {
   IBLM <- train_iblm_xgb(
     splits,
     response_var = "ClaimRate",
-    family = "poisson",
+    family = "quasipoisson",
+    weight_var = "Exposure",
     params = list(objective = "reg:squarederror")
   )
   )

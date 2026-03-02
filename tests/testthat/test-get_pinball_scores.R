@@ -71,10 +71,10 @@ testthat::test_that("test against Karol original script", {
   # IBLM v1.0.2... (test re-set following data.matrix() correction)
 
   ps_og <- data.frame(
-      model = c("homog", "glm", "iblm"),
-      poisson_deviance = c(0.6821739935523775, 0.6614371784998352, 0.6557417511577236),
-      pinball_score = c(0, 0.030398131926074545, 0.038747068408471086)
-    )
+    model = c("homog", "glm", "iblm"),
+    poisson_deviance = c(0.6821739935523775, 0.6614371784998352, 0.6557417511577236),
+    pinball_score = c(0, 0.030398131926074545, 0.038747068408471086)
+  )
 
   testthat::expect_equal(ps_nu, ps_og)
 
@@ -99,21 +99,21 @@ testthat::test_that("test against Karol paper", {
   # warning are given because of non-integer response vars and a poisson predictor...
   # ...just have to suppress for this test as we cannot change data...
   suppressWarnings(
-  IBLM <- train_iblm_xgb(
-    splits,
-    response_var = "ClaimNb",
-    family = "poisson",
-    # additional param settings required for rec...
+    IBLM <- train_iblm_xgb(
+      splits,
+      response_var = "ClaimNb",
+      family = "poisson",
+      # additional param settings required for rec...
       params = list(
         base_score = 0.5,
         objective = "count:poisson",
         seed=0,
         tree_method = "auto"
-        ),
+      ),
       nrounds = 1000,
       verbose = 0,
       early_stopping_rounds = 25
-  )
+    )
   )
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script

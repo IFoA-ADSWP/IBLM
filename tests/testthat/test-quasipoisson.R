@@ -1,5 +1,5 @@
 
-testthat::test_that("test weighting feature (mini) quasipoisson", {
+testthat::test_that("test quasipoisson vs poisson", {
 
   # A note on this test...
 
@@ -10,39 +10,23 @@ testthat::test_that("test weighting feature (mini) quasipoisson", {
 
   # ============================ Input data =====================
 
-  df <- freMTPLmini |> dplyr::select(Area, VehPower, DrivAge, VehGas, ClaimRate)
-
-  data <- df |>  split_into_train_validate_test(seed = 1)
-
-  splits <- data |>
-    purrr::modify(.f = function(x) dplyr::mutate(x, ClaimRate = round(ClaimRate)))
-
-  splits_weighted <-
-    splits |>
-    purrr::map(
-      function(x)
-        x |> dplyr::summarise(
-          ClaimRate = mean(ClaimRate),
-          weight = dplyr::n(),
-          .by = setdiff(names(df), "ClaimRate")
-        )
-    )
+  splits <- freMTPLmini |>  split_into_train_validate_test(seed = 1)
 
   # ============================ IBLM package process =====================
 
   IBLM_q <- train_iblm_xgb(
-    splits_weighted,
+    splits,
     response_var = "ClaimRate",
-    weight_var = "weight",
+    weight_var = "Exposure",
     family = "quasipoisson"
   )
 
   # get warnings because ClaimRate is now a mean and has non-integer values. This is expected so suppress
   suppressWarnings(
     IBLM_p <- train_iblm_xgb(
-      splits_weighted,
+      splits,
       response_var = "ClaimRate",
-      weight_var = "weight",
+      weight_var = "Exposure",
       family = "poisson"
     )
   )
@@ -63,9 +47,9 @@ testthat::test_that("test weighting feature (mini) quasipoisson", {
 
   # ============================ Test get_pinball_scors() =====================
 
-  pb_p <- get_pinball_scores(splits_weighted$test, IBLM_p)
+  pb_p <- get_pinball_scores(splits$test, IBLM_p)
 
-  pb_q <- get_pinball_scores(splits_weighted$test, IBLM_p)
+  pb_q <- get_pinball_scores(splits$test, IBLM_q)
 
   testthat::expect_equal(
     pb_p,
