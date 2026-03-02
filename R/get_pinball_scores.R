@@ -27,7 +27,8 @@
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' get_pinball_scores(data = df_list$test, iblm_model = iblm_model)
@@ -52,12 +53,12 @@ get_pinball_scores <- function(data,
     weight <- NULL
     homog <- mean(iblm_model$data$train[[response_var]])
 
-    } else if(weight_var %in% names(data)) {
+  } else if(weight_var %in% names(data)) {
 
     weight <- data[[weight_var]]
     homog <- stats::weighted.mean(iblm_model$data$train[[response_var]], iblm_model$data$train[[weight_var]])
 
-    } else {
+  } else {
 
     weight <- NULL
     homog <- stats::weighted.mean(iblm_model$data$train[[response_var]], iblm_model$data$train[[weight_var]])
@@ -110,6 +111,7 @@ get_pinball_scores <- function(data,
   model_names <- names(model_predictions)
 
   family <- iblm_model$glm_model$family$family
+  if(family == "quasipoisson") {family <- "poisson"}
 
   pds <- purrr::map_dbl(
     model_names,
@@ -119,7 +121,7 @@ get_pinball_scores <- function(data,
         y_pred = model_predictions[[x]],
         family = family,
         weight = weight
-        )
+      )
     }
   ) |> stats::setNames(model_names)
 
@@ -199,8 +201,8 @@ calculate_deviance <- function(y_true,
                             # Tweedie with p=1.5 (common default)
                             p <- 1.5
                             2 * sum(weight * ((y_true^(2-p)) / ((1-p)*(2-p)) -
-                                                 (y_true * y_pred^(1-p)) / (1-p) +
-                                                 (y_pred^(2-p)) / (2-p))) / sum(weight)
+                                                (y_true * y_pred^(1-p)) / (1-p) +
+                                                (y_pred^(2-p)) / (2-p))) / sum(weight)
                           },
                           cli::cli_abort("family must be one of: gaussian, poisson, gamma, tweedie")
   )
