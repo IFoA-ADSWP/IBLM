@@ -17,7 +17,7 @@
 #' @param weight_var Character string specifying the name of a variable to weight by.
 #'  Value of NULL (default) for no weighting. Any string MUST appear in both `df_list$train` and `df_list$validate`.
 #' @param family Character string specifying the distributional family for the model.
-#'   Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
+#'   Currently only "poisson", "quasipoisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
 #' @param params Named list of additional parameters to pass to \link[xgboost]{xgb.train}.
 #' Note that \link{train_iblm_xgb} will select "objective" and "base_score" for you
 #' depending on `family` (see details section). However you may overwrite these (do so with caution)
@@ -38,6 +38,7 @@
 #' The `family` argument will be fed into the GLM fitting. Default `params` values for the XGBoost fitting are also selected based on family:
 #' \itemize{
 #'   \item For "poisson" family, the "objective" is set to "count:poisson"
+#'   \item For "quasipoisson" family, the "objective" is set to "count:poisson"
 #'   \item For "gamma" family, the "objective" is set to "reg:gamma"
 #'   \item For "tweedie" family, the "objective" is set to "reg:tweedie". Also, "tweedie_variance_power = 1.5".
 #'   \item For "gaussian" family, the "objective" is set to "reg:squarederror"
@@ -131,6 +132,10 @@ train_iblm_xgb <- function(df_list,
 
     glm_family <- stats::poisson()
 
+  } else if (family == "quasipoisson") {
+
+    glm_family <- stats::quasipoisson()
+
   } else if (family == "gamma") {
 
     glm_family <- stats::Gamma(link = "log")
@@ -146,7 +151,7 @@ train_iblm_xgb <- function(df_list,
 
   } else {
 
-    stop(paste0("family was ", family, " but should be one of: poisson, gamma, tweedie, gaussian"))
+    stop(paste0("family was ", family, " but should be one of: poisson, quasipoisson, gamma, tweedie, gaussian"))
 
   }
 
@@ -156,7 +161,7 @@ train_iblm_xgb <- function(df_list,
 
   if(is.null(objective)) {
 
-    if (family == "poisson") {
+    if (family == "poisson" | family == "quasipoisson") {
 
       xgb_family_params <- utils::modifyList(xgb_family_params, list(objective = "count:poisson"))
 
@@ -174,7 +179,7 @@ train_iblm_xgb <- function(df_list,
 
     } else {
 
-      stop(paste0("family was ", family, " but should be one of: poisson, gamma, tweedie, gaussian"))
+      stop(paste0("family was ", family, " but should be one of: poisson, quasipoisson, gamma, tweedie, gaussian"))
 
     }
 
