@@ -92,7 +92,10 @@ testthat::test_that("test against Karol paper", {
 
   # ============================ Input data =====================
 
-  splits <- load_freMTPL2freq() |> split_into_train_validate_test(seed = 1)
+  splits <- load_freMTPL2freq() |>
+    dplyr::rename(ClaimNb = ClaimRate) |>
+    dplyr::select(-Exposure) |>
+    split_into_train_validate_test(seed = 1)
 
   # ============================ IBLM package process =====================
 
@@ -178,12 +181,12 @@ testthat::test_that("test error for character fields", {
     purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field))))
 
   testthat::expect_error(
-  IBLM_chr <- train_iblm_xgb(
-    splits_chr,
-    response_var = "ClaimNb",
-    family = "poisson"
+    IBLM_chr <- train_iblm_xgb(
+      splits_chr,
+      response_var = "ClaimNb",
+      family = "poisson"
+    )
   )
-)
 
 
 })

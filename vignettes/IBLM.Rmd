@@ -180,20 +180,19 @@ Data for training an IBLM model must be in the form of a list of 3 dataframes. T
 ```{r data-prep}
 df <- load_freMTPL2freq()
 
-df <- df |> mutate(ClaimNb = round(ClaimNb)) 
-
 df_list <- df |> split_into_train_validate_test(seed = 1)
 ```
 
 There is currently only one function available to train an IBLM. This is `train_iblm_xgb()` which will use xgboost as the booster model. This performs steps 1 and 2 of the [Theory].
 
-The output is of class "iblm". Objects of this class contain two component models "glm_model" and "booster_model". There are also other items containing information (see Value section of `train_iblm_xgb()` for more information)
+The output is of class "iblm". Objects of this class contain two component models "glm_model" and "booster_model". There are also other items containing information (see Value section of `train_iblm_xgb()` for more information).
 
 ```{r train}
 iblm_model <- train_iblm_xgb(
   df_list,
-  response_var = "ClaimNb",
-  family = "poisson",
+  response_var = "ClaimRate",
+  weight_var = "Exposure",
+  family = "quasipoisson",
   params = list(seed = 1)
 )
 
@@ -385,7 +384,7 @@ Because IBLM is essentially a collection of GLMs, and the corrected beta coeffic
 ```{r predict-alternative}
 coeff_multiplier <- 
   df_list$test |>
-  select(-all_of("ClaimNb")) |>
+  select(-all_of(c(iblm_model$response_var, iblm_model$weight_var))) |>
   mutate(
     across(
       all_of(iblm_model$predictor_vars$categorical),

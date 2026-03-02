@@ -338,7 +338,7 @@ testthat::test_that("test explain completes when no reference/zero levels", {
       ex$beta_corrected_density(vars[1])
       ex$overall_correction()
       suppressMessages({ex$bias_density()}) # expect message here to let user no there are no plots produced
-      }
+    }
   )
 })
 
