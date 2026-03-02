@@ -34,7 +34,8 @@
 #' iblm_model <- train_iblm_xgb(
 #'   data,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' predictions <- predict(iblm_model, data$test)
@@ -56,8 +57,9 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
     ))
   }
 
-  response_var <- all.vars(object$glm_model$formula)[1]
-  data <- newdata |> dplyr::select(-dplyr::any_of(response_var))
+  response_var <- object$response_var
+  weight_var <- object$weight_var
+  data <- newdata |> dplyr::select(-dplyr::any_of(c(response_var, weight_var)))
   relationship <- object["relationship"]
   glm <- unname(stats::predict(object$glm_model, data, type = type))
   booster <- stats::predict(object$booster_model, xgboost::xgb.DMatrix(data), type = type)
