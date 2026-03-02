@@ -62,6 +62,21 @@ testthat::test_that("test weighting feature (mini) poisson", {
     tolerance = 1E-7
   )
 
+  # ============================ Test explain_iblm() =====================
+
+  ex <- explain_iblm(IBLM, splits$test)
+  ex_w <- explain_iblm(IBLM_w, splits$test)
+
+  shap_diff <- max(abs(ex[["shap"]] / ex_w[["shap"]] - 1))
+  beta_corrections_diff <- max(abs(ex[["beta_corrections"]] / ex_w[["beta_corrections"]] - 1), na.rm = T)
+  beta_coeff_diff <- max(abs(ex[["data_beta_coeff"]] / ex_w[["data_beta_coeff"]] - 1), na.rm = T)
+
+  # tolerance is a bit more forgiving as expect some minor differences from xgboost between 2 methods
+  testthat::expect_equal(shap_diff, 0, tolerance = 1E-4)
+  testthat::expect_equal(beta_corrections_diff, 0, tolerance = 1E-4)
+  testthat::expect_equal(beta_coeff_diff, 0, tolerance = 1E-4)
+
+
 
 })
 
@@ -279,4 +294,38 @@ testthat::test_that("test weighting feature (mini) tweedie", {
   )
 
 
+})
+
+
+
+
+
+
+
+
+
+testthat::test_that("test explain completes with weighting", {
+
+  vars <- names(freMTPLmini) |> setdiff("ClaimRate")
+
+  splits <- freMTPLmini  |>
+    dplyr::mutate(dummy = sample(c(1, 2, 3), nrow(freMTPLmini), replace = T)) |>
+    split_into_train_validate_test(seed = 1)
+
+  IBLM <- train_iblm_xgb(
+    splits,
+    response_var = "ClaimRate",
+    weight_var = "dummy",
+    family = "poisson"
+  )
+
+  testthat::expect_no_error(
+    {
+      ex <- explain_iblm(iblm_model = IBLM, data = splits$test)
+      ex$beta_corrected_scatter(vars[1])
+      ex$beta_corrected_density(vars[1])
+      ex$overall_correction()
+      ex$bias_density()
+    }
+  )
 })

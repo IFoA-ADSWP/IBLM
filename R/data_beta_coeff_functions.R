@@ -28,6 +28,7 @@ data_beta_coeff_glm <- function(
   check_iblm_model(iblm_model)
 
   response_var <- iblm_model$response_var
+  weight_var <- iblm_model$weight_var
   glm_beta_coeff <- iblm_model$glm_model$coefficients
   levels_all_cat <- iblm_model$cat_levels$all
   levels_reference_cat <- iblm_model$cat_levels$reference
@@ -49,6 +50,7 @@ data_beta_coeff_glm <- function(
 
   data |>
     dplyr::select(-dplyr::any_of(response_var)) |>
+    dplyr::select(-dplyr::any_of(weight_var)) |>
     dplyr::mutate(
       dplyr::across(
         dplyr::all_of(predictor_vars_categorical),
@@ -105,6 +107,7 @@ data_beta_coeff_booster <- function(data,
   check_iblm_model(iblm_model)
 
   response_var <- iblm_model$response_var
+  weight_var <- iblm_model$weight_var
   levels_all_cat <- iblm_model$cat_levels$all
   levels_reference_cat <- iblm_model$cat_levels$reference
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
@@ -112,6 +115,7 @@ data_beta_coeff_booster <- function(data,
 
   data |>
     dplyr::select(-dplyr::any_of(response_var)) |>
+    dplyr::select(-dplyr::any_of(weight_var)) |>
     dplyr::mutate(
       dplyr::across(
         dplyr::all_of(predictor_vars_categorical),
