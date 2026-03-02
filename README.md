@@ -50,7 +50,8 @@ df_list <- freMTPLmini  |>
 iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
-  family = "poisson"
+  weight_var = "Exposure",
+  family = "quasipoisson"
 )
 
 ex <- explain_iblm(iblm_model, df_list$test)

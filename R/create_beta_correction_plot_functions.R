@@ -19,7 +19,8 @@
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' test_data <- df_list$test
@@ -80,7 +81,8 @@ create_beta_corrected_scatter <- function(data_beta_coeff,
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' test_data <- df_list$test
@@ -145,7 +147,8 @@ create_beta_corrected_density <- function(wide_input_frame,
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' test_data <- df_list$test
@@ -197,7 +200,8 @@ create_bias_density <- function(shap,
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' test_data <- df_list$test
@@ -271,7 +275,8 @@ create_overall_correction <- function(shap,
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)
@@ -336,7 +341,8 @@ beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALS
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)
@@ -392,7 +398,8 @@ beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)
@@ -435,7 +442,8 @@ bias_density <- function(q = 0, type = "hist") {
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)

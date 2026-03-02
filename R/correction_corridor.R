@@ -22,7 +22,8 @@
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' correction_corridor(iblm_model = iblm_model, data = df_list$test, color = "DrivAge")

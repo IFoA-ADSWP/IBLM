@@ -45,7 +45,8 @@ data <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
 iblm_model <- train_iblm_xgb(
   data,
   response_var = "ClaimRate",
-  family = "poisson"
+  weight_var = "Exposure",
+  family = "quasipoisson"
 )
 
 predictions <- predict(iblm_model, data$test)

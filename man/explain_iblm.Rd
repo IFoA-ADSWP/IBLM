@@ -49,7 +49,8 @@ df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
 iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
-  family = "poisson"
+  weight_var = "Exposure",
+  family = "quasipoisson"
 )
 
 ex <- explain_iblm(iblm_model, df_list$test)

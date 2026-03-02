@@ -17,7 +17,8 @@
 #' iblm_model1 <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson",
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson",
 #'   params = list(max_depth = 6),
 #'   nrounds = 1000
 #' )
@@ -28,6 +29,7 @@
 #' iblm_model2 <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
+#'   weight_var = "Exposure",
 #'   family = "poisson",
 #'   params = list(max_depth = 1),
 #'   nrounds = 2

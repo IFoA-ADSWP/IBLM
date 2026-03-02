@@ -38,7 +38,8 @@
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' ex <- explain_iblm(iblm_model, df_list$test)
@@ -139,7 +140,8 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
@@ -201,7 +203,8 @@ data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' shap <- extract_booster_shap(iblm_model$booster_model, df_list$test)
@@ -276,7 +279,8 @@ shap_to_onehot <- function(shap,
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
 #'   response_var = "ClaimRate",
-#'   family = "poisson"
+#'   weight_var = "Exposure",
+#'   family = "quasipoisson"
 #' )
 #'
 #' shap <- extract_booster_shap(iblm_model$booster_model, df_list$test)

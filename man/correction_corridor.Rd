@@ -43,7 +43,8 @@ df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
 iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
-  family = "poisson"
+  weight_var = "Exposure",
+  family = "quasipoisson"
 )
 
 correction_corridor(iblm_model = iblm_model, data = df_list$test, color = "DrivAge")
