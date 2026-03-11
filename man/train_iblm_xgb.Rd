@@ -63,9 +63,9 @@ This function trains an interpretable boosted linear model.
 
 The function combines a Generalized Linear Model (GLM) with a booster model of XGBoost
 
-The "booster" model is trained on:
-- actual responses / GLM predictions, when the link function is log
-- actual responses - GLM predictions, when the link function is identity
+The "booster" model is trained on the residuals of the glm model to the response_var, such that:
+- when the link function is log, IBLM predictions = GLM predictions * Booster predictions
+- when the link function is identity, IBLM predictions = GLM predictions + Booster predictions
 }
 \details{
 The `family` argument will be fed into the GLM fitting. Default `params` values for the XGBoost fitting are also selected based on family:

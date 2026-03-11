@@ -5,9 +5,9 @@
 #'
 #' The function combines a Generalized Linear Model (GLM) with a booster model of XGBoost
 #'
-#' The "booster" model is trained on the residuals of the glm model to the response_var, such that:
-#' - when the link function is log, IBLM predictions = GLM predictions * Booster predictions
-#' - when the link function is identity, IBLM predictions = GLM predictions + Booster predictions
+#' The "booster" model is trained on:
+#' - actual responses / GLM predictions, when the link function is log
+#' - actual responses - GLM predictions, when the link function is identity
 #'
 #' @param df_list A named list containing training and validation datasets. Must have
 #'   elements named "train" and "validate", each containing df_list frames with the
@@ -59,25 +59,25 @@
 #' @seealso
 #' \link[stats]{glm}, \link[xgboost]{xgb.train}
 #'
-#' @export
-train_iblm_xgb <- function(df_list,
-                           response_var,
-                           weight_var = NULL,
-                           family = "poisson",
-                           params = list(),
-                           nrounds = 1000,
-                           objective = NULL,
-                           custom_metric = NULL,
-                           verbose = 0,
-                           print_every_n = 1L,
-                           early_stopping_rounds = 25,
-                           maximize = NULL,
-                           save_period = NULL,
-                           save_name = "xgboost.model",
-                           xgb_model = NULL,
-                           callbacks = list(),
-                           ...,
-                           strip_glm = TRUE) {
+#' @noRd
+train_iblm_xgb_original <- function(df_list,
+                             response_var,
+                             weight_var = NULL,
+                             family = "poisson",
+                             params = list(),
+                             nrounds = 1000,
+                             objective = NULL,
+                             custom_metric = NULL,
+                             verbose = 0,
+                             print_every_n = 1L,
+                             early_stopping_rounds = 25,
+                             maximize = NULL,
+                             save_period = NULL,
+                             save_name = "xgboost.model",
+                             xgb_model = NULL,
+                             callbacks = list(),
+                             ...,
+                             strip_glm = TRUE) {
 
   # ==================== checks ====================
 
@@ -209,27 +209,24 @@ train_iblm_xgb <- function(df_list,
 
   link <- glm_family$link
 
-  train$glm_preds <- unname(stats::predict(glm_model, train$features, type = "link"))
-  validate$glm_preds <- unname(stats::predict(glm_model, validate$features, type = "link"))
+  train$glm_preds <- unname(stats::predict(glm_model, train$features, type = "response"))
+  validate$glm_preds <- unname(stats::predict(glm_model, validate$features, type = "response"))
 
   if (link == "log") {
-    # train$targets <- train$responses / train$glm_preds
-    # validate$targets <- validate$responses / validate$glm_preds
+    train$targets <- train$responses / train$glm_preds
+    validate$targets <- validate$responses / validate$glm_preds
     relationship <- "multiplicative"
   } else if (link == "identity") {
-    # train$targets <- train$responses - train$glm_preds
-    # validate$targets <- validate$responses - validate$glm_preds
+    train$targets <- train$responses - train$glm_preds
+    validate$targets <- validate$responses - validate$glm_preds
     relationship <- "additive"
   } else {
     stop(paste0("link function was ", link, " but should be one of: log, identity"))
   }
 
+  train$xgb_matrix <- xgboost::xgb.DMatrix(train$features, label = train$targets, weight = train$weights)
+  validate$xgb_matrix <- xgboost::xgb.DMatrix(validate$features, label = validate$targets, weight = validate$weights)
 
-  train$xgb_matrix <- xgboost::xgb.DMatrix(train$features, label = train$responses, weight = train$weights)
-  validate$xgb_matrix <- xgboost::xgb.DMatrix(validate$features, label = validate$responses, weight = validate$weights)
-
-  xgboost::setinfo(train$xgb_matrix, "base_margin", train$glm_preds)
-  xgboost::setinfo(validate$xgb_matrix, "base_margin", validate$glm_preds)
 
   # ==================== Fitting XGB  ====================
 

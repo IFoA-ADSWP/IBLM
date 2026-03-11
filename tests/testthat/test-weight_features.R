@@ -137,7 +137,7 @@ testthat::test_that("test weighting feature (mini) gaussian", {
   testthat::expect_equal(
     prediction_max_difference,
     0,
-    tolerance = 1E-6
+    tolerance = 1E-7
   )
 
 
