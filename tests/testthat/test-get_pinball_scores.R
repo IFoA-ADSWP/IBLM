@@ -70,10 +70,16 @@ testthat::test_that("test against Karol original script", {
 
   # IBLM v1.0.2... (test re-set following data.matrix() correction)
 
+  # model = c("homog", "glm", "iblm"),
+  # poisson_deviance = c(0.6821739935523775, 0.6614371784998352, 0.6557417511577236),
+  # pinball_score = c(0, 0.030398131926074545, 0.038747068408471086)
+
+  # IBLM v1.0.3... (test re-set following base_margin use)
+
   ps_og <- data.frame(
     model = c("homog", "glm", "iblm"),
-    poisson_deviance = c(0.6821739935523775, 0.6614371784998352, 0.6557417511577236),
-    pinball_score = c(0, 0.030398131926074545, 0.038747068408471086)
+    poisson_deviance = c(0.682173993552377, 0.6614371784998351, 0.6560075047435496),
+    pinball_score = c(0, 0.03039813192607399, 0.03835749978178882)
   )
 
   testthat::expect_equal(ps_nu, ps_og)
@@ -101,11 +107,11 @@ testthat::test_that("test against Karol paper", {
 
   # warning are given because of non-integer response vars and a poisson predictor...
   # ...just have to suppress for this test as we cannot change data...
-  suppressWarnings(
+
     IBLM <- train_iblm_xgb(
       splits,
       response_var = "ClaimNb",
-      family = "poisson",
+      family = "quasipoisson",
       # additional param settings required for rec...
       params = list(
         base_score = 0.5,
@@ -117,7 +123,7 @@ testthat::test_that("test against Karol paper", {
       verbose = 0,
       early_stopping_rounds = 25
     )
-  )
+
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
   ps_nu <- get_pinball_scores(splits$test, IBLM)
@@ -139,24 +145,33 @@ testthat::test_that("test against Karol paper", {
     model = c("homog", "glm", "iblm"),
     poisson_deviance = c(1.4195,1.3606, 1.2483),
     pinball_score = c(0.00,4.15,12.06)/100
-  ) |>
-    dplyr::mutate(
-      dplyr::across(
-        dplyr::all_of(c("poisson_deviance", "pinball_score")),
-        function(x) round(x, 2)
-      )
-    )
+  )
 
   ps_nu <- ps_nu |>
     dplyr::mutate(
       dplyr::across(
         dplyr::all_of(c("poisson_deviance", "pinball_score")),
-        function(x) round(x, 2)
+        function(x) round(x, 4)
       )
     )
 
+  # expect homog and glm to match
+  testthat::expect_equal(
+    ps_nu |> dplyr::filter(model %in% c("homog", "glm")),
+    ps_og |> dplyr::filter(model %in% c("homog", "glm"))
+    )
 
-  testthat::expect_equal(ps_nu, ps_og)
+  # expect iblm to have an improved pinball score
+  testthat::expect_gt(
+    ps_nu |> dplyr::filter(model %in% c("iblm")) |> dplyr::pull(pinball_score),
+    ps_og |> dplyr::filter(model %in% c("iblm")) |> dplyr::pull(pinball_score)
+  )
+
+  # put hardcoded anchor (against v1.0.3) into iblm pinball score
+  testthat::expect_equal(
+    ps_nu |> dplyr::filter(model %in% c("iblm")) |> dplyr::pull(pinball_score),
+    0.1253
+  )
 
 })
 
