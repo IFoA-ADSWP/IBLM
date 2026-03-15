@@ -67,7 +67,7 @@ freMTPL2freq <- freMTPL2freq |>
   dplyr::mutate(ClaimRate = pmin(.data$ClaimRate, stats::quantile(.data$ClaimRate, 0.999))) |>  # <-- kept in to help rec with original paper
   dplyr::mutate(VehAge = pmin(.data$VehAge,50)) |>  # <-- kept in to help rec with original paper
   dplyr::select(-dplyr::all_of(c("IDpol", "ClaimNb"))) |>
-  dplyr::relocate(.data$Exposure, .after = -1) |>
+  dplyr::relocate(dplyr::all_of("Exposure"), .after = -1) |>
   dplyr::mutate(dplyr::across(dplyr::where(is.character), function(field) as.factor(field)))
 
 return(freMTPL2freq)

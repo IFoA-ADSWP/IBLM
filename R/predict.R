@@ -68,9 +68,6 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
     xgboost::xgb.DMatrix(data, base_margin = rep(0, nrow(data))),
     type = type)
 
-  # glm_links <- unname(stats::predict(object$glm_model, data, type = "link"))
-  # toreturn2 <- stats::predict(object$booster_model, xgboost::xgb.DMatrix(data, base_margin = glm_links), type = type)
-
   if (!is.na(trim)) {
     truncate <- function(x) {
       return(
