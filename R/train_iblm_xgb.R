@@ -16,6 +16,10 @@
 #'   column in the datasets. The string MUST appear in both `df_list$train` and `df_list$validate`.
 #' @param weight_var Character string specifying the name of a variable to weight by.
 #'  Value of NULL (default) for no weighting. Any string MUST appear in both `df_list$train` and `df_list$validate`.
+#' @param offset_var Character string specifying the name of a variable to use as offset.
+#'  Value of NULL (default) for no offset. Any string MUST appear in both `df_list$train` and `df_list$validate`.
+#'
+#' Any transformations required (e.g. log) must be performed BEFORE `df_list` is fed into function.
 #' @param family Character string specifying the distributional family for the model.
 #'   Currently only "poisson", "quasipoisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
 #' @param params Named list of additional parameters to pass to \link[xgboost]{xgb.train}.
@@ -63,6 +67,7 @@
 train_iblm_xgb <- function(df_list,
                            response_var,
                            weight_var = NULL,
+                           offset_var = NULL,
                            family = "poisson",
                            params = list(),
                            nrounds = 1000,
@@ -88,12 +93,16 @@ train_iblm_xgb <- function(df_list,
     check_required_names(df_list[["train"]], weight_var)
     check_required_names(df_list[["validate"]], weight_var)
   }
+  if (!is.null(offset_var)) {
+    check_required_names(df_list[["train"]], offset_var)
+    check_required_names(df_list[["validate"]], offset_var)
+  }
   stopifnot(
     length(response_var) == 1,
     names(df_list[["train"]]) == names(df_list[["validate"]])
   )
 
-  if(sum(is.na(df_list$train), is.na(df_list$validate), is.na(df_list$test)) >0 ) {
+  if (sum(is.na(df_list$train), is.na(df_list$validate)) > 0) {
     cli::cli_abort(
       "'df_list' cannot contain NA values"
     )
@@ -116,8 +125,8 @@ train_iblm_xgb <- function(df_list,
   train$responses <- df_list[["train"]] |> dplyr::pull(response_var)
   validate$responses <- df_list[["validate"]] |> dplyr::pull(response_var)
 
-  train$features <- df_list[["train"]] |> dplyr::select(-dplyr::all_of(c(response_var, weight_var)))
-  validate$features <- df_list[["validate"]] |> dplyr::select(-dplyr::all_of(c(response_var, weight_var)))
+  train$features <- df_list[["train"]] |> dplyr::select(-dplyr::all_of(c(response_var, weight_var, offset_var)))
+  validate$features <- df_list[["validate"]] |> dplyr::select(-dplyr::all_of(c(response_var, weight_var, offset_var)))
 
   if (!is.null(weight_var)) {
     train$weights <- df_list[["train"]] |> dplyr::pull(weight_var)
@@ -125,6 +134,14 @@ train_iblm_xgb <- function(df_list,
   } else {
     train$weights <- NULL
     validate$weights <- NULL
+  }
+
+  if (!is.null(offset_var)) {
+    train$offset <- df_list[["train"]] |> dplyr::pull(offset_var)
+    validate$offset <- df_list[["validate"]] |> dplyr::pull(offset_var)
+  } else {
+    train$offset <- NULL
+    validate$offset <- NULL
   }
 
   # ==================== glm distribution choices ====================
@@ -196,7 +213,11 @@ train_iblm_xgb <- function(df_list,
 
   predictor_vars <- names(train$features)
 
-  formula <- stats::as.formula(paste(response_var, "~", paste(predictor_vars, collapse = " + ")))
+  formula <- stats::as.formula(paste(
+    response_var, "~",
+    paste(predictor_vars, collapse = " + "),
+    if(!is.null(offset_var)) {paste0("+ offset(", offset_var, ")")}
+  ))
 
   glm_model <- stats::glm(
     formula,
@@ -209,16 +230,36 @@ train_iblm_xgb <- function(df_list,
 
   link <- glm_family$link
 
-  train$glm_preds <- unname(stats::predict(glm_model, train$features, type = "link"))
-  validate$glm_preds <- unname(stats::predict(glm_model, validate$features, type = "link"))
+  glm_train_data <- train$features |>
+    dplyr::bind_cols(
+      df_list[["train"]] |> dplyr::select(dplyr::any_of(offset_var))
+    )
+
+  glm_validate_data <- validate$features |>
+    dplyr::bind_cols(
+      df_list[["validate"]] |> dplyr::select(dplyr::any_of(offset_var))
+    )
+
+  train$glm_preds <- unname(stats::predict(
+    glm_model,
+    newdata = glm_train_data,
+    type = "link")
+    )
+
+  validate$glm_preds <- unname(stats::predict(
+    glm_model,
+    newdata = glm_validate_data,
+    type = "link")
+    )
+
+  # if (!is.null(offset_var)) {
+  #   train$glm_preds <- train$glm_preds + train$offset
+  #   validate$glm_preds <- validate$glm_preds + validate$offset
+  # }
 
   if (link == "log") {
-    # train$targets <- train$responses / train$glm_preds
-    # validate$targets <- validate$responses / validate$glm_preds
     relationship <- "multiplicative"
   } else if (link == "identity") {
-    # train$targets <- train$responses - train$glm_preds
-    # validate$targets <- validate$responses - validate$glm_preds
     relationship <- "additive"
   } else {
     stop(paste0("link function was ", link, " but should be one of: log, identity"))
@@ -349,6 +390,7 @@ train_iblm_xgb <- function(df_list,
 
   iblm_model$response_var <- response_var
   iblm_model$weight_var <- weight_var
+  iblm_model$offset_var <- offset_var
   iblm_model$predictor_vars <- predictor_vars
   iblm_model$cat_levels <- cat_levels
   iblm_model$coeff_names <- coeff_names

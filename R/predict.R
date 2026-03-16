@@ -59,13 +59,24 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
 
   response_var <- object$response_var
   weight_var <- object$weight_var
+  offset_var <- object$offset_var
+
   data <- newdata |> dplyr::select(-dplyr::any_of(c(response_var, weight_var)))
+
+  if (!is.null(offset_var) && (!offset_var %in% names(data))) {
+    cli::cli_inform("'iblm' object was fitted with offset {offset_var} but none found in data. Offset assumed to be zero.")
+    data[[offset_var]] <- 0
+  }
+
   relationship <- object["relationship"]
 
   glm <- unname(stats::predict(object$glm_model, data, type = type))
   booster <- stats::predict(
     object$booster_model,
-    xgboost::xgb.DMatrix(data, base_margin = rep(0, nrow(data))),
+    xgboost::xgb.DMatrix(
+      data |> dplyr::select(-dplyr::any_of(offset_var)),
+      base_margin = rep(0, nrow(data))
+      ),
     type = type)
 
   if (!is.na(trim)) {

@@ -8,6 +8,7 @@ train_iblm_xgb(
   df_list,
   response_var,
   weight_var = NULL,
+  offset_var = NULL,
   family = "poisson",
   params = list(),
   nrounds = 1000,
@@ -35,6 +36,11 @@ column in the datasets. The string MUST appear in both `df_list$train` and `df_l
 
 \item{weight_var}{Character string specifying the name of a variable to weight by.
 Value of NULL (default) for no weighting. Any string MUST appear in both `df_list$train` and `df_list$validate`.}
+
+\item{offset_var}{Character string specifying the name of a variable to use as offset.
+ Value of NULL (default) for no offset. Any string MUST appear in both `df_list$train` and `df_list$validate`.
+
+Any transformations required (e.g. log) must be performed BEFORE `df_list` is fed into function.}
 
 \item{family}{Character string specifying the distributional family for the model.
 Currently only "poisson", "quasipoisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.}
