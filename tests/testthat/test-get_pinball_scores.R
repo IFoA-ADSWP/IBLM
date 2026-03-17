@@ -90,7 +90,7 @@ testthat::test_that("test against Karol original script", {
 
 
 
-testthat::test_that("test against Karol paper", {
+testthat::test_that("rec against Karol paper", {
 
 
   # test takes too long for CRAN
@@ -177,6 +177,59 @@ testthat::test_that("test against Karol paper", {
 
 
 
+testthat::test_that("test against v1.0.3 saved results", {
+
+
+  # test takes too long for CRAN
+  testthat::skip_on_cran()
+
+  # ============================ Input data =====================
+
+  splits <- load_freMTPL2freq() |>
+    dplyr::rename(ClaimNb = ClaimRate) |>
+    dplyr::mutate(LogExposure = log(Exposure)) |>
+    dplyr::select(-Exposure) |>
+    split_into_train_validate_test(seed = 1)
+
+  # ============================ IBLM package process =====================
+
+  # warning are given because of non-integer response vars and a poisson predictor...
+  # ...just have to suppress for this test as we cannot change data...
+
+  IBLM <- train_iblm_xgb(
+    splits,
+    response_var = "ClaimNb",
+    offset_var = "LogExposure",
+    family = "quasipoisson",
+    # additional param settings required for rec...
+    params = list(
+      base_score = 0.5,
+      objective = "count:poisson",
+      seed=0,
+      tree_method = "auto"
+    ),
+    nrounds = 1000,
+    verbose = 0,
+    early_stopping_rounds = 25
+  )
+
+
+  # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
+  ps_nu <- get_pinball_scores(splits$test, IBLM)
+
+
+  # ============================ Anchored to v1.0.3 =====================
+
+  ps_og <- data.frame(
+    model = c("homog", "glm", "iblm"),
+    poisson_deviance = c(1.990195839743657, 1.882002346255756, 1.7340033938216008),
+    pinball_score = c(0, 0.05436323970099177, 0.12872725427616938)
+  )
+
+  # expect homog and glm to match
+  testthat::expect_equal(ps_nu, ps_og)
+
+})
 
 
 testthat::test_that("test error for character fields", {
