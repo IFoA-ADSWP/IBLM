@@ -143,7 +143,7 @@ get_pinball_scores <- function(data,
   model_names <- names(model_predictions)
 
   family <- iblm_model$glm_model$family$family
-  if (family == "quassipoisson") family <- "poisson"
+  if (family == "quassipoisson") {family <- "poisson"}
 
   pds <- purrr::map_dbl(
     model_names,

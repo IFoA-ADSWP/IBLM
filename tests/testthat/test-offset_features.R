@@ -11,14 +11,13 @@ testthat::test_that("test offset predictions are same as weight predictions", {
 
   # ============================ Input data =====================
 
-  data_weight <- freMTPLmini |>  split_into_train_validate_test(seed = 1)
+  data_weight <- freMTPLmini |>
+    dplyr::mutate(ClaimRate = ClaimNb / Exposure ) |>
+    dplyr::select(-ClaimNb) |>
+    split_into_train_validate_test(seed = 1)
 
   data_offset <- freMTPLmini |>
-    dplyr::mutate(
-      ClaimNb = ClaimRate * Exposure,
-      LogExposure = log(Exposure)
-      ) |>
-    dplyr::select(-c("ClaimRate", "Exposure")) |>
+    dplyr::mutate(LogExposure = log(Exposure), .keep = "unused" ) |>
     split_into_train_validate_test(seed = 1)
 
   # ============================ IBLM package process =====================
@@ -115,12 +114,8 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
 
   # ============================ Input data =====================
 
-  splits <- freMTPLmini |>
-    dplyr::mutate(
-      ClaimNb = ClaimRate * Exposure,
-      LogExposure = log(Exposure)
-    ) |>
-    dplyr::select(-c("ClaimRate", "Exposure")) |>
+  splits <-  freMTPLmini |>
+    dplyr::mutate(LogExposure = log(Exposure), .keep = "unused" ) |>
     split_into_train_validate_test(seed = 1)
 
   # ============================ IBLM package process =====================

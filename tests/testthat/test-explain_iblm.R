@@ -1,6 +1,6 @@
 
 testthat::test_that("test explain completes when one categorical and one continuous", {
-  vars <- c("VehBrand", "VehPower", "ClaimRate")
+  vars <- c("VehBrand", "VehPower", "ClaimNb")
 
   splits <- freMTPLmini  |>
     dplyr::select(dplyr::all_of(vars)) |>
@@ -8,8 +8,8 @@ testthat::test_that("test explain completes when one categorical and one continu
 
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
-    family = "quasipoisson"
+    response_var = "ClaimNb",
+    family = "poisson"
   )
 
   testthat::expect_no_error(
@@ -24,7 +24,7 @@ testthat::test_that("test explain completes when one categorical and one continu
 })
 
 testthat::test_that("test explain completes when categorical only", {
-  vars <- c("VehBrand", "Area", "ClaimRate")
+  vars <- c("VehBrand", "Area", "ClaimNb")
 
 
   splits <- freMTPLmini  |>
@@ -33,8 +33,8 @@ testthat::test_that("test explain completes when categorical only", {
 
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
-    family = "quasipoisson"
+    response_var = "ClaimNb",
+    family = "poisson"
   )
 
   testthat::expect_no_error(
@@ -50,7 +50,7 @@ testthat::test_that("test explain completes when categorical only", {
 
 testthat::test_that("test explain completes when continuous only", {
 
-  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "ClaimRate")
+  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "ClaimNb")
 
   splits <- freMTPLmini  |>
     dplyr::select(dplyr::all_of(vars)) |>
@@ -58,8 +58,8 @@ testthat::test_that("test explain completes when continuous only", {
 
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
-    family = "quasipoisson"
+    response_var = "ClaimNb",
+    family = "poisson"
   )
 
   testthat::expect_no_error(
@@ -85,9 +85,9 @@ testthat::test_that("test explain completes when logical field", {
 
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
+    response_var = "ClaimNb",
     weight_var = "Exposure",
-    family = "quasipoisson"
+    family = "poisson"
   )
 
   testthat::expect_no_error(
@@ -105,17 +105,17 @@ testthat::test_that("test explain completes when logical field", {
 
 testthat::test_that("test explain completes when no reference/zero levels", {
 
-  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "ClaimRate")
+  vars <- c("VehPower", "VehAge", "DrivAge", "BonusMalus", "ClaimNb")
 
   splits <- freMTPLmini  |>
     dplyr::select(dplyr::all_of(vars)) |>
-    dplyr::mutate(dplyr::across(-dplyr::all_of("ClaimRate"), \(x) pmax(x, 1))) |>
+    dplyr::mutate(dplyr::across(-dplyr::all_of("ClaimNb"), \(x) pmax(x, 1))) |>
     split_into_train_validate_test(seed = 1)
 
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
-    family = "quasipoisson"
+    response_var = "ClaimNb",
+    family = "poisson"
   )
 
   testthat::expect_no_error(
@@ -155,9 +155,9 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
 
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
+    response_var = "ClaimNb",
     weight_var = "Exposure",
-    family = "quasipoisson"
+    family = "poisson"
   )
 
   explainer_w_migrate <- explain_iblm(iblm_model = IBLM, data = splits$test, migrate_reference_to_bias = TRUE)
@@ -165,7 +165,7 @@ testthat::test_that("test migrate-to-bias vs non-migrate-to-bias options", {
   explainer_wout_migrate <- explain_iblm(iblm_model = IBLM, data = splits$test, migrate_reference_to_bias = FALSE)
 
   coeff_multiplier <- splits$test |>
-    dplyr::select(-dplyr::all_of(c("ClaimRate", "Exposure"))) |>
+    dplyr::select(-dplyr::all_of(c("ClaimNb", "Exposure"))) |>
     dplyr::mutate(
       dplyr::across(
         dplyr::all_of(IBLM$predictor_vars$categorical),
@@ -208,7 +208,7 @@ testthat::test_that("test gaussian can run", {
 
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
+    response_var = "ClaimNb",
     weight_var = "Exposure",
     family = "gaussian"
   )
@@ -235,13 +235,13 @@ testthat::test_that("test gamma can run", {
   vars <- names(freMTPLmini)
 
   splits <- freMTPLmini |>
-    dplyr::mutate(ClaimRate = round(ClaimRate) |> pmax(0.1)) |> # set min. ClaimRate to 0.1 as pre-requisite for gamma dist is x>0
+    dplyr::mutate(ClaimNb = round(ClaimNb) |> pmax(0.1)) |> # set min. ClaimNb to 0.1 as pre-requisite for gamma dist is x>0
     split_into_train_validate_test(seed = 1)
 
 
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
+    response_var = "ClaimNb",
     weight_var = "Exposure",
     family = "gamma"
   )
@@ -272,7 +272,7 @@ testthat::test_that("test tweedie can run", {
 
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
+    response_var = "ClaimNb",
     weight_var = "Exposure",
     family = "tweedie"
   )
@@ -304,8 +304,8 @@ testthat::test_that("test can change objective function", {
   testthat::expect_message(
   IBLM <- train_iblm_xgb(
     splits,
-    response_var = "ClaimRate",
-    family = "quasipoisson",
+    response_var = "ClaimNb",
+    family = "poisson",
     weight_var = "Exposure",
     params = list(objective = "reg:squarederror")
   )
