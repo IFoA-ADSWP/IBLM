@@ -35,7 +35,7 @@
 #'   data,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' predictions <- predict(iblm_model, data$test)

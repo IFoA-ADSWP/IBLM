@@ -57,7 +57,7 @@
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' @seealso

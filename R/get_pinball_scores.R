@@ -28,7 +28,7 @@
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' get_pinball_scores(data = df_list$test, iblm_model = iblm_model)
@@ -143,7 +143,7 @@ get_pinball_scores <- function(data,
   model_names <- names(model_predictions)
 
   family <- iblm_model$glm_model$family$family
-  if (family == "quasipoisson") family <- "poisson"
+  if (family == "poisson") family <- "poisson"
 
   pds <- purrr::map_dbl(
     model_names,

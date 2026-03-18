@@ -39,7 +39,7 @@
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' ex <- explain_iblm(iblm_model, df_list$test)
@@ -141,7 +141,7 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' wide_input_frame <- data_to_onehot(df_list$test, iblm_model)
@@ -204,7 +204,7 @@ data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' shap <- extract_booster_shap(iblm_model$booster_model, df_list$test)
@@ -280,7 +280,7 @@ shap_to_onehot <- function(shap,
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' shap <- extract_booster_shap(iblm_model$booster_model, df_list$test)

@@ -20,7 +20,7 @@
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' test_data <- df_list$test
@@ -82,7 +82,7 @@ create_beta_corrected_scatter <- function(data_beta_coeff,
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' test_data <- df_list$test
@@ -148,7 +148,7 @@ create_beta_corrected_density <- function(wide_input_frame,
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' test_data <- df_list$test
@@ -201,7 +201,7 @@ create_bias_density <- function(shap,
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' test_data <- df_list$test
@@ -276,7 +276,7 @@ create_overall_correction <- function(shap,
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)
@@ -342,7 +342,7 @@ beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALS
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)
@@ -399,7 +399,7 @@ beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)
@@ -443,7 +443,7 @@ bias_density <- function(q = 0, type = "hist") {
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' explain_objects <- explain_iblm(iblm_model, df_list$test)

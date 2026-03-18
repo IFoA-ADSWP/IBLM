@@ -14,7 +14,7 @@
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' data_glm <- data_beta_coeff_glm(df_list$train, iblm_model)
@@ -90,7 +90,7 @@ data_beta_coeff_glm <- function(
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' explainer_outputs <- explain_iblm(iblm_model, df_list$test)

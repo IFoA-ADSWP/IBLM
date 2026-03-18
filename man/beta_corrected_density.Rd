@@ -47,7 +47,7 @@ iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimNb",
   offset_var = "LogExposure",
-  family = "quasipoisson"
+  family = "poisson"
 )
 
 explain_objects <- explain_iblm(iblm_model, df_list$test)

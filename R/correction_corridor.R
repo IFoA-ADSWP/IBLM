@@ -23,7 +23,7 @@
 #'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
-#'   family = "quasipoisson"
+#'   family = "poisson"
 #' )
 #'
 #' correction_corridor(iblm_model = iblm_model, data = df_list$test, color = "DrivAge")
