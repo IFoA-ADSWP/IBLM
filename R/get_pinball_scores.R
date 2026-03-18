@@ -22,7 +22,9 @@
 #' Higher scores indicate better predictive performance.
 #'
 #' @examples
-#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
@@ -143,7 +145,7 @@ get_pinball_scores <- function(data,
   model_names <- names(model_predictions)
 
   family <- iblm_model$glm_model$family$family
-  if (family == "quassipoisson") {family <- "poisson"}
+  if (family == "quasipoisson") {family <- "poisson"}
 
   pds <- purrr::map_dbl(
     model_names,

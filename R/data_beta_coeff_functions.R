@@ -8,7 +8,9 @@
 #' @return A data frame with beta coefficients. The structure will be the same dimension as `data` except for a "bias" column at the start.
 #'
 #' @examples
-#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
@@ -84,7 +86,9 @@ data_beta_coeff_glm <- function(
 #' @return A data frame with beta coefficient corrections. The structure will be the same dimension as `data` except for a "bias" column at the start.
 #'
 #' @examples
-#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,

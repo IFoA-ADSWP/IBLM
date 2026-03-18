@@ -11,7 +11,9 @@
 #' @return Trained XGBoost model object (class "xgb.Booster").
 #'
 #' @examples
-#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' # training with plenty of rounds allowed
 #' iblm_model1 <- train_iblm_xgb(

@@ -33,7 +33,9 @@
 #' When calling these functions output from `explain_iblm()` only key settings like variable names, colours...etc need populating.
 #'
 #' @examples
-#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
@@ -135,7 +137,9 @@ explain_iblm <- function(iblm_model, data, migrate_reference_to_bias = TRUE) {
 #' an intercept column, and all variables ordered according to "coeff_names$all" from `iblm_model`
 #'
 #' @examples
-#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
@@ -198,7 +202,9 @@ data_to_onehot <- function(data, iblm_model, remove_target = TRUE) {
 #' @return A data frame where SHAP values are in wide format for categorical variables. Column "bias" is moved to start.
 #'
 #' @examples
-#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
@@ -274,7 +280,9 @@ shap_to_onehot <- function(shap,
 #' @return A data frame with the booster model beta corrections in one-hot (wide) format
 #'
 #' @examples
-#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,

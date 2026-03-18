@@ -38,7 +38,9 @@ Creates a faceted scatter plot comparing GLM predictions to ensemble predictions
 across different trim values, showing how the ensemble corrects the base GLM model.
 }
 \examples{
-df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |>
+  dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+  split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
   df_list,

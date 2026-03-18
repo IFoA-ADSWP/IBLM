@@ -29,7 +29,9 @@
 #' At this point, only an iblm model with a "booster_model" object of class `xgb.Booster` is supported
 #'
 #' @examples
-#' data <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   data,
@@ -50,9 +52,9 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
 
   check_iblm_model(object)
 
-  if (type != "response") {
+  if (type != c("link", "response")) {
     cli::cli_abort(c(
-      "x" = "Only supported type currently is {.val response}",
+      "x" = "Only supported type currently is {.val response} or {.val link}",
       "i" = "You supplied {.val {type}}"
     ))
   }
@@ -95,6 +97,8 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
   if (relationship == "multiplicative") {
     toreturn <- glm * booster
   } else if (relationship == "additive") {
+    toreturn <- glm + booster
+  } else if (relationship == "multiplicative" && type == "link") {
     toreturn <- glm + booster
   } else {
     cli::cli_abort(c(

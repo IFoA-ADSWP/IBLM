@@ -40,7 +40,9 @@ The prediction process involves the following steps:
 At this point, only an iblm model with a "booster_model" object of class `xgb.Booster` is supported
 }
 \examples{
-data <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |>
+  dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+  split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
   data,
