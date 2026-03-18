@@ -45,7 +45,7 @@ df_list <- freMTPLmini |>
   split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
-  data,
+  df_list,
   response_var = "ClaimNb",
   offset_var = "LogExposure",
   family = "poisson"

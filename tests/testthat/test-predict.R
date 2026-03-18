@@ -143,3 +143,33 @@ testthat::test_that("test multi/add predict() method gives same answer as base_m
 
 
 })
+
+
+
+
+testthat::test_that("test predict.iblm() link versus response", {
+
+  df_list <- freMTPLmini |>
+    dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+    split_into_train_validate_test(seed = 9000)
+
+  iblm_model <- train_iblm_xgb(
+    df_list,
+    response_var = "ClaimNb",
+    offset_var = "LogExposure",
+    family = "poisson"
+  )
+
+  predictions <- predict(iblm_model, df_list$test, type = "response")
+
+  links <- predict(iblm_model, df_list$test, type = "link")
+
+  prediction_max_difference <- max(abs(predictions / exp(links)  - 1))
+
+  testthat::expect_equal(
+    prediction_max_difference,
+    0,
+    tolerance = 1E-8
+  )
+})
+

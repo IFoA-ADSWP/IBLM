@@ -34,7 +34,7 @@
 #'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
-#'   data,
+#'   df_list,
 #'   response_var = "ClaimNb",
 #'   offset_var = "LogExposure",
 #'   family = "poisson"
@@ -52,7 +52,7 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
 
   check_iblm_model(object)
 
-  if (type != c("link", "response")) {
+  if (!type %in% c("link", "response")) {
     cli::cli_abort(c(
       "x" = "Only supported type currently is {.val response} or {.val link}",
       "i" = "You supplied {.val {type}}"
@@ -94,12 +94,12 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
     booster <- booster * 1 / mean(booster)
   }
 
-  if (relationship == "multiplicative") {
+  if (relationship == "multiplicative"  && type == "response") {
     toreturn <- glm * booster
   } else if (relationship == "additive") {
     toreturn <- glm + booster
   } else if (relationship == "multiplicative" && type == "link") {
-    toreturn <- glm + booster
+    toreturn <- glm + log(booster)
   } else {
     cli::cli_abort(c(
       "x" = "Invalid relationship attribute: {.val {relationship}}",
