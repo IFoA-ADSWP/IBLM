@@ -29,12 +29,12 @@
 #' At this point, only an iblm model with a "booster_model" object of class `xgb.Booster` is supported
 #'
 #' @examples
-#' data <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' data <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   data,
-#'   response_var = "ClaimRate",
-#'   weight_var = "Exposure",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "quasipoisson"
 #' )
 #'

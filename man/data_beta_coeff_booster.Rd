@@ -20,12 +20,12 @@ A data frame with beta coefficient corrections. The structure will be the same d
 Creates dataframe of Shap beta corrections for each row and predictor variable of `data`
 }
 \examples{
-df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
   df_list,
-  response_var = "ClaimRate",
-  weight_var = "Exposure",
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "quasipoisson"
 )
 

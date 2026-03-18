@@ -21,13 +21,13 @@ Trains an XGBoost model using parameters extracted from the booster residual com
 This is a convenient way to fit an XGBoost model for direct comparison with a fitted iblm model
 }
 \examples{
-df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 
 # training with plenty of rounds allowed
 iblm_model1 <- train_iblm_xgb(
   df_list,
-  response_var = "ClaimRate",
-  weight_var = "Exposure",
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "quasipoisson",
   params = list(max_depth = 6),
   nrounds = 1000
@@ -38,8 +38,8 @@ xgb1 <- train_xgb_as_per_iblm(iblm_model1)
 # training with severe restrictions (expected poorer results)
 iblm_model2 <- train_iblm_xgb(
   df_list,
-  response_var = "ClaimRate",
-  weight_var = "Exposure",
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "poisson",
   params = list(max_depth = 1),
   nrounds = 2

@@ -14,12 +14,12 @@
 #' @examples
 #' # ------- prepare iblm objects required -------
 #'
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
-#'   weight_var = "Exposure",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "quasipoisson"
 #' )
 #'
@@ -76,12 +76,12 @@ create_beta_corrected_scatter <- function(data_beta_coeff,
 #' @examples
 #' # ------- prepare iblm objects required -------
 #'
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
-#'   weight_var = "Exposure",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "quasipoisson"
 #' )
 #'
@@ -142,12 +142,12 @@ create_beta_corrected_density <- function(wide_input_frame,
 #' @examples
 #' # ------- prepare iblm objects required -------
 #'
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
-#'   weight_var = "Exposure",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "quasipoisson"
 #' )
 #'
@@ -195,12 +195,12 @@ create_bias_density <- function(shap,
 #' @examples
 #' # ------- prepare iblm objects required -------
 #'
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
-#'   weight_var = "Exposure",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "quasipoisson"
 #' )
 #'
@@ -270,12 +270,12 @@ create_overall_correction <- function(shap,
 #' @examples
 #' # This function is created inside explain_iblm() and is output as an item
 #'
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
-#'   weight_var = "Exposure",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "quasipoisson"
 #' )
 #'
@@ -336,12 +336,12 @@ beta_corrected_scatter <- function(varname, q = 0, color = NULL, marginal = FALS
 #' @examples
 #' # This function is created inside explain_iblm() and is output as an item
 #'
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
-#'   weight_var = "Exposure",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "quasipoisson"
 #' )
 #'
@@ -393,12 +393,12 @@ beta_corrected_density <- function(varname, q = 0.05, type = "kde") {
 #' @examples
 #' # This function is created inside explain_iblm() and is output as an item
 #'
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
-#'   weight_var = "Exposure",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "quasipoisson"
 #' )
 #'
@@ -437,12 +437,12 @@ bias_density <- function(q = 0, type = "hist") {
 #' @examples
 #' # This function is created inside explain_iblm() and is output as an item
 #'
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |> dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>  split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
-#'   weight_var = "Exposure",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "quasipoisson"
 #' )
 #'
