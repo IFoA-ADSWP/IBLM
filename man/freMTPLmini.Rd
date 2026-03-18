@@ -15,7 +15,7 @@ A data frame with 25,000 rows and 8 variables:
   \item{VehAge}{Age of the vehicle in years (integer)}
   \item{VehBrand}{Vehicle brand/manufacturer code (factor with levels like B6, B12, etc.)}
   \item{VehPower}{Vehicle power rating or engine horsepower category (integer)}
-  \item{ClaimRate}{Number of claims made, at an annualised rate (double)}
+  \item{ClaimNb}{Number of claims made, at an annualised rate (double)}
   \item{Exposure}{Length of Exposure in years (double)}
 }
 }
@@ -29,7 +29,8 @@ freMTPLmini
 A dataset containing information about French motor insurance policies and claims,
 commonly used for actuarial modeling and risk assessment studies.
 
-This is a "mini" subset of the CASdatasets `freMTPL2freq` data, with some manipulation (see details)
+This is a "mini" subset of the CASdatasets `freMTPL2freq` data, with some manipulation
+(see details) so that it is ready to plug into the IBLM functions
 }
 \details{
 The dataset is a sample of 25,000 records from `freMTPL2freq` from the `CASdatasets` package.
