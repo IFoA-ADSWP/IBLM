@@ -226,7 +226,7 @@ testthat::test_that("test against v1.0.3 saved results - mini", {
 })
 
 
-("test against v1.0.3 saved results", {
+testthat::test_that("test against v1.0.3 saved results", {
 
 
   # test takes too long for CRAN

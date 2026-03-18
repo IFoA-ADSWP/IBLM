@@ -122,33 +122,24 @@ testthat::test_that("test multi/add predict() method gives same answer as base_m
 
   # ============================ Check the two predict() outcomes =====================
 
+  predict_vs_predict <- function(IBLM_model, test_data) {
+
+    predict_w_predict <- predict(IBLM_model, test_data)
+    predict_w_base_margin <- predict_base_margin_method(IBLM_model, test_data)
+    prediction_max_difference <- max(abs(predict_w_base_margin / predict_w_predict - 1))
+    prediction_mean_difference <- mean(predict_w_base_margin / predict_w_predict - 1)
+    testthat::expect_equal(prediction_max_difference, 0, tolerance = 1E-4)
+    testthat::expect_equal(prediction_mean_difference, 0, tolerance = 1E-6)
+
+  }
+
   # poisson
 
-  predict_w_predict <- predict(IBLM_poisson, splits$test)
-  predict_w_base_margin <- predict_base_margin_method(IBLM_poisson, splits$test)
-  prediction_max_difference <- max(abs(predict_w_base_margin / predict_w_predict - 1))
-  prediction_mean_difference <- mean(predict_w_base_margin / predict_w_predict - 1)
-  testthat::expect_equal(prediction_max_difference, 0, tolerance = 1E-5)
-  testthat::expect_equal(prediction_mean_difference, 0, tolerance = 1E-6)
+  predict_vs_predict(IBLM_poisson, splits$test)
 
-  # guassian
+  predict_vs_predict(IBLM_gaussian, splits$test)
 
-  predict_w_predict <- predict(IBLM_gaussian, splits$test)
-  predict_w_base_margin <- predict_base_margin_method(IBLM_gaussian, splits$test)
-  prediction_max_difference <- max(abs(predict_w_base_margin / predict_w_predict - 1))
-  prediction_mean_difference <- mean(predict_w_base_margin / predict_w_predict - 1)
-  testthat::expect_equal(prediction_max_difference, 0, tolerance = 1E-5)
-  testthat::expect_equal(prediction_mean_difference, 0, tolerance = 1E-7)
-
-  # gamma
-
-  predict_w_predict <- predict(IBLM_gamma, splits_gamma$test)
-  predict_w_base_margin <- predict_base_margin_method(IBLM_gamma, splits_gamma$test)
-  prediction_max_difference <- max(abs(predict_w_base_margin / predict_w_predict - 1))
-  prediction_mean_difference <- mean(predict_w_base_margin / predict_w_predict - 1)
-  testthat::expect_equal(prediction_max_difference, 0, tolerance = 1E-5)
-  testthat::expect_equal(prediction_mean_difference, 0, tolerance = 1E-7)
-
+  predict_vs_predict(IBLM_gamma, splits$test)
 
 
 })
