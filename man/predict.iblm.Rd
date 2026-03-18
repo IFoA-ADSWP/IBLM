@@ -51,7 +51,7 @@ iblm_model <- train_iblm_xgb(
   family = "poisson"
 )
 
-predictions <- predict(iblm_model, data$test)
+predictions <- predict(iblm_model, df_list$test)
 
 predictions |> dplyr::glimpse()
 

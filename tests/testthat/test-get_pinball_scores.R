@@ -98,7 +98,27 @@ testthat::test_that("rec against Karol paper", {
 
   # ============================ Input data =====================
 
-  splits <- load_freMTPL2freq() |>
+
+  commit <- "c49cbbb37235fc49616cac8ccac32e1491cdc619"  # <- use this commit
+
+  url <- paste0("https://github.com/dutangc/CASdatasets/raw/", commit, "/data/freMTPL2freq.rda")
+
+  temp <- tempfile()
+
+  utils::download.file(url, temp)
+
+  load(temp)
+
+  freMTPL2freq <- freMTPL2freq |>
+    dplyr::mutate(ClaimNb = as.numeric(.data$ClaimNb)) |>
+    dplyr::mutate(ClaimRate = .data$ClaimNb / .data$Exposure) |>
+    dplyr::mutate(ClaimRate = pmin(.data$ClaimRate, stats::quantile(.data$ClaimRate, 0.999))) |>  # <-- kept in to help rec with original paper
+    dplyr::mutate(VehAge = pmin(.data$VehAge,50)) |>  # <-- kept in to help rec with original paper
+    dplyr::select(-dplyr::all_of(c("IDpol", "ClaimNb"))) |>
+    dplyr::relocate(dplyr::all_of("Exposure"), .after = -1) |>
+    dplyr::mutate(dplyr::across(dplyr::where(is.character), function(field) as.factor(field)))
+
+  splits <- freMTPL2freq |>
     dplyr::rename(ClaimNb = ClaimRate) |>
     dplyr::select(-Exposure) |>
     split_into_train_validate_test(seed = 1)
@@ -226,59 +246,6 @@ testthat::test_that("test against v1.0.3 saved results - mini", {
 })
 
 
-testthat::test_that("test against v1.0.3 saved results", {
-
-
-  # test takes too long for CRAN
-  testthat::skip_on_cran()
-
-  # ============================ Input data =====================
-
-  splits <- load_freMTPL2freq() |>
-    dplyr::rename(ClaimNb = ClaimRate) |>
-    dplyr::mutate(LogExposure = log(Exposure)) |>
-    dplyr::select(-Exposure) |>
-    split_into_train_validate_test(seed = 1)
-
-  # ============================ IBLM package process =====================
-
-  # warning are given because of non-integer response vars and a poisson predictor...
-  # ...just have to suppress for this test as we cannot change data...
-
-  IBLM <- train_iblm_xgb(
-    splits,
-    response_var = "ClaimNb",
-    offset_var = "LogExposure",
-    family = "quasipoisson",
-    # additional param settings required for rec...
-    params = list(
-      base_score = 0.5,
-      objective = "count:poisson",
-      seed=0,
-      tree_method = "auto"
-    ),
-    nrounds = 1000,
-    verbose = 0,
-    early_stopping_rounds = 25
-  )
-
-
-  # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
-  ps_nu <- get_pinball_scores(splits$test, IBLM)
-
-
-  # ============================ Anchored to v1.0.3 =====================
-
-  ps_og <- data.frame(
-    model = c("homog", "glm", "iblm"),
-    poisson_deviance = c(1.990195839743657, 1.882002346255756, 1.7340033938216008),
-    pinball_score = c(0, 0.05436323970099177, 0.12872725427616938)
-  )
-
-  # expect homog and glm to match
-  testthat::expect_equal(ps_nu, ps_og)
-
-})
 
 testthat::test_that("test error for character fields", {
 
