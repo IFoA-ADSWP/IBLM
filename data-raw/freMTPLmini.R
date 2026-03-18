@@ -15,8 +15,7 @@ load(temp)
 
 freMTPLmini <- freMTPL2freq |>
   dplyr::mutate(
-    ClaimRate = as.numeric(ClaimNb) / Exposure,
-    ClaimRate = pmin(ClaimRate, quantile(ClaimRate, 0.999)), # <-- kept in to help rec with original paper
+    ClaimNb = as.numeric(ClaimNb),
     VehAge = pmin(VehAge,50) # <-- kept in to help rec with original paper
   ) |>
   # turn any character fields into factors, should help keep package memory lower
@@ -31,13 +30,11 @@ freMTPLmini <- freMTPL2freq |>
     "VehAge",
     "VehBrand",
     "VehPower",
-    "ClaimRate",
+    "ClaimNb",
     "Exposure"
   ))) |>
   dplyr::slice_sample(n = 25000) %>%
   withr::with_seed(seed_no, .) |>
   tibble::as_tibble()
-
-
 
 usethis::use_data(freMTPLmini, overwrite = TRUE)
