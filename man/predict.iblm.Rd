@@ -46,7 +46,7 @@ iblm_model <- train_iblm_xgb(
   data,
   response_var = "ClaimNb",
   offset_var = "LogExposure",
-  family = "quasipoisson"
+  family = "poisson"
 )
 
 predictions <- predict(iblm_model, data$test)

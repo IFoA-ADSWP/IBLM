@@ -45,7 +45,7 @@ iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimNb",
   offset_var = "LogExposure",
-  family = "quasipoisson"
+  family = "poisson"
 )
 
 get_pinball_scores(data = df_list$test, iblm_model = iblm_model)

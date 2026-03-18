@@ -40,7 +40,7 @@ iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimNb",
   offset_var = "LogExposure",
-  family = "quasipoisson"
+  family = "poisson"
 )
 
 booster_shap <- extract_booster_shap(iblm_model$booster_model, df_list$test)

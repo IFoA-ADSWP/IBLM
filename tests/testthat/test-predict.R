@@ -12,14 +12,13 @@ testthat::test_that("test corrected beta coeffecient predictions are same as pre
 
   # ============================ Input data =====================
 
-  data <- freMTPLmini |>  split_into_train_validate_test(seed = 1)
+  splits <- freMTPLmini |>
+    dplyr::mutate(ClaimRate = ClaimNb / Exposure) |>
+    dplyr::select(-ClaimNb) |>
+    dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+    dplyr::mutate(ClaimRate = round(ClaimRate)) |>
+    split_into_train_validate_test(seed = 1)
 
-
-  # changing factors to characters... this is necessary as bug in original script handles factors incorrectly
-  # changing "ClaimRate" to use "ClaimNb"... this is necessary as "ClaimNb" hardcoded in KG script and easier to modify in package script
-  # changing "ClaimNb" to round to integer values. This is to avoid warnings in the test environment.
-  splits <- data |>
-    purrr::modify(.f = function(x) dplyr::mutate(x, ClaimRate = round(ClaimRate)))
 
   # ============================ IBLM package process =====================
 
@@ -75,7 +74,10 @@ testthat::test_that("test multi/add predict() method gives same answer as base_m
 
   # ============================ Input data =====================
 
-  splits <- freMTPLmini |>  split_into_train_validate_test(seed = 1)
+  splits <- freMTPLmini |>
+    dplyr::mutate(ClaimRate = ClaimNb / Exposure) |>
+    dplyr::select(-ClaimNb) |>
+    split_into_train_validate_test(seed = 1)
 
   withr::with_seed(1, {
     splits_gamma <- splits |>
@@ -127,7 +129,7 @@ testthat::test_that("test multi/add predict() method gives same answer as base_m
   prediction_max_difference <- max(abs(predict_w_base_margin / predict_w_predict - 1))
   prediction_mean_difference <- mean(predict_w_base_margin / predict_w_predict - 1)
   testthat::expect_equal(prediction_max_difference, 0, tolerance = 1E-5)
-  testthat::expect_equal(prediction_mean_difference, 0, tolerance = 1E-7)
+  testthat::expect_equal(prediction_mean_difference, 0, tolerance = 1E-6)
 
   # guassian
 

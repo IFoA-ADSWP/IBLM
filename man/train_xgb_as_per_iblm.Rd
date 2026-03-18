@@ -28,7 +28,7 @@ iblm_model1 <- train_iblm_xgb(
   df_list,
   response_var = "ClaimNb",
   offset_var = "LogExposure",
-  family = "quasipoisson",
+  family = "poisson",
   params = list(max_depth = 6),
   nrounds = 1000
 )
