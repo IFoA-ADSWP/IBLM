@@ -217,11 +217,11 @@ train_iblm_xgb <- function(df_list,
     offset_vals <- df_list[["train"]][[offset_var]]
     if (min(offset_vals, na.rm = TRUE) >= 0 && max(offset_vals, na.rm = TRUE) / min(offset_vals[offset_vals > 0], na.rm = TRUE) > 1000) {
       cli::cli_warn(
-        "{.val {offset_var}} spans several orders of magnitude. Offset must be on the log scale — did you forget to log-transform?"
+        "{.val {offset_var}} spans several orders of magnitude. Offset must be on the log scale. Did you forget to log-transform?"
       )
     } else if (min(offset_vals, na.rm = TRUE) >= 0 && max(offset_vals, na.rm = TRUE) <= 1) {
       cli::cli_warn(
-        "{.val {offset_var}} has a range of 0 to 1. Offset must be on the log scale — did you forget to log-transform?"
+        "{.val {offset_var}} has a range of 0 to 1. Offset must be on the log scale. Did you forget to log-transform?"
       )
     }
   }
