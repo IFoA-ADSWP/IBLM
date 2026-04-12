@@ -220,7 +220,7 @@ beta_corrected_density_internal <- function(
 
   check_iblm_model(iblm_model)
 
-  glm_beta_coeff <- iblm_model$glm_model$coefficient
+  glm_beta_coeff <- iblm_model$glm_model$coefficients
   levels_all_cat <- iblm_model$cat_levels$all
   coef_names_reference_cat <- iblm_model$coeff_names$reference_cat
   x_glm_model <- iblm_model$glm_model

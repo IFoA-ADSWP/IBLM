@@ -70,7 +70,7 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
     data[[offset_var]] <- 0
   }
 
-  relationship <- object["relationship"]
+  relationship <- object[["relationship"]]
 
   glm <- unname(stats::predict(object$glm_model, data, type = type))
   booster <- stats::predict(
@@ -85,7 +85,7 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
     truncate <- function(x) {
       return(
         pmax(
-          pmin(booster, 1 + trim),
+          pmin(x, 1 + trim),
           max(1 - trim, 0)
         )
       )

@@ -40,7 +40,7 @@ check_iblm_model <- function(model, booster_models_supported = c("xgb.Booster"))
   }
 
   # Check relationship value
-  rel <- model["relationship"]
+  rel <- model[["relationship"]]
   if (!rel %in% c("additive", "multiplicative")) {
     cli::cli_abort(c(
       "x" = "Invalid relationship type: {.val {rel}}",
