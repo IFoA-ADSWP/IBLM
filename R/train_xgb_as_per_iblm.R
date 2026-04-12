@@ -71,6 +71,7 @@ train_xgb_as_per_iblm <- function(iblm_model, ...) {
 
   response_var <- iblm_model$response_var
   weight_var <- iblm_model$weight_var
+  offset_var <- iblm_model$offset_var
 
   train <- list()
   validate <- list()
@@ -78,8 +79,8 @@ train_xgb_as_per_iblm <- function(iblm_model, ...) {
   train$targets <- iblm_model$data$train |> dplyr::pull(response_var)
   validate$targets <- iblm_model$data$validate |> dplyr::pull(response_var)
 
-  train$features <- iblm_model$data$train |> dplyr::select(-dplyr::all_of(c(response_var, weight_var)))
-  validate$features <- iblm_model$data$validate |> dplyr::select(-dplyr::all_of(c(response_var, weight_var)))
+  train$features <- iblm_model$data$train |> dplyr::select(-dplyr::all_of(c(response_var, weight_var, offset_var)))
+  validate$features <- iblm_model$data$validate |> dplyr::select(-dplyr::all_of(c(response_var, weight_var, offset_var)))
 
   if (!is.null(weight_var)) {
     train$weights <- iblm_model$data$train |> dplyr::pull(weight_var)
@@ -94,6 +95,12 @@ train_xgb_as_per_iblm <- function(iblm_model, ...) {
   train$xgb_matrix <- xgboost::xgb.DMatrix(train$features, label = train$targets, weight = train$weights)
   validate$xgb_matrix <- xgboost::xgb.DMatrix(validate$features, label = validate$targets, weight = validate$weights)
 
+  if (!is.null(offset_var)) {
+    train$offset <- iblm_model$data$train |> dplyr::pull(offset_var)
+    validate$offset <- iblm_model$data$validate |> dplyr::pull(offset_var)
+    xgboost::setinfo(train$xgb_matrix, "base_margin", train$offset)
+    xgboost::setinfo(validate$xgb_matrix, "base_margin", validate$offset)
+  }
 
   # ==================== Fitting XGB  ====================
 

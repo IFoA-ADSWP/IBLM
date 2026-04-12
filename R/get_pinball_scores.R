@@ -56,14 +56,17 @@ get_pinball_scores <- function(data,
   if (is.null(offset_var)) {
     data_predictors <- data |> dplyr::select(dplyr::all_of(vars_for_model))
     data_offsets    <- 0
+    xgb_base_margin <- NULL
   } else if (offset_var %in% names(data)) {
     data_predictors <- data |> dplyr::select(dplyr::all_of(c(vars_for_model, offset_var)))
     data_offsets    <- data[[offset_var]]
+    xgb_base_margin <- data_offsets
   } else {
     data_predictors <- data |> dplyr::select(dplyr::all_of(vars_for_model))
     data_predictors[[offset_var]] <- 0
     cli::cli_inform("Column {.field {offset_var}} not found in {.arg data}. Offset of 0 assumed.")
     data_offsets <- 0
+    xgb_base_margin <- NULL
   }
 
   # ------- Derive test-set weights for deviance calculation -------
@@ -126,7 +129,14 @@ get_pinball_scores <- function(data,
 
     predict_dispatch <- function(model, data) {
       if (inherits(model, "xgb.Booster")) {
-        stats::predict(model, xgboost::xgb.DMatrix(data))
+        dmat <- if (!is.null(xgb_base_margin)) {
+          data <- data |> dplyr::select(-dplyr::any_of(offset_var))
+          xgboost::xgb.DMatrix(data, base_margin = xgb_base_margin)
+        } else {
+          data <- data |> dplyr::select(-dplyr::any_of(offset_var))
+          xgboost::xgb.DMatrix(data)
+        }
+        stats::predict(model, dmat)
       } else {
         stats::predict(model, data, type = "response")
       }
