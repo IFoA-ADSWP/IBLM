@@ -63,7 +63,6 @@ load(temp)
 
 freMTPL2freq <- freMTPL2freq |>
   dplyr::mutate(ClaimNb = as.numeric(.data$ClaimNb)) |> # <-- kept in to help rec with original paper
-  #dplyr::mutate(ClaimNb = pmin(.data$ClaimNb, stats::quantile(.data$ClaimNb, 0.9999))) |>
   dplyr::mutate(VehAge = pmin(.data$VehAge,50)) |>  # <-- kept in to help rec with original paper
   dplyr::select(-dplyr::all_of(c("IDpol"))) |>
   dplyr::relocate(dplyr::all_of(c("ClaimNb", "Exposure")), .after = -1) |>
