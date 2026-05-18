@@ -29,15 +29,18 @@
 #' At this point, only an iblm model with a "booster_model" object of class `xgb.Booster` is supported
 #'
 #' @examples
-#' data <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
-#'   data,
-#'   response_var = "ClaimRate",
+#'   df_list,
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "poisson"
 #' )
 #'
-#' predictions <- predict(iblm_model, data$test)
+#' predictions <- predict(iblm_model, df_list$test)
 #'
 #' predictions |> dplyr::glimpse()
 #'
@@ -49,24 +52,40 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
 
   check_iblm_model(object)
 
-  if (type != "response") {
+  if (!type %in% c("link", "response")) {
     cli::cli_abort(c(
-      "x" = "Only supported type currently is {.val response}",
+      "x" = "Only supported type currently is {.val response} or {.val link}",
       "i" = "You supplied {.val {type}}"
     ))
   }
 
-  response_var <- all.vars(object$glm_model$formula)[1]
-  data <- newdata |> dplyr::select(-dplyr::any_of(response_var))
-  relationship <- object["relationship"]
+  response_var <- object$response_var
+  weight_var <- object$weight_var
+  offset_var <- object$offset_var
+
+  data <- newdata |> dplyr::select(-dplyr::any_of(c(response_var, weight_var)))
+
+  if (!is.null(offset_var) && (!offset_var %in% names(data))) {
+    cli::cli_inform("'iblm' object was fitted with offset {offset_var} but none found in data. Offset assumed to be zero.")
+    data[[offset_var]] <- 0
+  }
+
+  relationship <- object[["relationship"]]
+
   glm <- unname(stats::predict(object$glm_model, data, type = type))
-  booster <- stats::predict(object$booster_model, xgboost::xgb.DMatrix(data), type = type)
+  booster <- stats::predict(
+    object$booster_model,
+    xgboost::xgb.DMatrix(
+      data |> dplyr::select(-dplyr::any_of(offset_var)),
+      base_margin = rep(0, nrow(data))
+      ),
+    type = type)
 
   if (!is.na(trim)) {
     truncate <- function(x) {
       return(
         pmax(
-          pmin(booster, 1 + trim),
+          pmin(x, 1 + trim),
           max(1 - trim, 0)
         )
       )
@@ -75,10 +94,12 @@ predict.iblm <- function(object, newdata, trim = NA_real_, type = "response", ..
     booster <- booster * 1 / mean(booster)
   }
 
-  if (relationship == "multiplicative") {
+  if (relationship == "multiplicative"  && type == "response") {
     toreturn <- glm * booster
   } else if (relationship == "additive") {
     toreturn <- glm + booster
+  } else if (relationship == "multiplicative" && type == "link") {
+    toreturn <- glm + log(booster)
   } else {
     cli::cli_abort(c(
       "x" = "Invalid relationship attribute: {.val {relationship}}",

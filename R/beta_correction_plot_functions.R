@@ -120,6 +120,15 @@ beta_corrected_scatter_internal <- function(varname,
     stderror <- summary(iblm_model$glm_model)$coefficients[varname, "Std. Error"]
     beta <- glm_beta_coeff[varname]
 
+    if(is.na(stderror)) {
+      stderrorlines <- list()
+    } else {
+    stderrorlines <- list(
+      geom_hline(yintercept = beta - stderror, linetype = "dashed", color = "black", linewidth = 0.5),
+      geom_hline(yintercept = beta + stderror, linetype = "dashed", color = "black", linewidth = 0.5)
+    )
+    }
+
     p <- plot_data |>
       ggplot() +
       geom_point(
@@ -140,13 +149,17 @@ beta_corrected_scatter_internal <- function(varname,
       } +
       labs(
         title = paste("Beta Coefficients after SHAP corrections for", varname),
-        subtitle = paste0(varname, " beta: ", round(beta, 3), ", SE: +/-", round(stderror, 4)),
+        subtitle = paste0(
+          varname,
+          " beta: ",
+          round(beta, 3),
+          if(is.na(stderror)) {""} else {paste0(", SE: +/-", round(stderror, 4))}
+            ),
         x = varname,
         y = "Beta Coefficients"
       ) +
       geom_hline(yintercept = beta, color = "black", linewidth = 0.5) +
-      geom_hline(yintercept = beta - stderror, linetype = "dashed", color = "black", linewidth = 0.5) +
-      geom_hline(yintercept = beta + stderror, linetype = "dashed", color = "black", linewidth = 0.5) +
+      stderrorlines +
       theme_iblm()
 
     if (marginal) {
@@ -207,7 +220,7 @@ beta_corrected_density_internal <- function(
 
   check_iblm_model(iblm_model)
 
-  glm_beta_coeff <- iblm_model$glm_model$coefficient
+  glm_beta_coeff <- iblm_model$glm_model$coefficients
   levels_all_cat <- iblm_model$cat_levels$all
   coef_names_reference_cat <- iblm_model$coeff_names$reference_cat
   x_glm_model <- iblm_model$glm_model
@@ -271,6 +284,14 @@ beta_corrected_density_internal <- function(
     stderror <- summary(x_glm_model)$coefficients[varname, "Std. Error"]
     beta <- glm_beta_coeff[varname]
     shap_deviations <- beta_corrections[, varname]
+    if(is.na(stderror)) {
+      stderrorlines <- list()
+    } else {
+      stderrorlines <- list(
+        geom_vline(xintercept = beta - stderror, linetype = "dashed", color = iblm_colors[3], linewidth = 0.5),
+        geom_vline(xintercept = beta + stderror, linetype = "dashed", color = iblm_colors[3], linewidth = 0.5)
+      )
+    }
   }
 
   # remove policies that do not have the level that was specified via varname (only when varname is a variable-level combo)
@@ -299,11 +320,15 @@ beta_corrected_density_internal <- function(
     ggplot(aes(x = .data$x)) +
     geom_corrections_density +
     geom_vline(xintercept = beta, color = iblm_colors[2], linewidth = 0.5) +
-    geom_vline(xintercept = beta - stderror, linetype = "dashed", color = iblm_colors[3], linewidth = 0.5) +
-    geom_vline(xintercept = beta + stderror, linetype = "dashed", color = iblm_colors[3], linewidth = 0.5) +
+    stderrorlines +
     labs(
       title = paste("Beta density after SHAP corrections for", varname),
-      subtitle = paste0(varname, " beta: ", round(beta, 3), ", SE: +/-", round(stderror, 4)),
+      subtitle = paste0(
+        varname,
+        " beta: ",
+        round(beta, 3),
+        if(is.na(stderror)) {""} else {paste0(", SE: +/-", round(stderror, 4))}
+      )
     ) +
     xlab("Beta Coefficients") +
     xlim(lower_bound, upper_bound) +
@@ -437,6 +462,7 @@ bias_density_internal <- function(q = 0,
   # --------- plot bias correction by var ------------
 
   stderror <- summary(iblm_model$glm_model)$coefficients[predictor_vars_continuous, "Std. Error"]
+  is_no_se <- all(is.na(stderror))
 
   stderror_df <- data.frame(
     var = predictor_vars_continuous,
@@ -446,25 +472,35 @@ bias_density_internal <- function(q = 0,
     dplyr::filter(.data$var %in% remaining_vars)
 
   shap_quantiles <-  stats::quantile(bias_correction_var_df$bias_correction, probs = c(q, 1 - q))
-  lower_bound <- min(shap_quantiles[1], stderror_df$stderror_minus)
-  upper_bound <- max(shap_quantiles[2], stderror_df$stderror_plus)
+  lower_bound <- min(shap_quantiles[1], stderror_df$stderror_minus, na.rm = T)
+  upper_bound <- max(shap_quantiles[2], stderror_df$stderror_plus, na.rm = T)
+
+  if (is_no_se) {
+    stderrorlines <- list()
+  } else {
+    stderrorlines <- list(
+      geom_vline(
+        data = stderror_df,
+        mapping = aes(xintercept = .data$stderror_plus),
+        linetype = "dashed",
+        color = iblm_colors[2],
+        linewidth = 0.5
+      ),
+      geom_vline(
+        data = stderror_df,
+        mapping = aes(xintercept = .data$stderror_minus),
+        linetype = "dashed",
+        color = iblm_colors[2],
+        linewidth = 0.5
+      )
+    )
+  }
 
   bias_correction_var <-
     bias_correction_var_df |>
     ggplot(aes(x=.data$bias_correction)) +
     geom_corrections_density +
-    geom_vline(
-      data = stderror_df,
-      mapping = aes(xintercept = .data$stderror_plus),
-      linetype = "dashed",
-      color = iblm_colors[2],
-      linewidth = 0.5) +
-    geom_vline(
-      data = stderror_df,
-      mapping = aes(xintercept = .data$stderror_minus),
-      linetype = "dashed",
-      color = iblm_colors[2],
-      linewidth = 0.5) +
+    stderrorlines +
     labs(
       title = paste("Density for SHAP corrections that are migrated to bias")
     ) +
@@ -491,22 +527,30 @@ bias_density_internal <- function(q = 0,
   lower_bound_bias <- min(bias_quantiles[1], estimate_bias - stderror_bias)
   upper_bound_bias <- max(bias_quantiles[2], estimate_bias + stderror_bias)
 
-  bias_correction_total <-
-    bias_correction_total_df |>
-    ggplot(aes(x=.data$bias_correction)) +
-    geom_corrections_density +
+  if(is.na(stderror_bias)) {
+    stderrorlines <- list()
+  } else {
+  stderrorlines <- list(
     geom_vline(
-      xintercept = estimate_bias + stderror_bias,
-      linetype = "dashed",
-      color = iblm_colors[2],
-      linewidth = 0.5
-    ) +
+    xintercept = estimate_bias + stderror_bias,
+    linetype = "dashed",
+    color = iblm_colors[2],
+    linewidth = 0.5
+  ),
     geom_vline(
       xintercept = estimate_bias - stderror_bias,
       linetype = "dashed",
       color = iblm_colors[2],
       linewidth = 0.5
-    ) +
+    )
+  )
+  }
+
+  bias_correction_total <-
+    bias_correction_total_df |>
+    ggplot(aes(x=.data$bias_correction)) +
+    geom_corrections_density +
+    stderrorlines +
     geom_vline(
       xintercept = estimate_bias,
       linetype = "solid",
@@ -515,7 +559,11 @@ bias_density_internal <- function(q = 0,
     ) +
     labs(
       title = paste("Density for corrected bias values"),
-      subtitle = paste0("bias: ", round(estimate_bias, 3), ", SE: +/-", round(stderror_bias, 4)),
+      subtitle = paste0(
+        "bias: ",
+        round(estimate_bias, 3),
+        if(is.na(stderror_bias)) {""} else {paste0(", SE: +/-", round(stderror_bias, 4))}
+      )
     ) +
     xlab("Bias Values") +
     ylab("Count") +

@@ -7,6 +7,8 @@
 train_iblm_xgb(
   df_list,
   response_var,
+  weight_var = NULL,
+  offset_var = NULL,
   family = "poisson",
   params = list(),
   nrounds = 1000,
@@ -32,8 +34,16 @@ same structure. This item is naturally output from the function [split_into_trai
 \item{response_var}{Character string specifying the name of the response variable
 column in the datasets. The string MUST appear in both `df_list$train` and `df_list$validate`.}
 
+\item{weight_var}{Character string specifying the name of a variable to weight by.
+Value of NULL (default) for no weighting. Any string MUST appear in both `df_list$train` and `df_list$validate`.}
+
+\item{offset_var}{Character string specifying the name of a variable to use as offset.
+ Value of NULL (default) for no offset. Any string MUST appear in both `df_list$train` and `df_list$validate`.
+
+Any transformations required (e.g. log) must be performed BEFORE `df_list` is fed into function.}
+
 \item{family}{Character string specifying the distributional family for the model.
-Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.}
+Currently only "poisson", "quasipoisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.}
 
 \item{params}{Named list of additional parameters to pass to \link[xgboost]{xgb.train}.
 Note that \link{train_iblm_xgb} will select "objective" and "base_score" for you
@@ -59,14 +69,15 @@ This function trains an interpretable boosted linear model.
 
 The function combines a Generalized Linear Model (GLM) with a booster model of XGBoost
 
-The "booster" model is trained on:
-- actual responses / GLM predictions, when the link function is log
-- actual responses - GLM predictions, when the link function is identity
+The "booster" model is trained on the residuals of the glm model to the response_var, such that:
+- when the link function is log, IBLM predictions = GLM predictions * Booster predictions
+- when the link function is identity, IBLM predictions = GLM predictions + Booster predictions
 }
 \details{
 The `family` argument will be fed into the GLM fitting. Default `params` values for the XGBoost fitting are also selected based on family:
 \itemize{
   \item For "poisson" family, the "objective" is set to "count:poisson"
+  \item For "quasipoisson" family, the "objective" is set to "count:poisson"
   \item For "gamma" family, the "objective" is set to "reg:gamma"
   \item For "tweedie" family, the "objective" is set to "reg:tweedie". Also, "tweedie_variance_power = 1.5".
   \item For "gaussian" family, the "objective" is set to "reg:squarederror"
@@ -75,11 +86,14 @@ The `family` argument will be fed into the GLM fitting. Default `params` values 
 Note: Any xgboost configuration below will be overwritten by any explicit arguments input into `train_iblm_xgb()`
 }
 \examples{
-df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |>
+  dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+  split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
   df_list,
-  response_var = "ClaimRate",
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "poisson"
 )
 

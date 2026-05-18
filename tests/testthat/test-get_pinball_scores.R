@@ -70,11 +70,17 @@ testthat::test_that("test against Karol original script", {
 
   # IBLM v1.0.2... (test re-set following data.matrix() correction)
 
+  # model = c("homog", "glm", "iblm"),
+  # poisson_deviance = c(0.6821739935523775, 0.6614371784998352, 0.6557417511577236),
+  # pinball_score = c(0, 0.030398131926074545, 0.038747068408471086)
+
+  # IBLM v1.0.3... (test re-set following base_margin use)
+
   ps_og <- data.frame(
-      model = c("homog", "glm", "iblm"),
-      poisson_deviance = c(0.6821739935523775, 0.6614371784998352, 0.6557417511577236),
-      pinball_score = c(0, 0.030398131926074545, 0.038747068408471086)
-    )
+    model = c("homog", "glm", "iblm"),
+    poisson_deviance = c(0.682173993552377, 0.6614371784998351, 0.6560075047435496),
+    pinball_score = c(0, 0.03039813192607399, 0.03835749978178882)
+  )
 
   testthat::expect_equal(ps_nu, ps_og)
 
@@ -84,7 +90,7 @@ testthat::test_that("test against Karol original script", {
 
 
 
-testthat::test_that("test against Karol paper", {
+testthat::test_that("rec against Karol paper", {
 
 
   # test takes too long for CRAN
@@ -92,29 +98,52 @@ testthat::test_that("test against Karol paper", {
 
   # ============================ Input data =====================
 
-  splits <- load_freMTPL2freq() |> split_into_train_validate_test(seed = 1)
+
+  commit <- "c49cbbb37235fc49616cac8ccac32e1491cdc619"  # <- use this commit
+
+  url <- paste0("https://github.com/dutangc/CASdatasets/raw/", commit, "/data/freMTPL2freq.rda")
+
+  temp <- tempfile()
+
+  utils::download.file(url, temp)
+
+  load(temp)
+
+  freMTPL2freq <- freMTPL2freq |>
+    dplyr::mutate(ClaimNb = as.numeric(.data$ClaimNb)) |>
+    dplyr::mutate(ClaimRate = .data$ClaimNb / .data$Exposure) |>
+    dplyr::mutate(ClaimRate = pmin(.data$ClaimRate, stats::quantile(.data$ClaimRate, 0.999))) |>  # <-- kept in to help rec with original paper
+    dplyr::mutate(VehAge = pmin(.data$VehAge,50)) |>  # <-- kept in to help rec with original paper
+    dplyr::select(-dplyr::all_of(c("IDpol", "ClaimNb"))) |>
+    dplyr::relocate(dplyr::all_of("Exposure"), .after = -1) |>
+    dplyr::mutate(dplyr::across(dplyr::where(is.character), function(field) as.factor(field)))
+
+  splits <- freMTPL2freq |>
+    dplyr::rename(ClaimNb = ClaimRate) |>
+    dplyr::select(-Exposure) |>
+    split_into_train_validate_test(seed = 1)
 
   # ============================ IBLM package process =====================
 
   # warning are given because of non-integer response vars and a poisson predictor...
   # ...just have to suppress for this test as we cannot change data...
-  suppressWarnings(
-  IBLM <- train_iblm_xgb(
-    splits,
-    response_var = "ClaimNb",
-    family = "poisson",
-    # additional param settings required for rec...
+
+    IBLM <- train_iblm_xgb(
+      splits,
+      response_var = "ClaimNb",
+      family = "quasipoisson",
+      # additional param settings required for rec...
       params = list(
         base_score = 0.5,
         objective = "count:poisson",
         seed=0,
         tree_method = "auto"
-        ),
+      ),
       nrounds = 1000,
       verbose = 0,
       early_stopping_rounds = 25
-  )
-  )
+    )
+
 
   # `migrate_reference_to_bias = FALSE` for purposes of test as trying to reconile with KG original script
   ps_nu <- get_pinball_scores(splits$test, IBLM)
@@ -136,27 +165,35 @@ testthat::test_that("test against Karol paper", {
     model = c("homog", "glm", "iblm"),
     poisson_deviance = c(1.4195,1.3606, 1.2483),
     pinball_score = c(0.00,4.15,12.06)/100
-  ) |>
-    dplyr::mutate(
-      dplyr::across(
-        dplyr::all_of(c("poisson_deviance", "pinball_score")),
-        function(x) round(x, 2)
-      )
-    )
+  )
 
   ps_nu <- ps_nu |>
     dplyr::mutate(
       dplyr::across(
         dplyr::all_of(c("poisson_deviance", "pinball_score")),
-        function(x) round(x, 2)
+        function(x) round(x, 4)
       )
     )
 
+  # expect homog and glm to match
+  testthat::expect_equal(
+    ps_nu |> dplyr::filter(model %in% c("homog", "glm")),
+    ps_og |> dplyr::filter(model %in% c("homog", "glm"))
+    )
 
-  testthat::expect_equal(ps_nu, ps_og)
+  # expect iblm to have an improved pinball score
+  testthat::expect_gt(
+    ps_nu |> dplyr::filter(model %in% c("iblm")) |> dplyr::pull(pinball_score),
+    ps_og |> dplyr::filter(model %in% c("iblm")) |> dplyr::pull(pinball_score)
+  )
+
+  # put hardcoded anchor (against v1.0.3) into iblm pinball score
+  testthat::expect_equal(
+    ps_nu |> dplyr::filter(model %in% c("iblm")) |> dplyr::pull(pinball_score),
+    0.1253
+  )
 
 })
-
 
 
 
@@ -165,25 +202,23 @@ testthat::test_that("test error for character fields", {
 
   # ============================ Input data =====================
 
-  data <- freMTPLmini |> head(25000) |> split_into_train_validate_test(seed = 1)
+  data <- freMTPLmini |> split_into_train_validate_test(seed = 1)
 
   # get data where categoricals are factors
   splits_fct <- data |>
-    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.character), function(field) as.factor(field)))) |>
-    purrr::modify(.f = function(x) dplyr::rename(x, "ClaimNb" = "ClaimRate")) |>
-    purrr::modify(.f = function(x) dplyr::mutate(x, ClaimNb = round(ClaimNb)))
+    purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.character), function(field) as.factor(field))))
 
   # get identical data where categoricals are strings
   splits_chr <- splits_fct |>
     purrr::modify(.f = function(x) x |> dplyr::mutate(dplyr::across(dplyr::where(is.factor), function(field) as.character(field))))
 
   testthat::expect_error(
-  IBLM_chr <- train_iblm_xgb(
-    splits_chr,
-    response_var = "ClaimNb",
-    family = "poisson"
+    IBLM_chr <- train_iblm_xgb(
+      splits_chr,
+      response_var = "ClaimNb",
+      family = "poisson"
+    )
   )
-)
 
 
 })

@@ -173,21 +173,22 @@ This preserves the familiar GLM form while incorporating the booster's superior 
 
 ## Train
 
-To train an IBLM we must get our data into an appropriate format. In this document our demonstrations will be completed using French motor claims dataset `freMTPL2freq`.
+To train an IBLM we must get our data into an appropriate format. In this document our demonstrations will be completed using French motor claims dataset `freMTPL2freq`. For simplicity, we will drop the "Exposure" column and assume all rows carry equal weight. In practice however this should be allowed for either through choice `weight_var` or `offset_var` (see Weights and Offsets).
 
 Data for training an IBLM model must be in the form of a list of 3 dataframes. These will be named "train", "validate" and "test". The function `split_into_train_validate_test()` can conveniently split a single dataframe into such a structure.
 
 ```{r data-prep}
-df <- load_freMTPL2freq()
+freMTPL2freq <- load_freMTPL2freq()
 
-df <- df |> mutate(ClaimNb = round(ClaimNb)) 
+df_list <- freMTPL2freq |> 
+  select(-Exposure) |> 
+  split_into_train_validate_test(seed = 1)
 
-df_list <- df |> split_into_train_validate_test(seed = 1)
 ```
 
 There is currently only one function available to train an IBLM. This is `train_iblm_xgb()` which will use xgboost as the booster model. This performs steps 1 and 2 of the [Theory].
 
-The output is of class "iblm". Objects of this class contain two component models "glm_model" and "booster_model". There are also other items containing information (see Value section of `train_iblm_xgb()` for more information)
+The output is of class "iblm". Objects of this class contain two component models "glm_model" and "booster_model". There are also other items containing information (see Value section of `train_iblm_xgb()` for more information).
 
 ```{r train}
 iblm_model <- train_iblm_xgb(
@@ -385,7 +386,7 @@ Because IBLM is essentially a collection of GLMs, and the corrected beta coeffic
 ```{r predict-alternative}
 coeff_multiplier <- 
   df_list$test |>
-  select(-all_of("ClaimNb")) |>
+  select(-all_of(c(iblm_model$response_var, iblm_model$weight_var))) |>
   mutate(
     across(
       all_of(iblm_model$predictor_vars$categorical),
@@ -436,3 +437,114 @@ correction_corridor(
   sample_perc = 0.1,
   color = "DrivAge")
 ```
+
+## Offsetting and Weighting
+
+In the examples above using `freMTPL2freq`, we dropped the "Exposure" column and treated each row equally. However, in reality we would want to account for the fact that some periods carry more weight than others. We can do this either through use of "offset_var" argument, or "weight_var".
+
+### Offsetting
+
+The principal of offsetting in iblm works similar to offsetting in glm. Any offset specified get incorporated only into the `glm_model` and not the `booster_model` component.
+
+For a poisson distribution we can implement offsetting to place more value on those rows with greater Exposure. 
+
+To do this when training the iblm object, it is necessary to create a column in your data for the offset. For poisson, quasipoisson, gamma or tweedie this *must* be in a log transformed format. Note to take care to drop unnecessary columns before training, in this case the Exposure column once used.
+
+```{r train offset}
+
+# Note that in preparing df_list we have log-transformed our Exposure column. Take care to drop any unneeded columns (in the case `Exposure`) 
+df_list_offset <- freMTPL2freq |> 
+  mutate(LogExposure = log(Exposure)) |> 
+  select(-Exposure) |> 
+  split_into_train_validate_test(seed = 1)
+
+iblm_model_offset <- train_iblm_xgb(
+  df_list_offset,
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
+  family = "poisson",
+  params = list(seed = 0)
+)
+
+```
+
+By adding an "offset_var" the iblm object will now have a "offset_var" field. The glm_model was fitted with this offset. The booster model is based on the residual of glm predictions and responses, therefore the offset is implicitly applied in the booster model training as a result, but not explicitly included.
+
+When using the explain or predict tools of iblm, the functions will account for this offset_var. If one is not included in testing data, an offset of zero is assumed:
+
+```{r predict offset}
+
+# to not include offset in prediction (recommended for Poisson rate predictions) set `offset_var` to zero
+predict_offset_a <- predict(iblm_model_offset, df_list_offset$test |> dplyr::mutate(LogExposure = 0) )
+
+# ...or simply drop the column from the data and it is treated as zero
+predict_offset_b <- predict(iblm_model_offset, df_list_offset$test |> dplyr::select(-LogExposure ))
+
+identical(predict_offset_a, predict_offset_b) # TRUE
+
+```
+
+If you leave the  "offset_var" in the data, the predictions will be based on this:
+
+```{r predict offset 2}
+
+# to not include offset in prediction (recommended for Poisson rate predictions) set `offset_var` to zero
+predict_offset_a <- predict(iblm_model_offset, df_list_offset$test |> dplyr::mutate(LogExposure = 0) )
+
+# if you leave the offset_var in the test data, the prediction will be based on this offset.
+predict_offset_c <- predict(iblm_model_offset, df_list_offset$test )
+
+identical(predict_offset_a, predict_offset_c) # FALSE because predict_offset_c values are based on LogExposure column of test data, whereas predict_offset_a values assumed LogExposure = 0 (i.e. Exposure = 1).
+
+```
+Note the same applies for other prediction functions, such as `get_pinball_scores()` and `correction_corridor()`.
+
+### Weighting
+
+An alternative is to use the weight feature. Note that for this to work, our response variable must be the ClaimRate and not ClaimNb.
+
+```{r train weight}
+
+# Note that in preparing df_list we have set the response_var to ClaimRate, and are setting weight_var to Exposure. Take care to drop any unneeded columns (in the case `ClaimNb`) 
+df_list_weight <- freMTPL2freq |> 
+  mutate(ClaimRate = ClaimNb / Exposure) |> 
+  select(-ClaimNb) |> 
+  split_into_train_validate_test(seed = 1)
+
+iblm_model_weight <- train_iblm_xgb(
+  df_list_weight,
+  response_var = "ClaimRate",
+  weight_var = "Exposure",
+  family = "quasipoisson",
+  params = list(seed = 0)
+)
+
+```
+
+By adding an "weight_var" the iblm object will now have a "weight_var" field. Both the glm_model and booster model were fitted with this weight applied. When using the explain or predict tools of iblm, the functions will not use any weight_var left in the data. 
+
+```{r predict weight}
+
+# `weight_var` is ignored in predict.iblm()
+predict_weight_a <- predict(iblm_model_weight, df_list_weight$test )
+
+# ...or simply drop the column from the data and it is treated as zero
+predict_weight_b <- predict(iblm_model_weight, df_list_weight$test |> dplyr::select(-Exposure ))
+
+identical(predict_weight_a, predict_weight_b) # TRUE
+
+```
+Note that for `get_pinball_scores()` the weight_var is considered when present. When it is not present, an equal weight of 1 is assumed for each row. Therefore leaving the weight var in the data can yield different scores. It is recommended you include weight_var if available.
+
+```{r pinball scores weight}
+
+# `weight_var` is ignored in predict.iblm()
+ps_weight_a <- get_pinball_scores(df_list_weight$test , iblm_model_weight)
+
+# ...or simply drop the column from the data and it is treated as zero
+ps_weight_b <- get_pinball_scores(df_list_weight$test |> dplyr::select(-Exposure), iblm_model_weight)
+
+identical(ps_weight_a, ps_weight_b) # FALSE because total poisson_deviance is weighted for `ps_weight_a` but not `ps_weight_b`
+
+```
+

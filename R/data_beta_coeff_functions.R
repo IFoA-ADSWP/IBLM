@@ -8,11 +8,14 @@
 #' @return A data frame with beta coefficients. The structure will be the same dimension as `data` except for a "bias" column at the start.
 #'
 #' @examples
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "poisson"
 #' )
 #'
@@ -28,6 +31,8 @@ data_beta_coeff_glm <- function(
   check_iblm_model(iblm_model)
 
   response_var <- iblm_model$response_var
+  weight_var <- iblm_model$weight_var
+  offset_var <- iblm_model$offset_var
   glm_beta_coeff <- iblm_model$glm_model$coefficients
   levels_all_cat <- iblm_model$cat_levels$all
   levels_reference_cat <- iblm_model$cat_levels$reference
@@ -49,6 +54,8 @@ data_beta_coeff_glm <- function(
 
   data |>
     dplyr::select(-dplyr::any_of(response_var)) |>
+    dplyr::select(-dplyr::any_of(weight_var)) |>
+    dplyr::select(-dplyr::any_of(offset_var)) |>
     dplyr::mutate(
       dplyr::across(
         dplyr::all_of(predictor_vars_categorical),
@@ -79,11 +86,14 @@ data_beta_coeff_glm <- function(
 #' @return A data frame with beta coefficient corrections. The structure will be the same dimension as `data` except for a "bias" column at the start.
 #'
 #' @examples
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "poisson"
 #' )
 #'
@@ -105,6 +115,8 @@ data_beta_coeff_booster <- function(data,
   check_iblm_model(iblm_model)
 
   response_var <- iblm_model$response_var
+  weight_var <- iblm_model$weight_var
+  offset_var <- iblm_model$offset_var
   levels_all_cat <- iblm_model$cat_levels$all
   levels_reference_cat <- iblm_model$cat_levels$reference
   predictor_vars_continuous <- iblm_model$predictor_vars$continuous
@@ -112,6 +124,8 @@ data_beta_coeff_booster <- function(data,
 
   data |>
     dplyr::select(-dplyr::any_of(response_var)) |>
+    dplyr::select(-dplyr::any_of(weight_var)) |>
+    dplyr::select(-dplyr::any_of(offset_var)) |>
     dplyr::mutate(
       dplyr::across(
         dplyr::all_of(predictor_vars_categorical),

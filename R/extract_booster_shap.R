@@ -19,11 +19,14 @@
 #'
 #'
 #' @examples
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "poisson"
 #' )
 #'
@@ -51,9 +54,7 @@ extract_booster_shap.xgb.Booster <- function(booster_model, data, ...) {
 
   shap <- stats::predict(
     booster_model,
-    newdata = xgboost::xgb.DMatrix(
-      data
-    ),
+    newdata = xgboost::xgb.DMatrix(data, base_margin = rep(0, nrow(data))),
     predcontrib = TRUE
   ) |>
     data.frame()

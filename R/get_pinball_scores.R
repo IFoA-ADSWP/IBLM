@@ -22,11 +22,14 @@
 #' Higher scores indicate better predictive performance.
 #'
 #' @examples
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "poisson"
 #' )
 #'
@@ -37,57 +40,111 @@ get_pinball_scores <- function(data,
                                iblm_model,
                                trim = NA_real_,
                                additional_models = list()) {
-
   check_iblm_model(iblm_model)
 
   response_var <- iblm_model$response_var
+  weight_var   <- iblm_model$weight_var
+  offset_var   <- iblm_model$offset_var
 
-  data_predictors <- data |> dplyr::select(dplyr::all_of(iblm_model$predictor_vars$all))
+  linkinv      <- iblm_model$glm_model$family$linkinv
+  vars_for_model <- iblm_model$predictor_vars$all
 
   actual <- data[[response_var]]
 
-  # get predictions for homogenous, glm and iblm
+  # ------- Derive test-set offsets and predictors -------
 
-  model_predictions <-
-    data.frame(
-      homog = iblm_model$data$train[[response_var]] |> mean(),
-      glm = stats::predict(iblm_model$glm_model, data_predictors, type = "response") |> as.vector(),
-      iblm = stats::predict(
-        iblm_model,
-        data_predictors,
-        trim
-      )
-    )
+  if (is.null(offset_var)) {
+    data_predictors <- data |> dplyr::select(dplyr::all_of(vars_for_model))
+    data_offsets    <- 0
+    xgb_base_margin <- NULL
+  } else if (offset_var %in% names(data)) {
+    data_predictors <- data |> dplyr::select(dplyr::all_of(c(vars_for_model, offset_var)))
+    data_offsets    <- data[[offset_var]]
+    xgb_base_margin <- data_offsets
+  } else {
+    data_predictors <- data |> dplyr::select(dplyr::all_of(vars_for_model))
+    data_predictors[[offset_var]] <- 0
+    cli::cli_inform("Column {.field {offset_var}} not found in {.arg data}. Offset of 0 assumed.")
+    data_offsets <- 0
+    xgb_base_margin <- NULL
+  }
 
-  # get predictions for any additional models passed in and append to model_predictions df
+  # ------- Derive test-set weights for deviance calculation -------
+
+  if (is.null(weight_var)) {
+    weight <- NULL
+  } else if (weight_var %in% names(data)) {
+    weight <- data[[weight_var]]
+  } else {
+    weight <- NULL
+    cli::cli_inform("Column {.field {weight_var}} not found in {.arg data}. Weight of 1 assumed.")
+  }
+
+  # ------- Derive homogeneous baseline via intercept-only GLM on training data -------
+  # Fitting a proper intercept-only GLM solves the MLE score equations correctly
+  # for any family, link function, offset and weight combination. This avoids the
+  # errors that arise from manually computing a weighted mean on the link scale.
+
+  train_data <- iblm_model$data$train
+
+  homog_glm_args <- list(
+    formula = stats::as.formula(paste(response_var, "~ 1")),
+    family  = iblm_model$glm_model$family,
+    data    = train_data
+  )
+
+  if (!is.null(weight_var)) {
+    homog_glm_args$weights <- train_data[[weight_var]]
+  }
+
+  if (!is.null(offset_var)) {
+    homog_glm_args$offset <- train_data[[offset_var]]
+  }
+
+  homog_glm <- withCallingHandlers(
+    do.call(stats::glm, homog_glm_args),
+    warning = function(w) {
+      if (grepl("non-integer", conditionMessage(w))) invokeRestart("muffleWarning")
+    }
+  )
+  beta0 <- stats::coef(homog_glm)[[1]]
+
+  # Apply the test-set offsets to the single intercept
+  homog <- linkinv(beta0 + data_offsets)
+
+  # ------- Get predictions for homogeneous, GLM and IBLM -------
+
+  model_predictions <- data.frame(
+    homog = homog,
+    glm   = stats::predict(iblm_model$glm_model, data_predictors, type = "response") |> as.vector(),
+    iblm  = stats::predict(iblm_model, data_predictors, trim)
+  )
+
+  # ------- Append predictions for any additional models -------
+
   if (length(additional_models) > 0) {
     if (is.null(names(additional_models))) {
       names(additional_models) <- purrr::map_chr(additional_models, function(x) class(x)[1])
     }
 
-    # Create a safe predict function that tries multiple approaches
-    safe_predict <- function(model, data) {
-      # Try methods in order of preference
-      methods <- list(
-        function() stats::predict(model, data, type = "response"),
-        function() stats::predict(model, as.matrix(data)),
-        function() stats::predict(model, data),
-        function() stats::predict(model, xgboost::xgb.DMatrix(data))
-      )
-
-      for (method in methods) {
-        result <- tryCatch(method(), error = function(e) NULL)
-        if (!is.null(result)) {
-          return(result)
+    predict_dispatch <- function(model, data) {
+      if (inherits(model, "xgb.Booster")) {
+        dmat <- if (!is.null(xgb_base_margin)) {
+          data <- data |> dplyr::select(-dplyr::any_of(offset_var))
+          xgboost::xgb.DMatrix(data, base_margin = xgb_base_margin)
+        } else {
+          data <- data |> dplyr::select(-dplyr::any_of(offset_var))
+          xgboost::xgb.DMatrix(data)
         }
+        stats::predict(model, dmat)
+      } else {
+        stats::predict(model, data, type = "response")
       }
-
-      stop("Could not generate predictions for model: ", class(model)[1])
     }
 
     additional_model_predictions <- purrr::map(
       additional_models,
-      .f = ~ safe_predict(.x, data_predictors)
+      .f = function(x) predict_dispatch(x, data_predictors)
     ) |>
       stats::setNames(names(additional_models)) |>
       dplyr::bind_cols()
@@ -98,47 +155,32 @@ get_pinball_scores <- function(data,
   model_names <- names(model_predictions)
 
   family <- iblm_model$glm_model$family$family
+  if (family == "quasipoisson") {family <- "poisson"}
 
   pds <- purrr::map_dbl(
     model_names,
-    function(x) calculate_deviance(y_true = actual, y_pred = model_predictions[[x]], family = family)
+    function(x) {
+      calculate_deviance(
+        y_true = actual,
+        y_pred = model_predictions[[x]],
+        family = family,
+        weight = weight
+      )
+    }
   ) |> stats::setNames(model_names)
 
-  result <- data.frame(
-    model = model_names,
-    deviance = unname(pds)
-  )
+  devcol <- paste0(tolower(family), "_deviance")
 
-  devcol <- paste0(family, "_deviance") |> tolower()
-
+  result <- data.frame(model = model_names, deviance = unname(pds))
   names(result)[names(result) == "deviance"] <- devcol
 
   result <- result |>
     dplyr::mutate(
-      pinball_score = 1 - result[[devcol]] / pds["homog"]
+      pinball_score = 1 - .data[[devcol]] / pds[["homog"]]
     )
 
   return(result)
 }
-
-
-#' Calculate Poisson Deviance
-#'
-#' Computes the Poisson deviance between true and predicted values, commonly
-#' used as a loss function for Poisson regression models.
-#'
-#' @param y_true Numeric vector of true/observed values
-#' @param y_pred Numeric vector of predicted values
-#' @param correction Numeric value added to avoid log(0) issues. Default is 1e-7
-#'
-#' @return Numeric value representing twice the mean Poisson deviance
-#'
-#' @noRd
-poisson_deviance <- function(y_true, y_pred, correction = +10^-7) {
-  pd <- mean((y_pred - y_true - y_true * log((y_pred + correction) / (y_true + correction))))
-  return(2 * pd)
-}
-
 
 #' Calculate Mean Deviance
 #'
@@ -149,8 +191,10 @@ poisson_deviance <- function(y_true, y_pred, correction = +10^-7) {
 #' @param y_pred Numeric vector of predicted values.
 #' @param family Character string specifying the distribution family. One of
 #'   "gaussian", "poisson", "gamma", or "tweedie" (with p=1.5).
+#' @param weight Numeric vector of weight for each observation. If NULL,
+#'   all observations are given equal weight. Default is NULL.
 #' @param correction Numeric value added to both y_true and y_pred to avoid
-#'   log(0) and division by zero errors. Default is 1e-7.
+#'   log(0) and division by zero errors. Default is 1e-10.
 #'
 #' @return Numeric value of the mean deviance.
 #'
@@ -159,36 +203,45 @@ poisson_deviance <- function(y_true, y_pred, correction = +10^-7) {
 #' y_pred <- c(1.1, 2.2, 2.8, 4.1, 4.9)
 #' calculate_deviance(y_true, y_pred, "gaussian")
 #' calculate_deviance(y_true, y_pred, "poisson")
+#' # With weight
+#' weight <- c(1, 1, 2, 1, 1)
+#' calculate_deviance(y_true, y_pred, "gaussian", weight = weight)
 #'
 #' @noRd
-calculate_deviance <- function(y_true, y_pred, family = "gaussian", correction = 1e-10) {
-
+calculate_deviance <- function(y_true,
+                               y_pred,
+                               family = "gaussian",
+                               weight = NULL,
+                               correction = 1e-10) {
   family <- tolower(family)
+
+  # Handle weight
+  if (is.null(weight)) {
+    weight <- rep(1, length(y_true))
+  }
 
   # Apply correction to avoid log(0) and division by zero
   y_true <- y_true + correction
   y_pred <- y_pred + correction
 
   mean_deviance <- switch(family,
-                          "gaussian" = {
-                            mean((y_true - y_pred)^2)
-                          },
-                          "poisson" = {
-                            2 * mean(y_pred - y_true - y_true * log(y_pred / y_true))
-                          },
-                          "gamma" = {
-                            2 * mean(-log(y_true / y_pred) + (y_true - y_pred) / y_pred)
-                          },
-                          "tweedie" = {
-                            # Tweedie with p=1.5 (common default)
-                            p <- 1.5
-                            2 * mean((y_true^(2-p)) / ((1-p)*(2-p)) -
-                                       (y_true * y_pred^(1-p)) / (1-p) +
-                                       (y_pred^(2-p)) / (2-p))
-                          },
-                          cli::cli_abort("family must be one of: gaussian, poisson, gamma, tweedie")
+    "gaussian" = {
+      sum(weight * (y_true - y_pred)^2) / sum(weight)
+    },
+    "poisson" = {
+      2 * sum(weight * (y_pred - y_true - y_true * log(y_pred / y_true))) / sum(weight)
+    },
+    "gamma" = {
+      2 * sum(weight * (-log(y_true / y_pred) + (y_true - y_pred) / y_pred)) / sum(weight)
+    },
+    "tweedie" = {
+      # Tweedie with p=1.5 (common default)
+      p <- 1.5
+      2 * sum(weight * ((y_true^(2 - p)) / ((1 - p) * (2 - p)) -
+        (y_true * y_pred^(1 - p)) / (1 - p) +
+        (y_pred^(2 - p)) / (2 - p))) / sum(weight)
+    },
+    cli::cli_abort("family must be one of: gaussian, poisson, gamma, tweedie")
   )
-
   return(mean_deviance)
 }
-

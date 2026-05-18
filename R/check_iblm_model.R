@@ -8,11 +8,14 @@
 #' @return Invisible TRUE if all checks pass
 #'
 #' @examples
-#' df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+#' df_list <- freMTPLmini |>
+#'   dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+#'   split_into_train_validate_test(seed = 9000)
 #'
 #' iblm_model <- train_iblm_xgb(
 #'   df_list,
-#'   response_var = "ClaimRate",
+#'   response_var = "ClaimNb",
+#'   offset_var = "LogExposure",
 #'   family = "poisson"
 #' )
 #'
@@ -37,7 +40,7 @@ check_iblm_model <- function(model, booster_models_supported = c("xgb.Booster"))
   }
 
   # Check relationship value
-  rel <- model["relationship"]
+  rel <- model[["relationship"]]
   if (!rel %in% c("additive", "multiplicative")) {
     cli::cli_abort(c(
       "x" = "Invalid relationship type: {.val {rel}}",

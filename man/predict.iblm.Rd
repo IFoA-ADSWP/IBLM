@@ -40,15 +40,18 @@ The prediction process involves the following steps:
 At this point, only an iblm model with a "booster_model" object of class `xgb.Booster` is supported
 }
 \examples{
-data <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |>
+  dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+  split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
-  data,
-  response_var = "ClaimRate",
+  df_list,
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "poisson"
 )
 
-predictions <- predict(iblm_model, data$test)
+predictions <- predict(iblm_model, df_list$test)
 
 predictions |> dplyr::glimpse()
 
