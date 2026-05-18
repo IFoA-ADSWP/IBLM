@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="IBLM">
 </head>
@@ -60,7 +60,7 @@
                         <h4 data-toc-skip class="author">Karol Gawlowski
 and Paul Beard</h4>
             
-            <h4 data-toc-skip class="date">2026-01-26</h4>
+            <h4 data-toc-skip class="date">2026-05-18</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/IFoA-ADSWP/IBLM/blob/main/vignettes/IBLM.Rmd" class="external-link"><code>vignettes/IBLM.Rmd</code></a></small>
       <div class="d-none name"><code>IBLM.Rmd</code></div>
@@ -105,14 +105,14 @@ explain and predict using functions from this package.</p>
 follows:</p>
 <p><strong>Step 1: Fit a GLM</strong></p>
 <div class="eq-block">
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>μ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>β</mi><mi>n</mi></msub><msub><mi>x</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>g</mi><mo stretchy="false" form="prefix">(</mo><mi>μ</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>β</mi><mi>n</mi></msub><msub><mi>x</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">
 g(\mu) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_n x_n
 </annotation></semantics></math></p>
 </div>
 <p>Where g(·) is the link function, μ is the expected value of the
 response, and β values are your standard regression coefficients.</p>
 <div class="eq-block">
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">GLM prediction</mtext><mo>=</mo><msup><mi>g</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>β</mi><mi>n</mi></msub><msub><mi>x</mi><mi>n</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">GLM prediction</mtext><mo>=</mo><msup><mi>g</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mo stretchy="false" form="prefix">(</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>β</mi><mi>n</mi></msub><msub><mi>x</mi><mi>n</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
 \text{GLM prediction} = g^{-1} (\beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_n x_n)
 </annotation></semantics></math></p>
 </div>
@@ -124,25 +124,25 @@ response values against the GLM predictions.</p>
 <p>SHAP decomposition allows the booster’s prediction to be apportioned
 into contributions from each feature:</p>
 <div class="eq-block">
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Booster prediction</mtext><mo>=</mo><msup><mi>g</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>φ</mi><mn>0</mn></msub><mo>+</mo><msub><mi>φ</mi><mn>1</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><msub><mi>φ</mi><mn>2</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>φ</mi><mi>n</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Booster prediction</mtext><mo>=</mo><msup><mi>g</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mo stretchy="false" form="prefix">(</mo><msub><mi>φ</mi><mn>0</mn></msub><mo>+</mo><msub><mi>φ</mi><mn>1</mn></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>φ</mi><mn>2</mn></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>φ</mi><mi>n</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
 \text{Booster prediction} = g^{-1} (\varphi_0 + \varphi_1(x) + \varphi_2(x) + \cdots + \varphi_n(x))
 </annotation></semantics></math></p>
 </div>
 <p>Where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>φ</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\varphi_j(x)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>φ</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\varphi_j(x)</annotation></semantics></math>
 is how much feature j contributed to a specific prediction.</p>
 <p><strong>Step 4: Convert SHAP Values to Beta Coefficient
 Corrections</strong></p>
 <p>Transform each SHAP contribution into beta corrections:</p>
 <div class="eq-block">
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>α</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>≈</mo><mfrac><mrow><msub><mi>φ</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><msub><mi>x</mi><mi>j</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>α</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>≈</mo><mfrac><mrow><msub><mi>φ</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow><msub><mi>x</mi><mi>j</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">
 \alpha_j(x) \approx \frac{\varphi_j(x)}{x_j}
 </annotation></semantics></math></p>
 </div>
 <p>There are two situations where the value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>α</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\alpha_j(x)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>α</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\alpha_j(x)</annotation></semantics></math>
 is set to zero and the value for
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>φ</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\varphi_j(x)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>φ</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\varphi_j(x)</annotation></semantics></math>
 is added to the intercept instead. This is when
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>
 is a numerical variable, and the value is zero. Or, when
@@ -153,7 +153,7 @@ value that is the value for which there is no coefficient in the GLM.
 The reference levels of an “iblm” class object can be found in
 &lt;code&gt;.$cat_levels$reference&lt;/code&gt;&lt;/p&gt;"><sup>2</sup></a>.</p>
 <div class="eq-block">
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>α</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><mn>0</mn><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> when </mtext><mspace width="0.333em"></mspace></mrow><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>x</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></mtd><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">(numerical)</mtext></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>x</mi><mi>j</mi></msub><mo>=</mo><mtext mathvariant="normal">ref</mtext></mtd><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">(categorical)</mtext></mtd></mtr></mtable></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>α</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><munder><mo>∑</mo><mtable><mtr><mtd columnalign="center" style="text-align: center"><mrow><mi>j</mi><mo>:</mo><msub><mi>x</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></mrow></mtd></mtr><mtr><mtd columnalign="center" style="text-align: center"><mrow><mrow><mtext mathvariant="normal">or </mtext><mspace width="0.333em"></mspace></mrow><msub><mi>x</mi><mi>j</mi></msub><mo>=</mo><mtext mathvariant="normal">ref</mtext></mrow></mtd></mtr></mtable></munder><msub><mi>φ</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr></mtable><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"><msub><mi>α</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mo>=</mo><mn>0</mn><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> when </mtext><mspace width="0.333em"></mspace></mrow><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>x</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></mtd><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">(numerical)</mtext></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>x</mi><mi>j</mi></msub><mo>=</mo><mtext mathvariant="normal">ref</mtext></mtd><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">(categorical)</mtext></mtd></mtr></mtable></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"><msub><mi>α</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mo>=</mo><munder><mo>∑</mo><mtable><mtr><mtd columnalign="center" style="text-align: center"><mrow><mi>j</mi><mo>:</mo><msub><mi>x</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></mrow></mtd></mtr><mtr><mtd columnalign="center" style="text-align: center"><mrow><mrow><mtext mathvariant="normal">or </mtext><mspace width="0.333em"></mspace></mrow><msub><mi>x</mi><mi>j</mi></msub><mo>=</mo><mtext mathvariant="normal">ref</mtext></mrow></mtd></mtr></mtable></munder><msub><mi>φ</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mtd></mtr></mtable><annotation encoding="application/x-tex">
 \begin{aligned}
 \alpha_j(x) &amp;= 0 \text{ when } 
 \begin{cases}
@@ -175,13 +175,13 @@ all rows</p></li>
 predictor variable combination.</p></li>
 </ol>
 <div class="eq-block">
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>μ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub><mo>+</mo><msub><mi>α</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>β</mi><mn>1</mn></msub><mo>+</mo><msub><mi>α</mi><mn>1</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>β</mi><mn>2</mn></msub><mo>+</mo><msub><mi>α</mi><mn>2</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>β</mi><mi>n</mi></msub><mo>+</mo><msub><mi>α</mi><mi>n</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><msub><mi>x</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>g</mi><mo stretchy="false" form="prefix">(</mo><mi>μ</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub><mo>+</mo><msub><mi>α</mi><mn>0</mn></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>β</mi><mn>1</mn></msub><mo>+</mo><msub><mi>α</mi><mn>1</mn></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>β</mi><mn>2</mn></msub><mo>+</mo><msub><mi>α</mi><mn>2</mn></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><mo stretchy="false" form="prefix">(</mo><msub><mi>β</mi><mi>n</mi></msub><mo>+</mo><msub><mi>α</mi><mi>n</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo><msub><mi>x</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">
 g(\mu) = (\beta_0 + \varphi_0 + \alpha_0) + (\beta_1 + \alpha_1(x))x_1 + (\beta_2 + \alpha_2(x))x_2 + \cdots + (\beta_n + \alpha_n(x))x_n
 </annotation></semantics></math></p>
 </div>
 <p>or</p>
 <div class="eq-block">
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>μ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><mi>β</mi><msub><mi>′</mi><mn>0</mn></msub><mo>+</mo><mi>β</mi><msub><mi>′</mi><mn>1</mn></msub><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><mi>β</mi><msub><mi>′</mi><mn>2</mn></msub><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><mi>β</mi><msub><mi>′</mi><mi>n</mi></msub><msub><mi>x</mi><mi>n</mi></msub></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mrow><mtext mathvariant="normal">where </mtext><mspace width="0.333em"></mspace></mrow><mi>β</mi><msub><mi>′</mi><mi>j</mi></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><msub><mi>β</mi><mi>j</mi></msub><mo>+</mo><msub><mi>α</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mrow><mtext mathvariant="normal">and </mtext><mspace width="0.333em"></mspace></mrow><mi>β</mi><msub><mi>′</mi><mn>0</mn></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub><mo>+</mo><msub><mi>α</mi><mn>0</mn></msub></mtd></mtr></mtable><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"><mi>g</mi><mo stretchy="false" form="prefix">(</mo><mi>μ</mi><mo stretchy="false" form="postfix">)</mo></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mo>=</mo><msubsup><mi>β</mi><mn>0</mn><mo>′</mo></msubsup><mo>+</mo><msubsup><mi>β</mi><mn>1</mn><mo>′</mo></msubsup><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msubsup><mi>β</mi><mn>2</mn><mo>′</mo></msubsup><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msubsup><mi>β</mi><mi>n</mi><mo>′</mo></msubsup><msub><mi>x</mi><mi>n</mi></msub></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"><mrow><mtext mathvariant="normal">where </mtext><mspace width="0.333em"></mspace></mrow><msubsup><mi>β</mi><mi>j</mi><mo>′</mo></msubsup></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mo>=</mo><msub><mi>β</mi><mi>j</mi></msub><mo>+</mo><msub><mi>α</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"><mrow><mtext mathvariant="normal">and </mtext><mspace width="0.333em"></mspace></mrow><msubsup><mi>β</mi><mn>0</mn><mo>′</mo></msubsup></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub><mo>+</mo><msub><mi>α</mi><mn>0</mn></msub></mtd></mtr></mtable><annotation encoding="application/x-tex">
 \begin{aligned}
 g(\mu) &amp;= \beta'_0 + \beta'_1 x_1 + \beta'_2 x_2 + \cdots + \beta'_n x_n \\
 \text{where } \beta'_j &amp;= \beta_j + \alpha_j(x) \\
@@ -193,7 +193,7 @@ g(\mu) &amp;= \beta'_0 + \beta'_1 x_1 + \beta'_2 x_2 + \cdots + \beta'_n x_n \\
 response, and β values are your standard regression coefficients.</p>
 <p>The IBLM prediction is a combination of components.</p>
 <div class="eq-block">
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mtext mathvariant="normal">IBLM prediction</mtext></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><msup><mi>g</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><msub><mi>′</mi><mn>0</mn></msub><mo>+</mo><mi>β</mi><msub><mi>′</mi><mn>1</mn></msub><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><mi>β</mi><msub><mi>′</mi><mn>2</mn></msub><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><mi>β</mi><msub><mi>′</mi><mi>n</mi></msub><msub><mi>x</mi><mi>n</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">GLM prediction</mtext><mo>×</mo><mtext mathvariant="normal">Booster prediction</mtext></mtd><mtd columnalign="left" style="text-align: left"><mrow><mtext mathvariant="normal">when </mtext><mspace width="0.333em"></mspace></mrow><mi>g</mi><mo>=</mo><mo>log</mo></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">GLM prediction</mtext><mo>+</mo><mtext mathvariant="normal">Booster prediction</mtext></mtd><mtd columnalign="left" style="text-align: left"><mrow><mtext mathvariant="normal">when </mtext><mspace width="0.333em"></mspace></mrow><mi>g</mi><mo>=</mo><mtext mathvariant="normal">identity</mtext></mtd></mtr></mtable></mrow></mtd></mtr></mtable><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"><mtext mathvariant="normal">IBLM prediction</mtext></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mo>=</mo><msup><mi>g</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mo stretchy="false" form="prefix">(</mo><msubsup><mi>β</mi><mn>0</mn><mo>′</mo></msubsup><mo>+</mo><msubsup><mi>β</mi><mn>1</mn><mo>′</mo></msubsup><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msubsup><mi>β</mi><mn>2</mn><mo>′</mo></msubsup><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msubsup><mi>β</mi><mi>n</mi><mo>′</mo></msubsup><msub><mi>x</mi><mi>n</mi></msub><mo stretchy="false" form="postfix">)</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right; padding-right: 0"></mtd><mtd columnalign="left" style="text-align: left; padding-left: 0"><mo>=</mo><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">GLM prediction</mtext><mo>×</mo><mtext mathvariant="normal">Booster prediction</mtext></mtd><mtd columnalign="left" style="text-align: left"><mrow><mtext mathvariant="normal">when </mtext><mspace width="0.333em"></mspace></mrow><mi>g</mi><mo>=</mo><mi mathvariant="normal">log</mi></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><mtext mathvariant="normal">GLM prediction</mtext><mo>+</mo><mtext mathvariant="normal">Booster prediction</mtext></mtd><mtd columnalign="left" style="text-align: left"><mrow><mtext mathvariant="normal">when </mtext><mspace width="0.333em"></mspace></mrow><mi>g</mi><mo>=</mo><mtext mathvariant="normal">identity</mtext></mtd></mtr></mtable></mrow></mtd></mtr></mtable><annotation encoding="application/x-tex">
 \begin{aligned}
 \text{IBLM prediction} &amp;= g^{-1} (\beta'_0 + \beta'_1 x_1 + \beta'_2 x_2 + \cdots + \beta'_n x_n) \\[0.5em]
 &amp;= \begin{cases}
@@ -211,24 +211,28 @@ booster’s superior predictive power.</p>
 </h2>
 <p>To train an IBLM we must get our data into an appropriate format. In
 this document our demonstrations will be completed using French motor
-claims dataset <code>freMTPL2freq</code>.</p>
+claims dataset <code>freMTPL2freq</code>. For simplicity, we will drop
+the “Exposure” column and assume all rows carry equal weight. In
+practice however this should be allowed for either through choice
+<code>weight_var</code> or <code>offset_var</code> (see Weights and
+Offsets).</p>
 <p>Data for training an IBLM model must be in the form of a list of 3
 dataframes. These will be named “train”, “validate” and “test”. The
 function <code><a href="../reference/split_into_train_validate_test.html">split_into_train_validate_test()</a></code> can conveniently
 split a single dataframe into such a structure.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_freMTPL2freq.html">load_freMTPL2freq</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">freMTPL2freq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_freMTPL2freq.html">load_freMTPL2freq</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span> <span class="fu">mutate</span><span class="op">(</span>ClaimNb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">ClaimNb</span><span class="op">)</span><span class="op">)</span> </span>
-<span></span>
-<span><span class="va">df_list</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/split_into_train_validate_test.html">split_into_train_validate_test</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">df_list</span> <span class="op">&lt;-</span> <span class="va">freMTPL2freq</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">Exposure</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="../reference/split_into_train_validate_test.html">split_into_train_validate_test</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p>There is currently only one function available to train an IBLM. This
 is <code><a href="../reference/train_iblm_xgb.html">train_iblm_xgb()</a></code> which will use xgboost as the booster
 model. This performs steps 1 and 2 of the <a href="#theory">Theory</a>.</p>
 <p>The output is of class “iblm”. Objects of this class contain two
 component models “glm_model” and “booster_model”. There are also other
 items containing information (see Value section of
-<code><a href="../reference/train_iblm_xgb.html">train_iblm_xgb()</a></code> for more information)</p>
+<code><a href="../reference/train_iblm_xgb.html">train_iblm_xgb()</a></code> for more information).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">iblm_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_iblm_xgb.html">train_iblm_xgb</a></span><span class="op">(</span></span>
 <span>  <span class="va">df_list</span>,</span>
@@ -253,8 +257,7 @@ be useful when directly comparing (for example see <a href="#pinball-score">Pinb
 <span></span>
 <span><span class="co"># the config is mostly identical. In our example the differences are:</span></span>
 <span><span class="va">is_identical_config</span><span class="op">[</span><span class="op">!</span><span class="va">is_identical_config</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "learner.gradient_booster.gbtree_model_param.num_trees"</span></span>
-<span><span class="co">#&gt; [2] "learner.learner_model_param.base_score"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "learner.gradient_booster.gbtree_model_param.num_trees"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="explain">Explain<a class="anchor" aria-label="anchor" href="#explain"></a>
@@ -283,19 +286,19 @@ correction distributions (see
 <code><a href="../reference/overall_correction.html">overall_correction()</a></code>)</p></li>
 <li><p><strong>shap</strong> Dataframe showing raw SHAP values of data
 records. These are the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>φ</mi><mi>n</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\varphi_n(x)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>φ</mi><mi>n</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\varphi_n(x)</annotation></semantics></math>
 values described in step 3 of <a href="#theory">Theory</a>.</p></li>
 <li><p><strong>beta_corrections</strong> Dataframe showing beta
 corrections (in wide/one-hot format) of data records. These are the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>α</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\alpha_0(x)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>α</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\alpha_0(x)</annotation></semantics></math>
 and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>α</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\alpha_j(x)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>α</mi><mi>j</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\alpha_j(x)</annotation></semantics></math>
 values described in step 4 of <a href="#theory">Theory</a>.</p></li>
 <li><p><strong>data_beta_coeff</strong> Dataframe showing corrected beta
 coefficients of data records. These are the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><msub><mi>′</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\beta'_0</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mn>0</mn><mo>′</mo></msubsup><annotation encoding="application/x-tex">\beta'_0</annotation></semantics></math>
 and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><msub><mi>′</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\beta'_j</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mi>j</mi><mo>′</mo></msubsup><annotation encoding="application/x-tex">\beta'_j</annotation></semantics></math>
 values described in step 5 of <a href="#theory">Theory</a>. For
 categorical variables, the value corresponds to the relevant coefficient
 for that datapoint.</p></li>
@@ -530,7 +533,7 @@ function, it is also possible to predict through linear calculation.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">coeff_multiplier</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="va">df_list</span><span class="op">$</span><span class="va">test</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="fu">all_of</span><span class="op">(</span><span class="st">"ClaimNb"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="fu">all_of</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">iblm_model</span><span class="op">$</span><span class="va">response_var</span>, <span class="va">iblm_model</span><span class="op">$</span><span class="va">weight_var</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span></span>
 <span>    <span class="fu">across</span><span class="op">(</span></span>
 <span>      <span class="fu">all_of</span><span class="op">(</span><span class="va">iblm_model</span><span class="op">$</span><span class="va">predictor_vars</span><span class="op">$</span><span class="va">categorical</span><span class="op">)</span>,</span>
@@ -547,7 +550,7 @@ function, it is also possible to predict through linear calculation.</p>
 <span></span>
 <span><span class="co"># difference in predictions very small between two alternative methods</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">predictions_alt</span> <span class="op">/</span> <span class="va">predictions</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -9.531663e-07  9.788184e-07</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] -1.107509e-06  8.825406e-07</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="pinball-score">Pinball Score<a class="anchor" aria-label="anchor" href="#pinball-score"></a>
 </h3>
@@ -1022,23 +1025,23 @@ the glm. We have also added the xgb_model (derived in section <a href="#train">T
 <tbody class="gt_table_body">
 <tr>
 <td headers="model" class="gt_row gt_left">homog</td>
-<td headers="poisson_deviance" class="gt_row gt_right">1.407148</td>
+<td headers="poisson_deviance" class="gt_row gt_right">0.3263248</td>
 <td headers="pinball_score" class="gt_row gt_right">0.00%</td>
 </tr>
 <tr>
 <td headers="model" class="gt_row gt_left">glm</td>
-<td headers="poisson_deviance" class="gt_row gt_right">1.348394</td>
-<td headers="pinball_score" class="gt_row gt_right">4.18%</td>
+<td headers="poisson_deviance" class="gt_row gt_right">0.3198652</td>
+<td headers="pinball_score" class="gt_row gt_right">1.98%</td>
 </tr>
 <tr>
 <td headers="model" class="gt_row gt_left">iblm</td>
-<td headers="poisson_deviance" class="gt_row gt_right">1.234015</td>
-<td headers="pinball_score" class="gt_row gt_right">12.30%</td>
+<td headers="poisson_deviance" class="gt_row gt_right">0.3059705</td>
+<td headers="pinball_score" class="gt_row gt_right">6.24%</td>
 </tr>
 <tr>
 <td headers="model" class="gt_row gt_left">xgb</td>
-<td headers="poisson_deviance" class="gt_row gt_right">1.227481</td>
-<td headers="pinball_score" class="gt_row gt_right">12.77%</td>
+<td headers="poisson_deviance" class="gt_row gt_right">0.3053881</td>
+<td headers="pinball_score" class="gt_row gt_right">6.42%</td>
 </tr>
 </tbody>
 </table>
@@ -1064,6 +1067,131 @@ the GLM predictions.</p>
 <span>  sample_perc <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  color <span class="op">=</span> <span class="st">"DrivAge"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="IBLM_files/figure-html/correction-corridor-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="offsetting-and-weighting">Offsetting and Weighting<a class="anchor" aria-label="anchor" href="#offsetting-and-weighting"></a>
+</h2>
+<p>In the examples above using <code>freMTPL2freq</code>, we dropped the
+“Exposure” column and treated each row equally. However, in reality we
+would want to account for the fact that some periods carry more weight
+than others. We can do this either through use of “offset_var” argument,
+or “weight_var”.</p>
+<div class="section level3">
+<h3 id="offsetting">Offsetting<a class="anchor" aria-label="anchor" href="#offsetting"></a>
+</h3>
+<p>The principal of offsetting in iblm works similar to offsetting in
+glm. Any offset specified get incorporated only into the
+<code>glm_model</code> and not the <code>booster_model</code>
+component.</p>
+<p>For a poisson distribution we can implement offsetting to place more
+value on those rows with greater Exposure.</p>
+<p>To do this when training the iblm object, it is necessary to create a
+column in your data for the offset. For poisson, quasipoisson, gamma or
+tweedie this <em>must</em> be in a log transformed format. Note to take
+care to drop unnecessary columns before training, in this case the
+Exposure column once used.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># Note that in preparing df_list we have log-transformed our Exposure column. Take care to drop any unneeded columns (in the case `Exposure`) </span></span>
+<span><span class="va">df_list_offset</span> <span class="op">&lt;-</span> <span class="va">freMTPL2freq</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>LogExposure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">Exposure</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">Exposure</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="../reference/split_into_train_validate_test.html">split_into_train_validate_test</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">iblm_model_offset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_iblm_xgb.html">train_iblm_xgb</a></span><span class="op">(</span></span>
+<span>  <span class="va">df_list_offset</span>,</span>
+<span>  response_var <span class="op">=</span> <span class="st">"ClaimNb"</span>,</span>
+<span>  offset_var <span class="op">=</span> <span class="st">"LogExposure"</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"poisson"</span>,</span>
+<span>  params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>By adding an “offset_var” the iblm object will now have a
+“offset_var” field. The glm_model was fitted with this offset. The
+booster model is based on the residual of glm predictions and responses,
+therefore the offset is implicitly applied in the booster model training
+as a result, but not explicitly included.</p>
+<p>When using the explain or predict tools of iblm, the functions will
+account for this offset_var. If one is not included in testing data, an
+offset of zero is assumed:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># to not include offset in prediction (recommended for Poisson rate predictions) set `offset_var` to zero</span></span>
+<span><span class="va">predict_offset_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">iblm_model_offset</span>, <span class="va">df_list_offset</span><span class="op">$</span><span class="va">test</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>LogExposure <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># ...or simply drop the column from the data and it is treated as zero</span></span>
+<span><span class="va">predict_offset_b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">iblm_model_offset</span>, <span class="va">df_list_offset</span><span class="op">$</span><span class="va">test</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">LogExposure</span> <span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 'iblm' object was fitted with offset LogExposure but none found in data. Offset</span></span>
+<span><span class="co">#&gt; assumed to be zero.</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">predict_offset_a</span>, <span class="va">predict_offset_b</span><span class="op">)</span> <span class="co"># TRUE</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>If you leave the “offset_var” in the data, the predictions will be
+based on this:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># to not include offset in prediction (recommended for Poisson rate predictions) set `offset_var` to zero</span></span>
+<span><span class="va">predict_offset_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">iblm_model_offset</span>, <span class="va">df_list_offset</span><span class="op">$</span><span class="va">test</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>LogExposure <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># if you leave the offset_var in the test data, the prediction will be based on this offset.</span></span>
+<span><span class="va">predict_offset_c</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">iblm_model_offset</span>, <span class="va">df_list_offset</span><span class="op">$</span><span class="va">test</span> <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">predict_offset_a</span>, <span class="va">predict_offset_c</span><span class="op">)</span> <span class="co"># FALSE because predict_offset_c values are based on LogExposure column of test data, whereas predict_offset_a values assumed LogExposure = 0 (i.e. Exposure = 1).</span></span>
+<span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
+<p>Note the same applies for other prediction functions, such as
+<code><a href="../reference/get_pinball_scores.html">get_pinball_scores()</a></code> and
+<code><a href="../reference/correction_corridor.html">correction_corridor()</a></code>.</p>
+</div>
+<div class="section level3">
+<h3 id="weighting">Weighting<a class="anchor" aria-label="anchor" href="#weighting"></a>
+</h3>
+<p>An alternative is to use the weight feature. Note that for this to
+work, our response variable must be the ClaimRate and not ClaimNb.</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># Note that in preparing df_list we have set the response_var to ClaimRate, and are setting weight_var to Exposure. Take care to drop any unneeded columns (in the case `ClaimNb`) </span></span>
+<span><span class="va">df_list_weight</span> <span class="op">&lt;-</span> <span class="va">freMTPL2freq</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>ClaimRate <span class="op">=</span> <span class="va">ClaimNb</span> <span class="op">/</span> <span class="va">Exposure</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">ClaimNb</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="../reference/split_into_train_validate_test.html">split_into_train_validate_test</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">iblm_model_weight</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_iblm_xgb.html">train_iblm_xgb</a></span><span class="op">(</span></span>
+<span>  <span class="va">df_list_weight</span>,</span>
+<span>  response_var <span class="op">=</span> <span class="st">"ClaimRate"</span>,</span>
+<span>  weight_var <span class="op">=</span> <span class="st">"Exposure"</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"quasipoisson"</span>,</span>
+<span>  params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>By adding an “weight_var” the iblm object will now have a
+“weight_var” field. Both the glm_model and booster model were fitted
+with this weight applied. When using the explain or predict tools of
+iblm, the functions will not use any weight_var left in the data.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># `weight_var` is ignored in predict.iblm()</span></span>
+<span><span class="va">predict_weight_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">iblm_model_weight</span>, <span class="va">df_list_weight</span><span class="op">$</span><span class="va">test</span> <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># ...or simply drop the column from the data and it is treated as zero</span></span>
+<span><span class="va">predict_weight_b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">iblm_model_weight</span>, <span class="va">df_list_weight</span><span class="op">$</span><span class="va">test</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Exposure</span> <span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">predict_weight_a</span>, <span class="va">predict_weight_b</span><span class="op">)</span> <span class="co"># TRUE</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Note that for <code><a href="../reference/get_pinball_scores.html">get_pinball_scores()</a></code> the weight_var is
+considered when present. When it is not present, an equal weight of 1 is
+assumed for each row. Therefore leaving the weight var in the data can
+yield different scores. It is recommended you include weight_var if
+available.</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># `weight_var` is ignored in predict.iblm()</span></span>
+<span><span class="va">ps_weight_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_pinball_scores.html">get_pinball_scores</a></span><span class="op">(</span><span class="va">df_list_weight</span><span class="op">$</span><span class="va">test</span> , <span class="va">iblm_model_weight</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># ...or simply drop the column from the data and it is treated as zero</span></span>
+<span><span class="va">ps_weight_b</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_pinball_scores.html">get_pinball_scores</a></span><span class="op">(</span><span class="va">df_list_weight</span><span class="op">$</span><span class="va">test</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Exposure</span><span class="op">)</span>, <span class="va">iblm_model_weight</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Column <span style="color: #00BB00;">Exposure</span> not found in `data`. Weight of 1 assumed.</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">ps_weight_a</span>, <span class="va">ps_weight_b</span><span class="op">)</span> <span class="co"># FALSE because total poisson_deviance is weighted for `ps_weight_a` but not `ps_weight_b`</span></span>
+<span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
 </div>
 </div>
 

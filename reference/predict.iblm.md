@@ -67,16 +67,19 @@ At this point, only an iblm model with a "booster_model" object of class
 ## Examples
 
 ``` r
-data <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |>
+  dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+  split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
-  data,
-  response_var = "ClaimRate",
+  df_list,
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "poisson"
 )
 
-predictions <- predict(iblm_model, data$test)
+predictions <- predict(iblm_model, df_list$test)
 
 predictions |> dplyr::glimpse()
-#>  num [1:3764] 0.196 0.195 0.112 0.206 0.071 ...
+#>  num [1:3764] 0.0489 0.0149 0.0976 0.0131 0.2081 ...
 ```

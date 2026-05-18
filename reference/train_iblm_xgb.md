@@ -5,9 +5,11 @@ This function trains an interpretable boosted linear model.
 The function combines a Generalized Linear Model (GLM) with a booster
 model of XGBoost
 
-The "booster" model is trained on: - actual responses / GLM predictions,
-when the link function is log - actual responses - GLM predictions, when
-the link function is identity
+The "booster" model is trained on the residuals of the glm model to the
+response_var, such that: - when the link function is log, IBLM
+predictions = GLM predictions \* Booster predictions - when the link
+function is identity, IBLM predictions = GLM predictions + Booster
+predictions
 
 ## Usage
 
@@ -15,6 +17,8 @@ the link function is identity
 train_iblm_xgb(
   df_list,
   response_var,
+  weight_var = NULL,
+  offset_var = NULL,
   family = "poisson",
   params = list(),
   nrounds = 1000,
@@ -48,11 +52,27 @@ train_iblm_xgb(
   in the datasets. The string MUST appear in both \`df_list\$train\` and
   \`df_list\$validate\`.
 
+- weight_var:
+
+  Character string specifying the name of a variable to weight by. Value
+  of NULL (default) for no weighting. Any string MUST appear in both
+  \`df_list\$train\` and \`df_list\$validate\`.
+
+- offset_var:
+
+  Character string specifying the name of a variable to use as offset.
+  Value of NULL (default) for no offset. Any string MUST appear in both
+  \`df_list\$train\` and \`df_list\$validate\`.
+
+  Any transformations required (e.g. log) must be performed BEFORE
+  \`df_list\` is fed into function.
+
 - family:
 
   Character string specifying the distributional family for the model.
-  Currently only "poisson", "gamma", "tweedie" and "gaussian" is fully
-  supported. See details for how this impacts fitting.
+  Currently only "poisson", "quasipoisson", "gamma", "tweedie" and
+  "gaussian" is fully supported. See details for how this impacts
+  fitting.
 
 - params:
 
@@ -124,6 +144,8 @@ family:
 
 - For "poisson" family, the "objective" is set to "count:poisson"
 
+- For "quasipoisson" family, the "objective" is set to "count:poisson"
+
 - For "gamma" family, the "objective" is set to "reg:gamma"
 
 - For "tweedie" family, the "objective" is set to "reg:tweedie". Also,
@@ -142,11 +164,14 @@ explicit arguments input into \`train_iblm_xgb()\`
 ## Examples
 
 ``` r
-df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |>
+  dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+  split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
   df_list,
-  response_var = "ClaimRate",
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "poisson"
 )
 ```

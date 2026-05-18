@@ -5,7 +5,8 @@ and claims, commonly used for actuarial modeling and risk assessment
 studies.
 
 This is a "mini" subset of the CASdatasets \`freMTPL2freq\` data, with
-some manipulation (see details)
+some manipulation (see details) so that it is ready to plug into the
+IBLM functions
 
 ## Usage
 
@@ -17,40 +18,40 @@ freMTPLmini
 
 A data frame with 25,000 rows and 8 variables:
 
-- ClaimRate:
+- Area:
 
-  Number of claims made, at an annualised rate, rounded (integer)
-
-- VehPower:
-
-  Vehicle power rating or engine horsepower category (integer)
-
-- VehAge:
-
-  Age of the vehicle in years (integer)
-
-- DrivAge:
-
-  Age of the driver in years (integer)
+  Area classification where the policy holder resides (factor with
+  levels A through F)
 
 - BonusMalus:
 
   Bonus-malus coefficient, a rating factor used in French insurance
   where lower values indicate better driving records (integer)
 
+- DrivAge:
+
+  Age of the driver in years (integer)
+
+- VehAge:
+
+  Age of the vehicle in years (integer)
+
 - VehBrand:
 
   Vehicle brand/manufacturer code (factor with levels like B6, B12,
   etc.)
 
-- VehGas:
+- VehPower:
 
-  Type of fuel used by the vehicle (factor with levels: Regular, Diesel)
+  Vehicle power rating or engine horsepower category (integer)
 
-- Area:
+- ClaimNb:
 
-  Area classification where the policy holder resides (factor with
-  levels A through F)
+  Number of claims made, at an annualised rate (double)
+
+- Exposure:
+
+  Length of Exposure in years (double)
 
 ## Source
 
@@ -58,27 +59,27 @@ A data frame with 25,000 rows and 8 variables:
 
 ## Details
 
-The dataset is a random sample of 50,000 records from \`freMTPL2freq\`
-from the \`CASdatasets\` pacakge. Other modifications applied are:
+The dataset is a sample of 25,000 records from \`freMTPL2freq\` from the
+\`CASdatasets\` package. Other modifications applied are:
 
 - `ClaimRate`: Converted to ClaimNb per Exposure, winsorized at the
   99.9th percentile, and rounded.
 
 - `VehAge`: Ceiling of 50 years applied
 
-- Dropped columns: Region, Density, Exposure, ClaimNb, IDpol
+- Dropped columns: VehGas, Region, Density, ClaimNb, IDpol
 
 ## Examples
 
 ``` r
 head(freMTPLmini)
 #> # A tibble: 6 × 8
-#>   Area  VehPower VehAge DrivAge BonusMalus VehBrand VehGas  ClaimRate
-#>   <fct>    <int>  <dbl>   <int>      <int> <fct>    <fct>       <int>
-#> 1 E           10     14      60         50 B2       Regular         0
-#> 2 E            6      4      50         53 B1       Regular         0
-#> 3 C            7      2      37         50 B3       Regular         0
-#> 4 E           11      1      58         50 B12      Diesel          0
-#> 5 B            8      1      29         64 B12      Regular         0
-#> 6 A            7      1      28         57 B3       Diesel          0
+#>   Area  BonusMalus DrivAge VehAge VehBrand VehPower ClaimNb Exposure
+#>   <fct>      <int>   <int>  <dbl> <fct>       <int>   <dbl>    <dbl>
+#> 1 D             50      53      2 B12            12       0     0.24
+#> 2 E             90      30      1 B12             4       0     0.05
+#> 3 E             76      42      7 B2              4       0     0.08
+#> 4 D             68      31     10 B4              7       0     0.96
+#> 5 D             57      35      9 B2              5       0     0.29
+#> 6 C             57      32     10 B1              9       0     0.3 
 ```

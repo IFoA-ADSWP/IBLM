@@ -59,17 +59,20 @@ predictive performance.
 ## Examples
 
 ``` r
-df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |>
+  dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+  split_into_train_validate_test(seed = 9000)
 
 iblm_model <- train_iblm_xgb(
   df_list,
-  response_var = "ClaimRate",
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "poisson"
 )
 
 get_pinball_scores(data = df_list$test, iblm_model = iblm_model)
 #>   model poisson_deviance pinball_score
-#> 1 homog         1.313877    0.00000000
-#> 2   glm         1.232683    0.06179691
-#> 3  iblm         1.201009    0.08590424
+#> 1 homog        0.2716294    0.00000000
+#> 2   glm        0.2647943    0.02516329
+#> 3  iblm        0.2567511    0.05477428
 ```

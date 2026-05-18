@@ -29,12 +29,14 @@ The package provides:
 You can install the **released version** of IBLM from **CRAN**:
 
 ``` r
+
 install.packages("IBLM")
 ```
 
 You can install the **development version** from GitHub:
 
 ``` r
+
 # install.packages("remotes")
 remotes::install_github("IFoA-ADSWP/IBLM")
 ```
@@ -46,6 +48,7 @@ remotes::install_github("IFoA-ADSWP/IBLM")
 Here’s a minimal example to train and explain an IBLM:
 
 ``` r
+
 library(IBLM)
 
 df_list <- freMTPLmini  |>
@@ -54,7 +57,8 @@ df_list <- freMTPLmini  |>
 iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimRate",
-  family = "poisson"
+  weight_var = "Exposure",
+  family = "quasipoisson"
 )
 
 ex <- explain_iblm(iblm_model, df_list$test)

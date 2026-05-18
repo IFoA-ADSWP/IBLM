@@ -5,6 +5,7 @@
 IBLM can be installed from CRAN or GitHub:
 
 ``` r
+
 # From CRAN
 install.packages("IBLM")
 
@@ -20,13 +21,14 @@ An IBLM is essentially a hybrid model consisting of two components:
 
 1.  Generalised Linear Model (GLM) - fitted to the training data
 
-2.  Booster Model[¹](#fn1) - fitted to the residuals of the training
-    data against GLM predictions in step 1.
+2.  Booster Model[^1] - fitted to the residuals of the training data
+    against GLM predictions in step 1.
 
 The purpose of this article is to show you how to use IBLM to train,
 explain and predict using functions from this package.
 
 ``` r
+
 library(IBLM)
 ```
 
@@ -36,12 +38,16 @@ The overall process for fitting and interpreting an IBLM is as follows:
 
 **Step 1: Fit a GLM**
 
-$$g(\mu) = \beta_{0} + \beta_{1}x_{1} + \beta_{2}x_{2} + \cdots + \beta_{n}x_{n}$$
+``` math
+g(\mu) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_n x_n
+```
 
 Where g(·) is the link function, μ is the expected value of the
 response, and β values are your standard regression coefficients.
 
-$$\text{GLM prediction} = g^{- 1}\left( \beta_{0} + \beta_{1}x_{1} + \beta_{2}x_{2} + \cdots + \beta_{n}x_{n} \right)$$
+``` math
+\text{GLM prediction} = g^{-1} (\beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_n x_n)
+```
 
 Where β values are your standard regression coefficients.
 
@@ -55,30 +61,37 @@ response values against the GLM predictions.
 SHAP decomposition allows the booster’s prediction to be apportioned
 into contributions from each feature:
 
-$$\text{Booster prediction} = g^{- 1}\left( \varphi_{0} + \varphi_{1}(x) + \varphi_{2}(x) + \cdots + \varphi_{n}(x) \right)$$
+``` math
+\text{Booster prediction} = g^{-1} (\varphi_0 + \varphi_1(x) + \varphi_2(x) + \cdots + \varphi_n(x))
+```
 
-Where $\varphi_{j}(x)$ is how much feature j contributed to a specific
+Where $`\varphi_j(x)`$ is how much feature j contributed to a specific
 prediction.
 
 **Step 4: Convert SHAP Values to Beta Coefficient Corrections**
 
 Transform each SHAP contribution into beta corrections:
 
-$$\alpha_{j}(x) \approx \frac{\varphi_{j}(x)}{x_{j}}$$
+``` math
+\alpha_j(x) \approx \frac{\varphi_j(x)}{x_j}
+```
 
-There are two situations where the value of $\alpha_{j}(x)$ is set to
-zero and the value for $\varphi_{j}(x)$ is added to the intercept
-instead. This is when $x$ is a numerical variable, and the value is
-zero. Or, when $x$ is a categorical variable, and the value is that of
-the reference level[²](#fn2).
+There are two situations where the value of $`\alpha_j(x)`$ is set to
+zero and the value for $`\varphi_j(x)`$ is added to the intercept
+instead. This is when $`x`$ is a numerical variable, and the value is
+zero. Or, when $`x`$ is a categorical variable, and the value is that of
+the reference level[^2].
 
-$$\begin{aligned}
-{\alpha_{j}(x)} & {= 0{\mspace{6mu}\text{when}\mspace{6mu}}\begin{cases}
-{x_{j} = 0} & \text{(numerical)} \\
-{x_{j} = \text{ref}} & \text{(categorical)}
-\end{cases}} \\
-{\alpha_{0}(x)} & {= \sum\limits_{\substack{j:x_{j} = 0 \\ {\text{or}\mspace{6mu}}x_{j} = \text{ref}}}\varphi_{j}(x)}
-\end{aligned}$$
+``` math
+\begin{aligned}
+\alpha_j(x) &= 0 \text{ when } 
+\begin{cases}
+x_j = 0 & \text{(numerical)} \\
+x_j = \text{ref} & \text{(categorical)}
+\end{cases} \\[1em]
+\alpha_0(x) &= \sum_{\substack{j: x_j = 0 \\ \text{or } x_j = \text{ref}}} \varphi_j(x)
+\end{aligned}
+```
 
 **Step 5: Combine**
 
@@ -92,28 +105,34 @@ are the addition of:
 2.  The beta corrections derived in step 4, which are unique to that
     predictor variable combination.
 
-$$g(\mu) = \left( \beta_{0} + \varphi_{0} + \alpha_{0} \right) + \left( \beta_{1} + \alpha_{1}(x) \right)x_{1} + \left( \beta_{2} + \alpha_{2}(x) \right)x_{2} + \cdots + \left( \beta_{n} + \alpha_{n}(x) \right)x_{n}$$
+``` math
+g(\mu) = (\beta_0 + \varphi_0 + \alpha_0) + (\beta_1 + \alpha_1(x))x_1 + (\beta_2 + \alpha_2(x))x_2 + \cdots + (\beta_n + \alpha_n(x))x_n
+```
 
 or
 
-$$\begin{aligned}
-{g(\mu)} & {= \beta\prime_{0} + \beta\prime_{1}x_{1} + \beta\prime_{2}x_{2} + \cdots + \beta\prime_{n}x_{n}} \\
-{{\text{where}\mspace{6mu}}\beta\prime_{j}} & {= \beta_{j} + \alpha_{j}(x)} \\
-{{\text{and}\mspace{6mu}}\beta\prime_{0}} & {= \beta_{0} + \varphi_{0} + \alpha_{0}}
-\end{aligned}$$
+``` math
+\begin{aligned}
+g(\mu) &= \beta'_0 + \beta'_1 x_1 + \beta'_2 x_2 + \cdots + \beta'_n x_n \\
+\text{where } \beta'_j &= \beta_j + \alpha_j(x) \\
+\text{and } \beta'_0 &= \beta_0 + \varphi_0 + \alpha_0
+\end{aligned}
+```
 
 Where g(·) is the link function, μ is the expected value of the
 response, and β values are your standard regression coefficients.
 
 The IBLM prediction is a combination of components.
 
-$$\begin{aligned}
-\text{IBLM prediction} & {= g^{- 1}\left( \beta\prime_{0} + \beta\prime_{1}x_{1} + \beta\prime_{2}x_{2} + \cdots + \beta\prime_{n}x_{n} \right)} \\
- & {= \begin{cases}
-{\text{GLM prediction} \times \text{Booster prediction}} & {{\text{when}\mspace{6mu}}g = \log} \\
-{\text{GLM prediction} + \text{Booster prediction}} & {{\text{when}\mspace{6mu}}g = \text{identity}}
-\end{cases}}
-\end{aligned}$$
+``` math
+\begin{aligned}
+\text{IBLM prediction} &= g^{-1} (\beta'_0 + \beta'_1 x_1 + \beta'_2 x_2 + \cdots + \beta'_n x_n) \\[0.5em]
+&= \begin{cases}
+\text{GLM prediction} \times \text{Booster prediction} & \text{when } g = \log \\
+\text{GLM prediction} + \text{Booster prediction} & \text{when } g = \text{identity}
+\end{cases}
+\end{aligned}
+```
 
 This preserves the familiar GLM form while incorporating the booster’s
 superior predictive power.
@@ -122,7 +141,10 @@ superior predictive power.
 
 To train an IBLM we must get our data into an appropriate format. In
 this document our demonstrations will be completed using French motor
-claims dataset `freMTPL2freq`.
+claims dataset `freMTPL2freq`. For simplicity, we will drop the
+“Exposure” column and assume all rows carry equal weight. In practice
+however this should be allowed for either through choice `weight_var` or
+`offset_var` (see Weights and Offsets).
 
 Data for training an IBLM model must be in the form of a list of 3
 dataframes. These will be named “train”, “validate” and “test”. The
@@ -131,11 +153,12 @@ function
 can conveniently split a single dataframe into such a structure.
 
 ``` r
-df <- load_freMTPL2freq()
 
-df <- df |> mutate(ClaimNb = round(ClaimNb)) 
+freMTPL2freq <- load_freMTPL2freq()
 
-df_list <- df |> split_into_train_validate_test(seed = 1)
+df_list <- freMTPL2freq |> 
+  select(-Exposure) |> 
+  split_into_train_validate_test(seed = 1)
 ```
 
 There is currently only one function available to train an IBLM. This is
@@ -147,9 +170,10 @@ The output is of class “iblm”. Objects of this class contain two
 component models “glm_model” and “booster_model”. There are also other
 items containing information (see Value section of
 [`train_iblm_xgb()`](https://ifoa-adswp.github.io/IBLM/reference/train_iblm_xgb.md)
-for more information)
+for more information).
 
 ``` r
+
 iblm_model <- train_iblm_xgb(
   df_list,
   response_var = "ClaimNb",
@@ -167,6 +191,7 @@ useful when directly comparing (for example see [Pinball
 Score](#pinball-score))
 
 ``` r
+
 xgb_model <- train_xgb_as_per_iblm(iblm_model)
 
 is_identical_config <- purrr::map2_lgl(
@@ -178,7 +203,6 @@ is_identical_config <- purrr::map2_lgl(
 # the config is mostly identical. In our example the differences are:
 is_identical_config[!is_identical_config] |> names()
 #> [1] "learner.gradient_booster.gbtree_model_param.num_trees"
-#> [2] "learner.learner_model_param.base_score"
 ```
 
 ## Explain
@@ -193,6 +217,7 @@ the test portion of your dataset.
 The following line is all that is required:
 
 ``` r
+
 ex <- explain_iblm(iblm_model, df_list$test)
 ```
 
@@ -215,17 +240,16 @@ The output object is a list containing the following items:
   [`overall_correction()`](https://ifoa-adswp.github.io/IBLM/reference/overall_correction.md))
 
 - **shap** Dataframe showing raw SHAP values of data records. These are
-  the $\varphi_{n}(x)$ values described in step 3 of [Theory](#theory).
+  the $`\varphi_n(x)`$ values described in step 3 of [Theory](#theory).
 
 - **beta_corrections** Dataframe showing beta corrections (in
-  wide/one-hot format) of data records. These are the $\alpha_{0}(x)$
-  and $\alpha_{j}(x)$ values described in step 4 of [Theory](#theory).
+  wide/one-hot format) of data records. These are the $`\alpha_0(x)`$
+  and $`\alpha_j(x)`$ values described in step 4 of [Theory](#theory).
 
 - **data_beta_coeff** Dataframe showing corrected beta coefficients of
-  data records. These are the $\beta\prime_{0}$ and $\beta\prime_{j}$
-  values described in step 5 of [Theory](#theory). For categorical
-  variables, the value corresponds to the relevant coefficient for that
-  datapoint.
+  data records. These are the $`\beta'_0`$ and $`\beta'_j`$ values
+  described in step 5 of [Theory](#theory). For categorical variables,
+  the value corresponds to the relevant coefficient for that datapoint.
 
 Many of the items output are functions. The functions can then be called
 to observe the components of the “iblm” object in different ways.
@@ -255,24 +279,28 @@ freMTPL2freq dataset.
 - BonusMalus
 
 ``` r
+
 ex$beta_corrected_density(varname = "VehPower")
 ```
 
 ![](IBLM_files/figure-html/explain-beta_correct_density-VehPower-1.png)
 
 ``` r
+
 ex$beta_corrected_density(varname = "VehAge")
 ```
 
 ![](IBLM_files/figure-html/explain-beta_correct_density-VehAge-1.png)
 
 ``` r
+
 ex$beta_corrected_density(varname = "DrivAge")
 ```
 
 ![](IBLM_files/figure-html/explain-beta_correct_density-DrivAge-1.png)
 
 ``` r
+
 ex$beta_corrected_density(varname = "BonusMalus")
 ```
 
@@ -294,6 +322,7 @@ Density](#bias-corrected-density)). Also in the example, we have wrapped
 our list using patchwork to create a single graphic for simplicity.
 
 ``` r
+
 VehBrand <- ex$beta_corrected_density(varname = "VehBrand", type = "hist")
 
 VehBrand |> patchwork::wrap_plots(ncol = 2) 
@@ -322,6 +351,7 @@ Note the color argument can also be set to try and observe interactions
 with a second variable.
 
 ``` r
+
 ex$beta_corrected_scatter(varname = "DrivAge", color = "VehPower")
 #> `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
 ```
@@ -338,6 +368,7 @@ Note the color argument can also be set to try and observe interactions
 with a second variable.
 
 ``` r
+
 ex$beta_corrected_scatter(varname = "VehBrand")
 ```
 
@@ -378,6 +409,7 @@ The bias values can be observed with
 - Total
 
 ``` r
+
 bias_corrections <- ex$bias_density()
 bias_corrections$bias_correction_var
 ```
@@ -385,6 +417,7 @@ bias_corrections$bias_correction_var
 ![](IBLM_files/figure-html/explain-bias_density-var-1.png)
 
 ``` r
+
 bias_corrections <- ex$bias_density()
 bias_corrections$bias_correction_total
 ```
@@ -407,12 +440,14 @@ transformed by the link function, but this can be switched off.
 - Not transformed
 
 ``` r
+
 ex$overall_correction()
 ```
 
 ![](IBLM_files/figure-html/explain-overall_correction-log-1.png)
 
 ``` r
+
 ex$overall_correction(transform_x_scale_by_link = FALSE)
 ```
 
@@ -428,6 +463,7 @@ the “glm_model” and “booster_model” items within the “iblm” class
 object.
 
 ``` r
+
 predictions <- predict(iblm_model, df_list$test)
 ```
 
@@ -442,9 +478,10 @@ coefficients are derived by the
 function, it is also possible to predict through linear calculation.
 
 ``` r
+
 coeff_multiplier <- 
   df_list$test |>
-  select(-all_of("ClaimNb")) |>
+  select(-all_of(c(iblm_model$response_var, iblm_model$weight_var))) |>
   mutate(
     across(
       all_of(iblm_model$predictor_vars$categorical),
@@ -461,7 +498,7 @@ predictions_alt <-
 
 # difference in predictions very small between two alternative methods
 range(predictions_alt / predictions - 1)
-#> [1] -9.531663e-07  9.788184e-07
+#> [1] -1.107509e-06  8.825406e-07
 ```
 
 ### Pinball Score
@@ -475,6 +512,7 @@ the glm. We have also added the xgb_model (derived in section
 [Train](#train)) as a further comparison.
 
 ``` r
+
 get_pinball_scores(
   data = df_list$test, 
   iblm_model = iblm_model,
@@ -486,10 +524,10 @@ get_pinball_scores(
 
 | model | poisson_deviance | pinball_score |
 |-------|------------------|---------------|
-| homog | 1.407148         | 0.00%         |
-| glm   | 1.348394         | 4.18%         |
-| iblm  | 1.234015         | 12.30%        |
-| xgb   | 1.227481         | 12.77%        |
+| homog | 0.3263248        | 0.00%         |
+| glm   | 0.3198652        | 1.98%         |
+| iblm  | 0.3059705        | 6.24%         |
+| xgb   | 0.3053881        | 6.42%         |
 
 ### Correction Corridor
 
@@ -506,6 +544,7 @@ that when the trim value is zero, the IBLM predictions are the same as
 the GLM predictions.
 
 ``` r
+
 correction_corridor(
   iblm_model, 
   df_list$test,
@@ -516,12 +555,160 @@ correction_corridor(
 
 ![](IBLM_files/figure-html/correction-corridor-1.png)
 
-------------------------------------------------------------------------
+## Offsetting and Weighting
 
-1.  As of v.1.0.0 the IBLM package can only fit a booster model of type
-    XGBoost, however we are looking to add other options in the future.
+In the examples above using `freMTPL2freq`, we dropped the “Exposure”
+column and treated each row equally. However, in reality we would want
+to account for the fact that some periods carry more weight than others.
+We can do this either through use of “offset_var” argument, or
+“weight_var”.
 
-2.  The reference level of a categorical variable is the value that is
+### Offsetting
+
+The principal of offsetting in iblm works similar to offsetting in glm.
+Any offset specified get incorporated only into the `glm_model` and not
+the `booster_model` component.
+
+For a poisson distribution we can implement offsetting to place more
+value on those rows with greater Exposure.
+
+To do this when training the iblm object, it is necessary to create a
+column in your data for the offset. For poisson, quasipoisson, gamma or
+tweedie this *must* be in a log transformed format. Note to take care to
+drop unnecessary columns before training, in this case the Exposure
+column once used.
+
+``` r
+
+
+# Note that in preparing df_list we have log-transformed our Exposure column. Take care to drop any unneeded columns (in the case `Exposure`) 
+df_list_offset <- freMTPL2freq |> 
+  mutate(LogExposure = log(Exposure)) |> 
+  select(-Exposure) |> 
+  split_into_train_validate_test(seed = 1)
+
+iblm_model_offset <- train_iblm_xgb(
+  df_list_offset,
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
+  family = "poisson",
+  params = list(seed = 0)
+)
+```
+
+By adding an “offset_var” the iblm object will now have a “offset_var”
+field. The glm_model was fitted with this offset. The booster model is
+based on the residual of glm predictions and responses, therefore the
+offset is implicitly applied in the booster model training as a result,
+but not explicitly included.
+
+When using the explain or predict tools of iblm, the functions will
+account for this offset_var. If one is not included in testing data, an
+offset of zero is assumed:
+
+``` r
+
+
+# to not include offset in prediction (recommended for Poisson rate predictions) set `offset_var` to zero
+predict_offset_a <- predict(iblm_model_offset, df_list_offset$test |> dplyr::mutate(LogExposure = 0) )
+
+# ...or simply drop the column from the data and it is treated as zero
+predict_offset_b <- predict(iblm_model_offset, df_list_offset$test |> dplyr::select(-LogExposure ))
+#> 'iblm' object was fitted with offset LogExposure but none found in data. Offset
+#> assumed to be zero.
+
+identical(predict_offset_a, predict_offset_b) # TRUE
+#> [1] TRUE
+```
+
+If you leave the “offset_var” in the data, the predictions will be based
+on this:
+
+``` r
+
+
+# to not include offset in prediction (recommended for Poisson rate predictions) set `offset_var` to zero
+predict_offset_a <- predict(iblm_model_offset, df_list_offset$test |> dplyr::mutate(LogExposure = 0) )
+
+# if you leave the offset_var in the test data, the prediction will be based on this offset.
+predict_offset_c <- predict(iblm_model_offset, df_list_offset$test )
+
+identical(predict_offset_a, predict_offset_c) # FALSE because predict_offset_c values are based on LogExposure column of test data, whereas predict_offset_a values assumed LogExposure = 0 (i.e. Exposure = 1).
+#> [1] FALSE
+```
+
+Note the same applies for other prediction functions, such as
+[`get_pinball_scores()`](https://ifoa-adswp.github.io/IBLM/reference/get_pinball_scores.md)
+and
+[`correction_corridor()`](https://ifoa-adswp.github.io/IBLM/reference/correction_corridor.md).
+
+### Weighting
+
+An alternative is to use the weight feature. Note that for this to work,
+our response variable must be the ClaimRate and not ClaimNb.
+
+``` r
+
+
+# Note that in preparing df_list we have set the response_var to ClaimRate, and are setting weight_var to Exposure. Take care to drop any unneeded columns (in the case `ClaimNb`) 
+df_list_weight <- freMTPL2freq |> 
+  mutate(ClaimRate = ClaimNb / Exposure) |> 
+  select(-ClaimNb) |> 
+  split_into_train_validate_test(seed = 1)
+
+iblm_model_weight <- train_iblm_xgb(
+  df_list_weight,
+  response_var = "ClaimRate",
+  weight_var = "Exposure",
+  family = "quasipoisson",
+  params = list(seed = 0)
+)
+```
+
+By adding an “weight_var” the iblm object will now have a “weight_var”
+field. Both the glm_model and booster model were fitted with this weight
+applied. When using the explain or predict tools of iblm, the functions
+will not use any weight_var left in the data.
+
+``` r
+
+
+# `weight_var` is ignored in predict.iblm()
+predict_weight_a <- predict(iblm_model_weight, df_list_weight$test )
+
+# ...or simply drop the column from the data and it is treated as zero
+predict_weight_b <- predict(iblm_model_weight, df_list_weight$test |> dplyr::select(-Exposure ))
+
+identical(predict_weight_a, predict_weight_b) # TRUE
+#> [1] TRUE
+```
+
+Note that for
+[`get_pinball_scores()`](https://ifoa-adswp.github.io/IBLM/reference/get_pinball_scores.md)
+the weight_var is considered when present. When it is not present, an
+equal weight of 1 is assumed for each row. Therefore leaving the weight
+var in the data can yield different scores. It is recommended you
+include weight_var if available.
+
+``` r
+
+
+# `weight_var` is ignored in predict.iblm()
+ps_weight_a <- get_pinball_scores(df_list_weight$test , iblm_model_weight)
+
+# ...or simply drop the column from the data and it is treated as zero
+ps_weight_b <- get_pinball_scores(df_list_weight$test |> dplyr::select(-Exposure), iblm_model_weight)
+#> Column Exposure not found in `data`. Weight of 1 assumed.
+
+identical(ps_weight_a, ps_weight_b) # FALSE because total poisson_deviance is weighted for `ps_weight_a` but not `ps_weight_b`
+#> [1] FALSE
+```
+
+[^1]: As of v.1.0.0 the IBLM package can only fit a booster model of
+    type XGBoost, however we are looking to add other options in the
+    future.
+
+[^2]: The reference level of a categorical variable is the value that is
     the value for which there is no coefficient in the GLM. The
     reference levels of an “iblm” class object can be found in
     `.$cat_levels$reference`

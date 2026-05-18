@@ -33,12 +33,15 @@ Trained XGBoost model object (class "xgb.Booster").
 ## Examples
 
 ``` r
-df_list <- freMTPLmini |> split_into_train_validate_test(seed = 9000)
+df_list <- freMTPLmini |>
+  dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+  split_into_train_validate_test(seed = 9000)
 
 # training with plenty of rounds allowed
 iblm_model1 <- train_iblm_xgb(
   df_list,
-  response_var = "ClaimRate",
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "poisson",
   params = list(max_depth = 6),
   nrounds = 1000
@@ -49,10 +52,11 @@ xgb1 <- train_xgb_as_per_iblm(iblm_model1)
 # training with severe restrictions (expected poorer results)
 iblm_model2 <- train_iblm_xgb(
   df_list,
-  response_var = "ClaimRate",
+  response_var = "ClaimNb",
+  offset_var = "LogExposure",
   family = "poisson",
   params = list(max_depth = 1),
-  nrounds = 5
+  nrounds = 2
 )
 
 xgb2 <- train_xgb_as_per_iblm(iblm_model2)
@@ -65,10 +69,10 @@ get_pinball_scores(
   additional_models = list(iblm2 = iblm_model2, xgb1 = xgb1, xgb2 = xgb2)
 )
 #>   model poisson_deviance pinball_score
-#> 1 homog         1.313877    0.00000000
-#> 2   glm         1.232683    0.06179691
-#> 3  iblm         1.201009    0.08590424
-#> 4 iblm2         1.211335    0.07804541
-#> 5  xgb1         1.212865    0.07688069
-#> 6  xgb2         1.259753    0.04119366
+#> 1 homog        0.2716294    0.00000000
+#> 2   glm        0.2647943    0.02516329
+#> 3  iblm        0.2567511    0.05477428
+#> 4 iblm2        0.2631261    0.03130501
+#> 5  xgb1        0.2591308    0.04601350
+#> 6  xgb2        0.6606099   -1.43202634
 ```
