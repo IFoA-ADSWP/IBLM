@@ -83,7 +83,7 @@ If you’d like to report a bug or suggest a feature, please open an issue on Gi
 
 If you use **IBLM** in research or teaching, please cite it as:
 
-> Gawlowski, K. and Beard, P. (2025). *IBLM: Interpretable Boosted Linear Models.* R package version 1.0.2.
+> Gawlowski, K. and Beard, P. (2026). *IBLM: Interpretable Boosted Linear Models.* R package version 2.0.1.
 
 ---
 
