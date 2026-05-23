@@ -18,6 +18,9 @@ The package provides:
 - Tools to analyze and visualize model results  
 - Support for model comparison and diagnostics  
 
+This package is built in R. However an equivalent **Python package** is available too:
+🔗 [https://ifoa-adswp.github.io/pyIBLM](https://ifoa-adswp.github.io/pyIBLM)
+
 ---
 
 ### Installation
