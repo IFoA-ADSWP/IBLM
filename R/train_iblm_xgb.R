@@ -231,19 +231,20 @@ train_iblm_xgb <- function(df_list,
 
   predictor_vars <- names(train$features)
 
-  formula <- stats::as.formula(paste(
-    response_var, "~",
-    paste(predictor_vars, collapse = " + "),
-    if(!is.null(offset_var)) {paste0("+ offset(", offset_var, ")")}
-  ))
+  if(!is.null(glm_model)){
+    formula <- stats::as.formula(paste(
+      response_var, "~",
+      paste(predictor_vars, collapse = " + "),
+      if(!is.null(offset_var)) {paste0("+ offset(", offset_var, ")")}
+    ))
 
-  glm_model <- stats::glm(
-    formula,
-    data = df_list[["train"]] |> dplyr::select(-dplyr::all_of(weight_var)),
-    family = glm_family,
-    weights = train$weights
-  )
-
+    glm_model <- stats::glm(
+      formula,
+      data = df_list[["train"]] |> dplyr::select(-dplyr::all_of(weight_var)),
+      family = glm_family,
+      weights = train$weights
+    )
+  }
   # ==================== Preparing for XGB  ====================
 
   link <- glm_family$link
