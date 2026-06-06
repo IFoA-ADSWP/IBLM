@@ -18,8 +18,9 @@
 #'  Value of NULL (default) for no weighting. Any string MUST appear in both `df_list$train` and `df_list$validate`.
 #' @param offset_var Character string specifying the name of a variable to use as offset.
 #'  Value of NULL (default) for no offset. Any string MUST appear in both `df_list$train` and `df_list$validate`.
-#'
 #' Any transformations required (e.g. log) must be performed BEFORE `df_list` is fed into function.
+#' @param glm_model Optional pre-fitted object of class `glm` to use as the GLM component.
+#'  Default is NULL, in which case the GLM component is fitted inside this function.
 #' @param family Character string specifying the distributional family for the model.
 #'   Currently only "poisson", "quasipoisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.
 #' @param params Named list of additional parameters to pass to \link[xgboost]{xgb.train}.
@@ -70,6 +71,7 @@ train_iblm_xgb <- function(df_list,
                            response_var,
                            weight_var = NULL,
                            offset_var = NULL,
+                           glm_model = NULL,
                            family = "poisson",
                            params = list(),
                            nrounds = 1000,
@@ -231,7 +233,7 @@ train_iblm_xgb <- function(df_list,
 
   predictor_vars <- names(train$features)
 
-  if(!is.null(glm_model)){
+  if (is.null(glm_model)) {
     formula <- stats::as.formula(paste(
       response_var, "~",
       paste(predictor_vars, collapse = " + "),
@@ -244,10 +246,14 @@ train_iblm_xgb <- function(df_list,
       family = glm_family,
       weights = train$weights
     )
+  } else {
+    if (!inherits(glm_model, "glm")) {
+      cli::cli_abort("'glm_model' must be of class 'glm'")
+    }
   }
   # ==================== Preparing for XGB  ====================
 
-  link <- glm_family$link
+  link <- glm_model$family$link
 
   glm_train_data <- train$features |>
     dplyr::bind_cols(

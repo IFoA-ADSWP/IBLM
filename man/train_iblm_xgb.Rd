@@ -9,6 +9,7 @@ train_iblm_xgb(
   response_var,
   weight_var = NULL,
   offset_var = NULL,
+  glm_model = NULL,
   family = "poisson",
   params = list(),
   nrounds = 1000,
@@ -39,8 +40,10 @@ Value of NULL (default) for no weighting. Any string MUST appear in both `df_lis
 
 \item{offset_var}{Character string specifying the name of a variable to use as offset.
  Value of NULL (default) for no offset. Any string MUST appear in both `df_list$train` and `df_list$validate`.
-
 Any transformations required (e.g. log) must be performed BEFORE `df_list` is fed into function.}
+
+\item{glm_model}{Optional pre-fitted object of class `glm` to use as the GLM component.
+Default is NULL, in which case the GLM component is fitted inside this function.}
 
 \item{family}{Character string specifying the distributional family for the model.
 Currently only "poisson", "quasipoisson", "gamma", "tweedie" and "gaussian" is fully supported. See details for how this impacts fitting.}

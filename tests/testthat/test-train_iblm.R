@@ -144,6 +144,48 @@ testthat::test_that("test against Karol original script", {
 })
 
 
+testthat::test_that("glm_model input is optional and reusable", {
+  df_list <- freMTPLmini |>
+    dplyr::mutate(LogExposure = log(Exposure), .keep = "unused") |>
+    split_into_train_validate_test(seed = 123)
+
+  iblm_default <- train_iblm_xgb(
+    df_list,
+    response_var = "ClaimNb",
+    offset_var = "LogExposure",
+    family = "poisson",
+    nrounds = 5,
+    early_stopping_rounds = NULL,
+    params = list(seed = 99)
+  )
+
+  testthat::expect_s3_class(iblm_default$glm_model, "glm")
+
+  external_glm <- stats::glm(
+    ClaimNb ~ . + offset(LogExposure),
+    data = df_list$train |>
+      dplyr::select(-dplyr::any_of(c("weight"))),
+    family = stats::poisson()
+  )
+
+  iblm_external <- train_iblm_xgb(
+    df_list,
+    response_var = "ClaimNb",
+    offset_var = "LogExposure",
+    glm_model = external_glm,
+    family = "poisson",
+    nrounds = 5,
+    early_stopping_rounds = NULL,
+    params = list(seed = 99)
+  )
+
+  testthat::expect_equal(
+    unname(iblm_external$glm_model$coefficients),
+    unname(external_glm$coefficients)
+  )
+})
+
+
 
 
 
